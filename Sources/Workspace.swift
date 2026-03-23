@@ -248,7 +248,13 @@ extension Workspace {
             statusEntries: statusSnapshots,
             logEntries: logSnapshots,
             progress: progressSnapshot,
-            gitBranch: gitBranchSnapshot
+            gitBranch: gitBranchSnapshot,
+            supervisorGoal: supervisorGoal,
+            supervisorEnabled: supervisorEnabled,
+            supervisorHealth: supervisorHealth,
+            supervisorLastReview: supervisorLastReview,
+            supervisorInteractionNotes: supervisorInteractionNotes,
+            supervisorStartupPlan: supervisorStartupPlan
         )
     }
 
@@ -296,6 +302,14 @@ extension Workspace {
         }
         progress = snapshot.progress.map { SidebarProgressState(value: $0.value, label: $0.label) }
         gitBranch = snapshot.gitBranch.map { SidebarGitBranchState(branch: $0.branch, isDirty: $0.isDirty) }
+        supervisorGoal = snapshot.supervisorGoal ?? ""
+        supervisorEnabled = snapshot.supervisorEnabled ?? false
+        supervisorHealth = snapshot.supervisorHealth ?? .idle
+        supervisorLastReview = snapshot.supervisorLastReview
+        supervisorInteractionNotes = snapshot.supervisorInteractionNotes ?? ""
+        supervisorStartupPlan = snapshot.supervisorStartupPlan
+        supervisorUpdatedAt = supervisorLastReview.map { Date(timeIntervalSince1970: $0.generatedAt) }
+        publishSupervisorStatusEntry()
 
         recomputeListeningPorts()
 
@@ -5232,6 +5246,13 @@ final class Workspace: Identifiable, ObservableObject {
     @Published var remoteConfiguration: WorkspaceRemoteConfiguration?
     @Published var remoteConnectionState: WorkspaceRemoteConnectionState = .disconnected
     @Published var remoteConnectionDetail: String?
+    @Published var supervisorGoal: String = ""
+    @Published var supervisorEnabled: Bool = false
+    @Published var supervisorHealth: WorkspaceSupervisorHealth = .idle
+    @Published var supervisorLastReview: WorkspaceSupervisorReview?
+    @Published var supervisorUpdatedAt: Date?
+    @Published var supervisorInteractionNotes: String = ""
+    @Published var supervisorStartupPlan: WorkspaceSupervisorStartupPlan?
     @Published var remoteDaemonStatus: WorkspaceRemoteDaemonStatus = WorkspaceRemoteDaemonStatus()
     @Published var remoteDetectedPorts: [Int] = []
     @Published var remoteForwardedPorts: [Int] = []
@@ -5248,6 +5269,7 @@ final class Workspace: Identifiable, ObservableObject {
     private var remoteLastDaemonErrorFingerprint: String?
     private var remoteLastPortConflictFingerprint: String?
     private var activeRemoteTerminalSurfaceIds: Set<UUID> = []
+    private var supervisorHeuristicRefreshTask: Task<Void, Never>?
 
     private static let remoteErrorStatusKey = "remote.error"
     private static let remotePortConflictStatusKey = "remote.port_conflicts"
@@ -5274,6 +5296,19 @@ final class Workspace: Identifiable, ObservableObject {
     private var preservesSSHTerminalConnection: Bool {
         activeRemoteTerminalSessionCount > 0
             && remoteConfiguration?.terminalStartupCommand?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+    }
+
+    var hasInteractiveRemoteSSHSession: Bool {
+        guard remoteConfiguration?.terminalStartupCommand?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+            return false
+        }
+        for panelId in activeRemoteTerminalSurfaceIds {
+            guard let ttyName = surfaceTTYNames[panelId] else { continue }
+            if TerminalSSHSessionDetector.detect(forTTY: ttyName) != nil {
+                return true
+            }
+        }
+        return false
     }
 
     private var hasProxyOnlyRemoteSidebarError: Bool {
@@ -6816,6 +6851,27 @@ final class Workspace: Identifiable, ObservableObject {
         let limit = max(1, min(500, configuredLimit))
         if logEntries.count > limit {
             logEntries.removeFirst(logEntries.count - limit)
+        }
+        if supervisorEnabled {
+            scheduleSupervisorHeuristicRefresh()
+        }
+    }
+
+    func appendLogEntry(_ message: String, level: SidebarLogLevel, source: String?) {
+        appendSidebarLog(message: message, level: level, source: source)
+    }
+
+    func scheduleSupervisorHeuristicRefresh(delay: TimeInterval = 0.35) {
+        supervisorHeuristicRefreshTask?.cancel()
+        supervisorHeuristicRefreshTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let nanoseconds = UInt64(max(0, delay) * 1_000_000_000)
+            if nanoseconds > 0 {
+                try? await Task.sleep(nanoseconds: nanoseconds)
+            }
+            guard !Task.isCancelled else { return }
+            self.refreshSupervisorHeuristicReview()
+            self.supervisorHeuristicRefreshTask = nil
         }
     }
 

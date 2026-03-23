@@ -217,7 +217,7 @@ struct cmuxApp: App {
     }
 
     private static func terminateForMissingLaunchTag() -> Never {
-        let message = "error: refusing to launch untagged cmux DEV; start with ./scripts/reload.sh --tag <name> (or set CMUX_TAG for test harnesses)"
+        let message = "error: refusing to launch untagged iatlas DEV; start with ./scripts/reload.sh --tag <name> (or set CMUX_TAG for test harnesses)"
         fputs("\(message)\n", stderr)
         fflush(stderr)
         NSLog("%@", message)
@@ -370,7 +370,7 @@ struct cmuxApp: App {
             }
 
             CommandGroup(replacing: .appInfo) {
-                Button(String(localized: "menu.app.about", defaultValue: "About cmux")) {
+                Button(String(localized: "menu.app.about", defaultValue: "About iatlas")) {
                     showAboutPanel()
                 }
                 Button(String(localized: "menu.app.ghosttySettings", defaultValue: "Ghostty Settings…")) {
@@ -1254,16 +1254,16 @@ struct cmuxApp: App {
 }
 
 private let cmuxAuxiliaryWindowIdentifiers: Set<String> = [
-    "cmux.settings",
-    "cmux.about",
-    "cmux.licenses",
-    "cmux.browser-popup",
-    "cmux.settingsAboutTitlebarDebug",
-    "cmux.debugWindowControls",
-    "cmux.browserImportHintDebug",
-    "cmux.sidebarDebug",
-    "cmux.menubarDebug",
-    "cmux.backgroundDebug",
+    "iatlas.settings",
+    "iatlas.about",
+    "iatlas.licenses",
+    "iatlas.browser-popup",
+    "iatlas.settingsAboutTitlebarDebug",
+    "iatlas.debugWindowControls",
+    "iatlas.browserImportHintDebug",
+    "iatlas.sidebarDebug",
+    "iatlas.menubarDebug",
+    "iatlas.backgroundDebug",
 ]
 
 /// Returns whether the given window should handle the standard close shortcut
@@ -1292,9 +1292,9 @@ private enum SettingsAboutWindowKind: String, CaseIterable, Identifiable {
     var windowIdentifier: String {
         switch self {
         case .settings:
-            return "cmux.settings"
+            return "iatlas.settings"
         case .about:
-            return "cmux.about"
+            return "iatlas.about"
         }
     }
 
@@ -1303,7 +1303,7 @@ private enum SettingsAboutWindowKind: String, CaseIterable, Identifiable {
         case .settings:
             return "Settings"
         case .about:
-            return "About cmux"
+            return "About iatlas"
         }
     }
 
@@ -1416,7 +1416,7 @@ private struct SettingsAboutTitlebarDebugOptions: Equatable {
         case .about:
             return SettingsAboutTitlebarDebugOptions(
                 overridesEnabled: false,
-                windowTitle: "About cmux",
+                windowTitle: "About iatlas",
                 titleVisibility: .hidden,
                 titlebarAppearsTransparent: true,
                 movableByWindowBackground: false,
@@ -1588,7 +1588,7 @@ private final class SettingsAboutTitlebarDebugWindowController: NSWindowControll
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.settingsAboutTitlebarDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.settingsAboutTitlebarDebug")
         window.center()
         window.contentView = NSHostingView(rootView: SettingsAboutTitlebarDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -1816,7 +1816,7 @@ private final class DebugWindowControlsWindowController: NSWindowController, NSW
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.debugWindowControls")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.debugWindowControls")
         window.center()
         window.contentView = NSHostingView(rootView: DebugWindowControlsView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -2120,7 +2120,7 @@ private final class BrowserImportHintDebugWindowController: NSWindowController, 
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.browserImportHintDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.browserImportHintDebug")
         window.center()
         window.contentView = NSHostingView(rootView: BrowserImportHintDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -2157,7 +2157,7 @@ private final class BrowserProfilePopoverDebugWindowController: NSWindowControll
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.browserProfilePopoverDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.browserProfilePopoverDebug")
         window.center()
         window.contentView = NSHostingView(rootView: BrowserProfilePopoverDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -2521,7 +2521,7 @@ private final class AboutWindowController: NSWindowController, NSWindowDelegate 
             defer: false
         )
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.about")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.about")
         window.center()
         window.contentView = NSHostingView(rootView: AboutPanelView())
         SettingsAboutTitlebarDebugStore.shared.applyCurrentOptions(to: window, for: .about)
@@ -2555,7 +2555,7 @@ private final class AcknowledgmentsWindowController: NSWindowController, NSWindo
         )
         window.isReleasedWhenClosed = false
         window.title = String(localized: "about.licenses.windowTitle", defaultValue: "Third-Party Licenses")
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.licenses")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.licenses")
         window.center()
         window.contentView = NSHostingView(rootView: AcknowledgmentsView())
         super.init(window: window)
@@ -2606,7 +2606,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.settings")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.settings")
         window.center()
         window.contentView = NSHostingView(rootView: SettingsRootView())
         SettingsAboutTitlebarDebugStore.shared.applyCurrentOptions(to: window, for: .settings)
@@ -2729,13 +2729,14 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 }
 
 enum SettingsNavigationTarget: String {
+    case notifications
     case browser
     case browserImport
     case keyboardShortcuts
 }
 
 enum SettingsNavigationRequest {
-    static let notificationName = Notification.Name("cmux.settings.navigate")
+    static let notificationName = Notification.Name("iatlas.settings.navigate")
     private static let targetKey = "target"
 
     static func post(_ target: SettingsNavigationTarget) {
@@ -2767,7 +2768,7 @@ private final class SidebarDebugWindowController: NSWindowController, NSWindowDe
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.sidebarDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.sidebarDebug")
         window.center()
         window.contentView = NSHostingView(rootView: SidebarDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -2789,8 +2790,8 @@ private final class SidebarDebugWindowController: NSWindowController, NSWindowDe
 private struct AboutPanelView: View {
     @Environment(\.openURL) private var openURL
 
-    private let githubURL = URL(string: "https://github.com/manaflow-ai/cmux")
-    private let docsURL = URL(string: "https://cmux.com/docs")
+    private let githubURL = URL(string: "https://github.com/miounet11/iatlas")
+    private let docsURL = URL(string: "https://github.com/miounet11/iatlas#readme")
 
     private var version: String? { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String }
     private var build: String? { Bundle.main.infoDictionary?["CFBundleVersion"] as? String }
@@ -2813,7 +2814,7 @@ private struct AboutPanelView: View {
 
             VStack(alignment: .center, spacing: 32) {
                 VStack(alignment: .center, spacing: 8) {
-                    Text(String(localized: "about.appName", defaultValue: "cmux"))
+                    Text(String(localized: "about.appName", defaultValue: "iatlas"))
                         .bold()
                         .font(.title)
                     Text(String(localized: "about.description", defaultValue: "A Ghostty-based terminal with vertical tabs\nand a notification panel for macOS."))
@@ -2834,7 +2835,7 @@ private struct AboutPanelView: View {
                     }
                     let commitText = commit ?? "—"
                     let commitURL = commit.flatMap { hash in
-                        URL(string: "https://github.com/manaflow-ai/cmux/commit/\(hash)")
+                        URL(string: "https://github.com/miounet11/iatlas/commit/\(hash)")
                     }
                     AboutPropertyRow(label: String(localized: "about.commit", defaultValue: "Commit"), text: commitText, url: commitURL)
                 }
@@ -3168,7 +3169,7 @@ private final class MenuBarExtraDebugWindowController: NSWindowController, NSWin
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.menubarDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.menubarDebug")
         window.center()
         window.contentView = NSHostingView(rootView: MenuBarExtraDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -3338,7 +3339,7 @@ private final class BackgroundDebugWindowController: NSWindowController, NSWindo
         window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.backgroundDebug")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.backgroundDebug")
         window.center()
         window.contentView = NSHostingView(rootView: BackgroundDebugView())
         AppDelegate.shared?.applyWindowDecorations(to: window)
@@ -3433,12 +3434,12 @@ private struct BackgroundDebugView: View {
         let window: NSWindow? = {
             if let key = NSApp.keyWindow,
                let raw = key.identifier?.rawValue,
-               raw == "cmux.main" || raw.hasPrefix("cmux.main.") {
+               raw == "cmux.main" || raw.hasPrefix("iatlas.main.") {
                 return key
             }
             return NSApp.windows.first(where: {
                 guard let raw = $0.identifier?.rawValue else { return false }
-                return raw == "cmux.main" || raw.hasPrefix("cmux.main.")
+                return raw == "cmux.main" || raw.hasPrefix("iatlas.main.")
             })
         }()
         guard let window else { return }
@@ -3639,7 +3640,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
 enum LanguageSettings {
     static let languageKey = "appLanguage"
-    static let defaultLanguage: AppLanguage = .system
+    static let defaultLanguage: AppLanguage = .zhHans
 
     static func apply(_ language: AppLanguage) {
         if language == .system {
@@ -3651,7 +3652,7 @@ enum LanguageSettings {
 
     static var languageAtLaunch: AppLanguage = {
         let stored = UserDefaults.standard.string(forKey: languageKey)
-        guard let stored, let lang = AppLanguage(rawValue: stored) else { return .system }
+        guard let stored, let lang = AppLanguage(rawValue: stored) else { return defaultLanguage }
         return lang
     }()
 }
@@ -4467,6 +4468,7 @@ struct SettingsView: View {
                                     String(localized: "settings.notifications.paneRing.title", defaultValue: "Unread Pane Ring")
                                 )
                         }
+                        .id(SettingsNavigationTarget.notifications)
 
                         SettingsCardDivider()
 
@@ -6167,7 +6169,7 @@ private struct SettingsRootView: View {
     }
 
     private func configureSettingsWindow(_ window: NSWindow) {
-        window.identifier = NSUserInterfaceItemIdentifier("cmux.settings")
+        window.identifier = NSUserInterfaceItemIdentifier("iatlas.settings")
         applyCurrentSettingsWindowStyle(to: window)
 
         let accessories = window.titlebarAccessoryViewControllers

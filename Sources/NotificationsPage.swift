@@ -68,11 +68,24 @@ struct NotificationsPage: View {
 
     private var header: some View {
         HStack {
-            Text(String(localized: "notifications.title", defaultValue: "Notifications"))
-                .font(.title2)
-                .fontWeight(.semibold)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(String(localized: "notifications.title", defaultValue: "Notifications"))
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Text("Review alerts here, or open notification preferences.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
 
             Spacer()
+
+            Button("Settings") {
+                AppDelegate.shared?.openPreferencesWindow(
+                    debugSource: "notifications.page",
+                    navigationTarget: .notifications
+                )
+            }
+            .buttonStyle(.bordered)
 
             if !notificationStore.notifications.isEmpty {
                 jumpToUnreadButton

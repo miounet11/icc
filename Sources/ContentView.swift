@@ -1551,6 +1551,9 @@ struct ContentView: View {
     @EnvironmentObject var sidebarState: SidebarState
     @EnvironmentObject var sidebarSelectionState: SidebarSelectionState
     @State private var sidebarWidth: CGFloat = 200
+    @State private var explorerPaneWidth: CGFloat = 420
+    @State private var selectedExplorerLocation: ExplorerDocumentLocation?
+    @State private var selectedExplorerDocument: ExplorerTextDocument?
     @State private var hoveredResizerHandles: Set<SidebarResizerHandle> = []
     @State private var isResizerDragging = false
     @State private var sidebarDragStartWidth: CGFloat?
@@ -2020,6 +2023,7 @@ struct ContentView: View {
     nonisolated private static let commandPaletteCommandsPrefix = ">"
     private static let commandPaletteVisiblePreviewResultLimit = 48
     private static let commandPaletteVisiblePreviewCandidateLimit = 192
+    private static let activityRailWidth: CGFloat = 54
     private static let minimumSidebarWidth: CGFloat = CGFloat(SessionPersistencePolicy.minimumSidebarWidth)
     private static let maximumSidebarWidthRatio: CGFloat = 1.0 / 3.0
 
@@ -2318,15 +2322,176 @@ struct ContentView: View {
     }
 
     private var sidebarView: some View {
-        VerticalTabsSidebar(
-            updateViewModel: updateViewModel,
-            onSendFeedback: presentFeedbackComposer,
-            selection: $sidebarSelectionState.selection,
-            selectedTabIds: $selectedTabIds,
-            lastSidebarSelectionIndex: $lastSidebarSelectionIndex
-        )
-        .frame(width: sidebarWidth)
+        HStack(spacing: 0) {
+            SidebarActivityRail(
+                updateViewModel: updateViewModel,
+                selection: $sidebarSelectionState.selection,
+                onSendFeedback: presentFeedbackComposer
+            )
+            .frame(width: Self.activityRailWidth)
+
+            if showsWorkspaceSidebarList {
+                Divider()
+
+                VerticalTabsSidebar(
+                    updateViewModel: updateViewModel,
+                    onSendFeedback: presentFeedbackComposer,
+                    selection: $sidebarSelectionState.selection,
+                    selectedTabIds: $selectedTabIds,
+                    lastSidebarSelectionIndex: $lastSidebarSelectionIndex
+                )
+            }
+        }
+        .frame(width: effectiveSidebarWidth)
         .frame(maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var showsWorkspaceSidebarList: Bool {
+        sidebarSelectionState.selection == .tabs
+    }
+
+    private var effectiveSidebarWidth: CGFloat {
+        showsWorkspaceSidebarList ? sidebarWidth : Self.activityRailWidth
+    }
+
+    private var explorerPaneVisible: Bool {
+        switch sidebarSelectionState.selection {
+        case .files, .remote, .supervisor:
+            return true
+        case .tabs, .notifications:
+            return false
+        }
+    }
+
+    private var explorerPaneView: some View {
+        VStack(spacing: 0) {
+            SidebarModeSwitcher(
+                selection: $sidebarSelectionState.selection,
+                trailingAccessory: {
+                    Button {
+                        sidebarSelectionState.selection = .tabs
+                    } label: {
+                        Image(systemName: "sidebar.right")
+                    }
+                    .buttonStyle(.plain)
+                    .help("Collapse Explorer")
+                }
+            )
+
+            Group {
+                switch sidebarSelectionState.selection {
+                case .files:
+                    VStack(spacing: 0) {
+                        LocalFileExplorerSidebar(
+                            rootPath: activeSidebarDirectory,
+                            onOpenFile: { url in
+                                selectedExplorerLocation = .local(url)
+                                selectedExplorerDocument = ExplorerTextDocumentLoader.load(url: url)
+                                explorerPaneWidth = max(explorerPaneWidth, 520)
+                            }
+                        )
+
+                        if let selectedExplorerDocument {
+                            Divider()
+                            ExplorerTextEditorView(
+                                document: selectedExplorerDocument,
+                                onClose: {
+                                    self.selectedExplorerLocation = nil
+                                    self.selectedExplorerDocument = nil
+                                },
+                                onSave: { updatedText in
+                                    guard case .local(let fileURL) = self.selectedExplorerLocation else { return }
+                                    try? ExplorerTextDocumentLoader.save(text: updatedText, to: fileURL)
+                                    self.selectedExplorerDocument = ExplorerTextDocumentLoader.load(url: fileURL)
+                                }
+                            )
+                            .frame(maxHeight: .infinity)
+                        }
+                    }
+                case .remote:
+                    if let workspace = tabManager.selectedWorkspace,
+                       workspace.remoteConfiguration != nil {
+                        VStack(spacing: 0) {
+                            RemoteWorkspaceExplorerSidebar(
+                                workspace: workspace,
+                                onOpenRemoteFile: { remotePath in
+                                    selectedExplorerLocation = .remote(
+                                        destination: workspace.remoteDisplayTarget ?? workspace.remoteConfiguration?.destination ?? "remote",
+                                        path: remotePath
+                                    )
+                                    selectedExplorerDocument = try? workspace.loadRemoteExplorerDocument(path: remotePath)
+                                    explorerPaneWidth = max(explorerPaneWidth, 520)
+                                }
+                            )
+
+                            if let selectedExplorerDocument,
+                               case .remote = selectedExplorerDocument.location {
+                                Divider()
+                                ExplorerTextEditorView(
+                                    document: selectedExplorerDocument,
+                                    onClose: {
+                                        self.selectedExplorerLocation = nil
+                                        self.selectedExplorerDocument = nil
+                                    },
+                                    onSave: { updatedText in
+                                        guard case .remote(_, let remotePath) = self.selectedExplorerLocation else { return }
+                                        try? workspace.saveRemoteExplorerDocument(path: remotePath, text: updatedText)
+                                        self.selectedExplorerDocument = try? workspace.loadRemoteExplorerDocument(path: remotePath)
+                                    }
+                                )
+                                .frame(maxHeight: .infinity)
+                            }
+                        }
+                    } else {
+                        RemoteHostsSidebar(
+                            onConnect: { host in
+                                let configuration = host.workspaceConfiguration()
+                                let workspace = tabManager.addWorkspace(
+                                    initialTerminalCommand: configuration.terminalStartupCommand,
+                                    select: true,
+                                    autoWelcomeIfNeeded: false
+                                )
+                                workspace.customTitle = host.alias
+                                workspace.configureRemoteConnection(configuration, autoConnect: false)
+                                sidebarSelectionState.selection = .remote
+                            }
+                        )
+                    }
+                case .supervisor:
+                    if let workspace = tabManager.selectedWorkspace {
+                        SupervisorPaneView(workspace: workspace)
+                    } else {
+                        ContentUnavailableView(
+                            "No Workspace Selected",
+                            systemImage: "brain",
+                            description: Text("Select a workspace to configure its supervisor goal and review state.")
+                        )
+                    }
+                case .tabs, .notifications:
+                    EmptyView()
+                }
+            }
+        }
+        .frame(width: explorerPaneWidth)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .background(SidebarBackdrop().ignoresSafeArea())
+        .overlay(alignment: .leading) {
+            Divider()
+        }
+        .onChange(of: sidebarSelectionState.selection) {
+            if sidebarSelectionState.selection != .files && sidebarSelectionState.selection != .remote {
+                selectedExplorerLocation = nil
+                selectedExplorerDocument = nil
+            }
+        }
+    }
+
+    private var activeSidebarDirectory: String {
+        let candidate = tabManager.selectedWorkspace?.currentDirectory.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let candidate, !candidate.isEmpty {
+            return candidate
+        }
+        return FileManager.default.currentDirectoryPath
     }
 
     /// Space at top of content area for the titlebar. This must be at least the actual titlebar
@@ -2341,6 +2506,10 @@ struct ContentView: View {
 
     private var effectiveTitlebarPadding: CGFloat {
         isMinimalMode ? 0 : titlebarPadding
+    }
+
+    private var showsNotificationsPage: Bool {
+        sidebarSelectionState.selection == .notifications
     }
 
     private var terminalContent: some View {
@@ -2390,18 +2559,19 @@ struct ContentView: View {
                     }
                 }
             }
-            .opacity(sidebarSelectionState.selection == .tabs ? 1 : 0)
-            .allowsHitTesting(sidebarSelectionState.selection == .tabs)
-            .accessibilityHidden(sidebarSelectionState.selection != .tabs)
+            .opacity(sidebarSelectionState.selection == .notifications ? 0 : 1)
+            .allowsHitTesting(sidebarSelectionState.selection != .notifications)
+            .accessibilityHidden(sidebarSelectionState.selection == .notifications)
 
             NotificationsPage(selection: $sidebarSelectionState.selection)
-                .opacity(sidebarSelectionState.selection == .notifications ? 1 : 0)
-                .allowsHitTesting(sidebarSelectionState.selection == .notifications)
-                .accessibilityHidden(sidebarSelectionState.selection != .notifications)
+                .opacity(showsNotificationsPage ? 1 : 0)
+                .allowsHitTesting(showsNotificationsPage)
+                .accessibilityHidden(!showsNotificationsPage)
+                .zIndex(5)
         }
-        .padding(.top, effectiveTitlebarPadding)
+        .padding(.top, showsNotificationsPage ? 0 : effectiveTitlebarPadding)
         .overlay(alignment: .top) {
-            if !isMinimalMode {
+            if !isMinimalMode && !showsNotificationsPage {
                 // Titlebar overlay is only over terminal content, not the sidebar.
                 customTitlebar
             }
@@ -2424,7 +2594,7 @@ struct ContentView: View {
     @AppStorage("debugTitlebarLeadingExtra") private var debugTitlebarLeadingExtra: Double = 0
 
     @State private var titlebarLeadingInset: CGFloat = 12
-    private var windowIdentifier: String { "cmux.main.\(windowId.uuidString)" }
+    private var windowIdentifier: String { "iatlas.main.\(windowId.uuidString)" }
     private var fakeTitlebarTextColor: Color {
         _ = titlebarThemeGeneration
         let ghosttyBackground = GhosttyApp.shared.defaultBackgroundColor
@@ -2586,11 +2756,21 @@ struct ContentView: View {
             // Overlay mode: terminal extends full width, sidebar on top
             // This allows withinWindow blur to see the terminal content
             layout = AnyView(
-                ZStack(alignment: .leading) {
+                ZStack {
                     terminalContentWithSidebarDropOverlay
-                        .padding(.leading, sidebarState.isVisible ? sidebarWidth : 0)
+                        .padding(.leading, sidebarState.isVisible ? effectiveSidebarWidth : 0)
+                        .padding(.trailing, explorerPaneVisible ? explorerPaneWidth : 0)
                     if sidebarState.isVisible {
-                        sidebarView
+                        HStack(spacing: 0) {
+                            sidebarView
+                            Spacer(minLength: 0)
+                        }
+                    }
+                    if explorerPaneVisible {
+                        HStack(spacing: 0) {
+                            Spacer(minLength: 0)
+                            explorerPaneView
+                        }
                     }
                 }
             )
@@ -2602,6 +2782,9 @@ struct ContentView: View {
                         sidebarView
                     }
                     terminalContentWithSidebarDropOverlay
+                    if explorerPaneVisible {
+                        explorerPaneView
+                    }
                 }
             )
         }
@@ -2609,7 +2792,7 @@ struct ContentView: View {
         return AnyView(
             layout
                 .overlay(alignment: .leading) {
-                    if sidebarState.isVisible {
+                    if sidebarState.isVisible && showsWorkspaceSidebarList {
                         sidebarResizerOverlay
                             .zIndex(1000)
                     }
@@ -8471,104 +8654,100 @@ struct VerticalTabsSidebar: View {
         let canCloseWorkspace = workspaceCount > 1
         let workspaceNumberShortcut = self.workspaceNumberShortcut
 
-        VStack(spacing: 0) {
-            GeometryReader { proxy in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // Space for traffic lights / fullscreen controls
-                        Spacer()
-                            .frame(height: trafficLightPadding)
-
-                        LazyVStack(spacing: tabRowSpacing) {
-                            ForEach(Array(tabManager.tabs.enumerated()), id: \.element.id) { index, tab in
-                                let selectedContextIds: Set<UUID> = selectedTabIds.contains(tab.id) ? selectedTabIds : [tab.id]
-                                let contextTargetIds = tabManager.tabs.compactMap { workspace in
-                                    selectedContextIds.contains(workspace.id) ? workspace.id : nil
-                                }
-                                let remoteContextMenuTargets = tabManager.tabs.filter { workspace in
-                                    contextTargetIds.contains(workspace.id) && workspace.isRemoteWorkspace
-                                }
-                                TabItemView(
-                                    tabManager: tabManager,
-                                    notificationStore: notificationStore,
-                                    tab: tab,
-                                    index: index,
-                                    isActive: tabManager.selectedTabId == tab.id,
-                                    workspaceShortcutDigit: WorkspaceShortcutMapper.digitForWorkspace(
-                                        at: index,
-                                        workspaceCount: workspaceCount
-                                    ),
-                                    workspaceShortcutModifierSymbol: workspaceNumberShortcut.modifierDisplayString,
-                                    canCloseWorkspace: canCloseWorkspace,
-                                    accessibilityWorkspaceCount: workspaceCount,
-                                    unreadCount: notificationStore.unreadCount(forTabId: tab.id),
-                                    latestNotificationText: {
-                                        guard showsSidebarNotificationMessage,
-                                              let notification = notificationStore.latestNotification(forTabId: tab.id) else {
-                                            return nil
-                                        }
-                                        let text = notification.body.isEmpty ? notification.title : notification.body
-                                        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                                        return trimmed.isEmpty ? nil : trimmed
-                                    }(),
-                                    rowSpacing: tabRowSpacing,
-                                    setSelectionToTabs: { selection = .tabs },
-                                    selectedTabIds: $selectedTabIds,
-                                    lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
-                                    showsModifierShortcutHints: modifierKeyMonitor.isModifierPressed,
-                                    dragAutoScrollController: dragAutoScrollController,
-                                    draggedTabId: $draggedTabId,
-                                    dropIndicator: $dropIndicator,
-                                    remoteContextMenuWorkspaceIds: remoteContextMenuTargets.map(\.id),
-                                    allRemoteContextMenuTargetsConnecting: !remoteContextMenuTargets.isEmpty && remoteContextMenuTargets.allSatisfy { $0.remoteConnectionState == .connecting },
-                                    allRemoteContextMenuTargetsDisconnected: !remoteContextMenuTargets.isEmpty && remoteContextMenuTargets.allSatisfy { $0.remoteConnectionState == .disconnected }
-                                )
-                                .equatable()
-                            }
-                        }
-                        .padding(.vertical, 8)
-
-                        SidebarEmptyArea(
-                            rowSpacing: tabRowSpacing,
-                            selection: $selection,
-                            selectedTabIds: $selectedTabIds,
-                            lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
-                            dragAutoScrollController: dragAutoScrollController,
-                            draggedTabId: $draggedTabId,
-                            dropIndicator: $dropIndicator
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    .frame(minHeight: proxy.size.height, alignment: .top)
-                }
-                .background(
-                    SidebarScrollViewResolver { scrollView in
-                        dragAutoScrollController.attach(scrollView: scrollView)
-                    }
-                    .frame(width: 0, height: 0)
-                )
-                .overlay(alignment: .top) {
-                    SidebarTopScrim(height: trafficLightPadding + 20)
-                        .allowsHitTesting(false)
-                }
-                .overlay(alignment: .top) {
-                    // Match native titlebar behavior in the sidebar top strip:
-                    // drag-to-move and double-click action (zoom/minimize).
-                    WindowDragHandleView()
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Space for traffic lights / fullscreen controls
+                    Spacer()
                         .frame(height: trafficLightPadding)
-                }
-                .overlay(alignment: .topLeading) {
-                    if isMinimalMode {
-                        HiddenTitlebarSidebarControlsView(notificationStore: notificationStore)
-                            .padding(.leading, hiddenTitlebarControlsLeadingInset)
-                            .padding(.top, 2)
+
+                    LazyVStack(spacing: tabRowSpacing) {
+                        ForEach(Array(tabManager.tabs.enumerated()), id: \.element.id) { index, tab in
+                            let selectedContextIds: Set<UUID> = selectedTabIds.contains(tab.id) ? selectedTabIds : [tab.id]
+                            let contextTargetIds = tabManager.tabs.compactMap { workspace in
+                                selectedContextIds.contains(workspace.id) ? workspace.id : nil
+                            }
+                            let remoteContextMenuTargets = tabManager.tabs.filter { workspace in
+                                contextTargetIds.contains(workspace.id) && workspace.isRemoteWorkspace
+                            }
+                            TabItemView(
+                                tabManager: tabManager,
+                                notificationStore: notificationStore,
+                                tab: tab,
+                                index: index,
+                                isActive: tabManager.selectedTabId == tab.id,
+                                workspaceShortcutDigit: WorkspaceShortcutMapper.digitForWorkspace(
+                                    at: index,
+                                    workspaceCount: workspaceCount
+                                ),
+                                workspaceShortcutModifierSymbol: workspaceNumberShortcut.modifierDisplayString,
+                                canCloseWorkspace: canCloseWorkspace,
+                                accessibilityWorkspaceCount: workspaceCount,
+                                unreadCount: notificationStore.unreadCount(forTabId: tab.id),
+                                latestNotificationText: {
+                                    guard showsSidebarNotificationMessage,
+                                          let notification = notificationStore.latestNotification(forTabId: tab.id) else {
+                                        return nil
+                                    }
+                                    let text = notification.body.isEmpty ? notification.title : notification.body
+                                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    return trimmed.isEmpty ? nil : trimmed
+                                }(),
+                                rowSpacing: tabRowSpacing,
+                                setSelectionToTabs: { selection = .tabs },
+                                selectedTabIds: $selectedTabIds,
+                                lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
+                                showsModifierShortcutHints: modifierKeyMonitor.isModifierPressed,
+                                dragAutoScrollController: dragAutoScrollController,
+                                draggedTabId: $draggedTabId,
+                                dropIndicator: $dropIndicator,
+                                remoteContextMenuWorkspaceIds: remoteContextMenuTargets.map(\.id),
+                                allRemoteContextMenuTargetsConnecting: !remoteContextMenuTargets.isEmpty && remoteContextMenuTargets.allSatisfy { $0.remoteConnectionState == .connecting },
+                                allRemoteContextMenuTargetsDisconnected: !remoteContextMenuTargets.isEmpty && remoteContextMenuTargets.allSatisfy { $0.remoteConnectionState == .disconnected }
+                            )
+                            .equatable()
+                        }
                     }
+                    .padding(.vertical, 8)
+
+                    SidebarEmptyArea(
+                        rowSpacing: tabRowSpacing,
+                        selection: $selection,
+                        selectedTabIds: $selectedTabIds,
+                        lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
+                        dragAutoScrollController: dragAutoScrollController,
+                        draggedTabId: $draggedTabId,
+                        dropIndicator: $dropIndicator
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .background(Color.clear)
-                .modifier(ClearScrollBackground())
+                .frame(minHeight: proxy.size.height, alignment: .top)
             }
-            SidebarFooter(updateViewModel: updateViewModel, onSendFeedback: onSendFeedback)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                SidebarScrollViewResolver { scrollView in
+                    dragAutoScrollController.attach(scrollView: scrollView)
+                }
+                .frame(width: 0, height: 0)
+            )
+            .overlay(alignment: .top) {
+                SidebarTopScrim(height: trafficLightPadding + 20)
+                    .allowsHitTesting(false)
+            }
+            .overlay(alignment: .top) {
+                // Match native titlebar behavior in the sidebar top strip:
+                // drag-to-move and double-click action (zoom/minimize).
+                WindowDragHandleView()
+                    .frame(height: trafficLightPadding)
+            }
+            .overlay(alignment: .topLeading) {
+                if isMinimalMode {
+                    HiddenTitlebarSidebarControlsView(notificationStore: notificationStore)
+                        .padding(.leading, hiddenTitlebarControlsLeadingInset)
+                        .padding(.top, 2)
+                }
+            }
+            .background(Color.clear)
+            .modifier(ClearScrollBackground())
         }
         .accessibilityIdentifier("Sidebar")
         .ignoresSafeArea()
@@ -8733,8 +8912,8 @@ enum DevBuildBannerDebugSettings {
 private enum FeedbackComposerSettings {
     static let storedEmailKey = "sidebarHelpFeedbackEmail"
     static let endpointEnvironmentKey = "CMUX_FEEDBACK_API_URL"
-    static let defaultEndpoint = "https://cmux.com/api/feedback"
-    static let foundersEmail = "founders@manaflow.com"
+    static let defaultEndpoint = ""
+    static let supportURL = "https://github.com/miounet11/iatlas/issues"
     static let maxMessageLength = 4_000
     static let maxAttachmentCount = 10
     // Keep the multipart body below Vercel's 4.5 MB request limit.
@@ -8747,6 +8926,7 @@ private enum FeedbackComposerSettings {
            !override.isEmpty {
             return URL(string: override)
         }
+        guard defaultEndpoint.isEmpty == false else { return nil }
         return URL(string: defaultEndpoint)
     }
 }
@@ -9503,32 +9683,231 @@ private final class SidebarShortcutHintModifierMonitor: ObservableObject {
     }
 }
 
-private struct SidebarFooter: View {
+private struct SidebarActivityRail: View {
     @ObservedObject var updateViewModel: UpdateViewModel
+    @Binding var selection: SidebarSelection
     let onSendFeedback: () -> Void
 
     var body: some View {
-#if DEBUG
-        SidebarDevFooter(updateViewModel: updateViewModel, onSendFeedback: onSendFeedback)
-#else
-        SidebarFooterButtons(updateViewModel: updateViewModel, onSendFeedback: onSendFeedback)
-            .padding(.leading, 6)
-            .padding(.trailing, 10)
-            .padding(.bottom, 6)
-#endif
+        VStack(spacing: 0) {
+            Spacer()
+                .frame(height: 16)
+
+            VStack(spacing: 8) {
+                SidebarActivityRailButton(selection: $selection, target: .tabs, systemImage: "square.grid.2x2", label: "工作区")
+                SidebarActivityRailButton(selection: $selection, target: .files, systemImage: "folder", label: "文件")
+                SidebarActivityRailButton(selection: $selection, target: .remote, systemImage: "network", label: "远程")
+                SidebarActivityRailButton(selection: $selection, target: .supervisor, systemImage: "brain", label: "监督器")
+                SidebarActivityRailButton(selection: $selection, target: .notifications, systemImage: "bell.badge", label: "提醒")
+            }
+            .padding(.top, 30)
+
+            Spacer(minLength: 12)
+
+            VStack(spacing: 8) {
+                SidebarHelpMenuButton(onSendFeedback: onSendFeedback)
+                    .help("更多")
+
+                if updateViewModel.showsPill {
+                    Button {
+                        Task { @MainActor in
+                            AppDelegate.shared?.checkForUpdates(nil)
+                        }
+                    } label: {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.orange)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(Color.primary.opacity(0.06))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help("检查更新")
+                }
+            }
+            .padding(.bottom, 12)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(.ultraThinMaterial)
     }
 }
 
-private struct SidebarFooterButtons: View {
-    @ObservedObject var updateViewModel: UpdateViewModel
-    let onSendFeedback: () -> Void
+private struct SidebarActivityRailButton: View {
+    @Binding var selection: SidebarSelection
+    let target: SidebarSelection
+    let systemImage: String
+    let label: String
+
+    private var isActive: Bool {
+        selection == target
+    }
 
     var body: some View {
-        HStack(spacing: 4) {
-            SidebarHelpMenuButton(onSendFeedback: onSendFeedback)
-            UpdatePill(model: updateViewModel)
+        Button {
+            withTransaction(Transaction(animation: nil)) {
+                selection = target
+            }
+        } label: {
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isActive ? Color.accentColor.opacity(0.16) : Color.clear)
+
+                if isActive {
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(Color.accentColor)
+                        .frame(width: 3, height: 18)
+                }
+
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(isActive ? Color.accentColor : Color.primary.opacity(0.84))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(width: 40, height: 40)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(.plain)
+        .help(label)
+        .accessibilityLabel(Text(label))
+    }
+}
+
+private struct SidebarModeButton: View {
+    @Binding var selection: SidebarSelection
+    let target: SidebarSelection
+    let systemImage: String
+    let label: String
+
+    var body: some View {
+        Button {
+            selection = target
+        } label: {
+            Image(systemName: systemImage)
+        }
+        .buttonStyle(SidebarFooterIconButtonStyle(active: selection == target))
+        .help(label)
+        .accessibilityLabel(Text(label))
+    }
+}
+
+private struct SidebarModePill: View {
+    @Binding var selection: SidebarSelection
+    let target: SidebarSelection
+    let systemImage: String
+    let label: String
+    var subtitle: String? = nil
+
+    private var isActive: Bool {
+        selection == target
+    }
+
+    var body: some View {
+        Button {
+            selection = target
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(width: 24, height: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(isActive ? Color.white.opacity(0.18) : Color.primary.opacity(0.08))
+                        )
+                    Text(label)
+                        .font(.system(size: 12, weight: .semibold))
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                }
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(isActive ? Color.white.opacity(0.82) : Color.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 10)
+            .foregroundStyle(isActive ? Color.white : Color.primary)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isActive ? Color.accentColor : Color.clear)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(isActive ? Color.accentColor : Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+            )
+        }
+        .buttonStyle(.plain)
+        .help(label)
+        .accessibilityLabel(Text(label))
+    }
+}
+
+private struct SidebarModeSwitcher<TrailingAccessory: View>: View {
+    @Binding var selection: SidebarSelection
+    @ViewBuilder let trailingAccessory: () -> TrailingAccessory
+
+    init(
+        selection: Binding<SidebarSelection>,
+        @ViewBuilder trailingAccessory: @escaping () -> TrailingAccessory = { EmptyView() }
+    ) {
+        _selection = selection
+        self.trailingAccessory = trailingAccessory
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    SidebarSwitcherChip(selection: $selection, target: .tabs, label: "工作区", systemImage: "square.grid.2x2")
+                    SidebarSwitcherChip(selection: $selection, target: .files, label: "文件", systemImage: "folder")
+                    SidebarSwitcherChip(selection: $selection, target: .remote, label: "远程", systemImage: "network")
+                    SidebarSwitcherChip(selection: $selection, target: .supervisor, label: "监督器", systemImage: "brain")
+                    SidebarSwitcherChip(selection: $selection, target: .notifications, label: "提醒", systemImage: "bell")
+                }
+            }
+            trailingAccessory()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .bottom) {
+            Divider()
+        }
+    }
+}
+
+private struct SidebarSwitcherChip: View {
+    @Binding var selection: SidebarSelection
+    let target: SidebarSelection
+    let label: String
+    let systemImage: String
+
+    private var isActive: Bool {
+        selection == target
+    }
+
+    var body: some View {
+        Button {
+            selection = target
+        } label: {
+            Label(label, systemImage: systemImage)
+                .font(.system(size: 11, weight: .semibold))
+                .lineLimit(1)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .foregroundStyle(isActive ? Color.white : Color.primary)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(isActive ? Color.accentColor : Color.primary.opacity(0.08))
+                )
+        }
+        .buttonStyle(.plain)
+        .help(label)
     }
 }
 
@@ -9785,7 +10164,7 @@ private struct SidebarFeedbackComposerSheet: View {
             Text(
                 String(
                     localized: "sidebar.help.feedback.successBody",
-                    defaultValue: "You can also reach us at founders@manaflow.com."
+                    defaultValue: "You can also reach us on the iatlas issue tracker."
                 )
             )
             .font(.system(size: 12))
@@ -9807,7 +10186,7 @@ private struct SidebarFeedbackComposerSheet: View {
             Text(
                 String(
                     localized: "sidebar.help.feedback.note",
-                    defaultValue: "A human will read this! You can also reach us at founders@manaflow.com."
+                    defaultValue: "A human will read this. You can also reach us on the iatlas issue tracker."
                 )
             )
             .font(.system(size: 12))
@@ -10060,7 +10439,7 @@ private struct SidebarFeedbackComposerSheet: View {
         case .invalidEndpoint:
             return String(
                 localized: "sidebar.help.feedback.endpointError",
-                defaultValue: "Feedback is unavailable right now. Email founders@manaflow.com instead."
+                defaultValue: "Feedback is unavailable right now. Open an issue in the iatlas repository instead."
             )
         case .invalidResponse:
             return String(
@@ -10103,7 +10482,7 @@ private struct SidebarFeedbackComposerSheet: View {
             case 500...599:
                 return String(
                     localized: "sidebar.help.feedback.endpointError",
-                    defaultValue: "Feedback is unavailable right now. Email founders@manaflow.com instead."
+                    defaultValue: "Feedback is unavailable right now. Open an issue in the iatlas repository instead."
                 )
             default:
                 return String(
@@ -10204,7 +10583,7 @@ enum FeedbackComposerBridge {
 
         switch submissionError {
         case .invalidEndpoint:
-            return "Feedback is unavailable right now. Email founders@manaflow.com instead."
+            return "Feedback is unavailable right now. Open an issue in the iatlas repository instead."
         case .invalidResponse:
             return "Couldn't send feedback. Please try again."
         case .attachmentReadFailed:
@@ -10223,7 +10602,7 @@ enum FeedbackComposerBridge {
             case 429:
                 return "Too many feedback attempts. Please try again later."
             case 500...599:
-                return "Feedback is unavailable right now. Email founders@manaflow.com instead."
+                return "Feedback is unavailable right now. Open an issue in the iatlas repository instead."
             default:
                 return "Couldn't send feedback. Please try again."
             }
@@ -10232,11 +10611,11 @@ enum FeedbackComposerBridge {
 }
 
 private struct SidebarHelpMenuButton: View {
-    private let docsURL = URL(string: "https://cmux.com/docs")
-    private let changelogURL = URL(string: "https://cmux.com/docs/changelog")
-    private let githubURL = URL(string: "https://github.com/manaflow-ai/cmux")
-    private let githubIssuesURL = URL(string: "https://github.com/manaflow-ai/cmux/issues")
-    private let discordURL = URL(string: "https://discord.gg/xsgFEVrWCZ")
+    private let docsURL = URL(string: "https://github.com/miounet11/iatlas#readme")
+    private let changelogURL = URL(string: "https://github.com/miounet11/iatlas/releases")
+    private let githubURL = URL(string: "https://github.com/miounet11/iatlas")
+    private let githubIssuesURL = URL(string: "https://github.com/miounet11/iatlas/issues")
+    private let discordURL: URL? = nil
     private let helpTitle = String(localized: "sidebar.help.button", defaultValue: "Help")
     private let buttonSize: CGFloat = 22
     private let iconSize: CGFloat = 11
@@ -10281,7 +10660,7 @@ private struct SidebarHelpMenuButton: View {
     private var helpPopover: some View {
         VStack(alignment: .leading, spacing: 2) {
             helpOptionButton(
-                title: String(localized: "sidebar.help.welcome", defaultValue: "Welcome to cmux!"),
+                title: String(localized: "sidebar.help.welcome", defaultValue: "Welcome to iatlas!"),
                 action: .welcome,
                 accessibilityIdentifier: "SidebarHelpMenuOptionWelcome",
                 isExternalLink: false
@@ -10618,19 +10997,23 @@ private struct ArrowlessPopoverAnchor<PopoverContent: View>: NSViewRepresentable
 }
 
 private struct SidebarFooterIconButtonStyle: ButtonStyle {
+    var active: Bool = false
+
     func makeBody(configuration: Configuration) -> some View {
-        SidebarFooterIconButtonStyleBody(configuration: configuration)
+        SidebarFooterIconButtonStyleBody(configuration: configuration, active: active)
     }
 }
 
 private struct SidebarFooterIconButtonStyleBody: View {
     let configuration: SidebarFooterIconButtonStyle.Configuration
+    let active: Bool
 
     @Environment(\.isEnabled) private var isEnabled
     @State private var isHovered = false
 
     private var backgroundOpacity: Double {
         guard isEnabled else { return 0.0 }
+        if active { return configuration.isPressed ? 0.22 : 0.14 }
         if configuration.isPressed { return 0.16 }
         if isHovered { return 0.08 }
         return 0.0
@@ -10653,13 +11036,18 @@ private struct SidebarFooterIconButtonStyleBody: View {
 #if DEBUG
 private struct SidebarDevFooter: View {
     @ObservedObject var updateViewModel: UpdateViewModel
+    @Binding var selection: SidebarSelection
     let onSendFeedback: () -> Void
     @AppStorage(DevBuildBannerDebugSettings.sidebarBannerVisibleKey)
     private var showSidebarDevBuildBanner = DevBuildBannerDebugSettings.defaultShowSidebarBanner
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SidebarFooterButtons(updateViewModel: updateViewModel, onSendFeedback: onSendFeedback)
+            SidebarActivityRail(
+                updateViewModel: updateViewModel,
+                selection: $selection,
+                onSendFeedback: onSendFeedback
+            )
             if showSidebarDevBuildBanner {
                 Text(String(localized: "debug.devBuildBanner.title", defaultValue: "THIS IS A DEV BUILD"))
                     .font(.system(size: 11, weight: .semibold))
@@ -13196,6 +13584,9 @@ private final class MiddleClickCaptureView: NSView {
 
 enum SidebarSelection {
     case tabs
+    case files
+    case remote
+    case supervisor
     case notifications
 }
 
@@ -13625,7 +14016,7 @@ private struct TitlebarLeadingInsetReader: NSViewRepresentable {
     }
 }
 
-private struct SidebarBackdrop: View {
+struct SidebarBackdrop: View {
     @AppStorage("sidebarTintOpacity") private var sidebarTintOpacity = SidebarTintDefaults.opacity
     @AppStorage("sidebarTintHex") private var sidebarTintHex = SidebarTintDefaults.hex
     @AppStorage("sidebarTintHexLight") private var sidebarTintHexLight: String?

@@ -1371,7 +1371,8 @@ final class UpdateTitlebarAccessoryController {
     }
 
     private func isSettingsWindow(_ window: NSWindow) -> Bool {
-        if window.identifier?.rawValue == "cmux.settings" {
+        if let raw = window.identifier?.rawValue,
+           raw == "cmux.settings" || raw == "iatlas.settings" {
             return true
         }
         return window.title == "Settings"
@@ -1379,7 +1380,7 @@ final class UpdateTitlebarAccessoryController {
 
     private func isMainTerminalWindow(_ window: NSWindow) -> Bool {
         guard let raw = window.identifier?.rawValue else { return false }
-        return raw == "cmux.main" || raw.hasPrefix("cmux.main.")
+        return raw == "cmux.main" || raw == "iatlas.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.")
     }
 
     private func preferredNotificationsController(

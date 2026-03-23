@@ -169,12 +169,21 @@ struct SessionDisplaySnapshot: Codable, Sendable {
 
 enum SessionSidebarSelection: String, Codable, Sendable, Equatable {
     case tabs
+    case files
+    case remote
+    case supervisor
     case notifications
 
     init(selection: SidebarSelection) {
         switch selection {
         case .tabs:
             self = .tabs
+        case .files:
+            self = .files
+        case .remote:
+            self = .remote
+        case .supervisor:
+            self = .supervisor
         case .notifications:
             self = .notifications
         }
@@ -184,6 +193,12 @@ enum SessionSidebarSelection: String, Codable, Sendable, Equatable {
         switch self {
         case .tabs:
             return .tabs
+        case .files:
+            return .files
+        case .remote:
+            return .remote
+        case .supervisor:
+            return .supervisor
         case .notifications:
             return .notifications
         }
@@ -340,6 +355,12 @@ struct SessionWorkspaceSnapshot: Codable, Sendable {
     var logEntries: [SessionLogEntrySnapshot]
     var progress: SessionProgressSnapshot?
     var gitBranch: SessionGitBranchSnapshot?
+    var supervisorGoal: String?
+    var supervisorEnabled: Bool?
+    var supervisorHealth: WorkspaceSupervisorHealth?
+    var supervisorLastReview: WorkspaceSupervisorReview?
+    var supervisorInteractionNotes: String?
+    var supervisorStartupPlan: WorkspaceSupervisorStartupPlan?
 }
 
 struct SessionTabManagerSnapshot: Codable, Sendable {
@@ -413,21 +434,21 @@ enum SessionPersistenceStore {
         }
         let bundleId = (bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
             ? bundleIdentifier!
-            : "com.cmuxterm.app"
+            : "com.iatlas.app"
         let safeBundleId = bundleId.replacingOccurrences(
             of: "[^A-Za-z0-9._-]",
             with: "_",
             options: .regularExpression
         )
         return resolvedAppSupport
-            .appendingPathComponent("cmux", isDirectory: true)
+            .appendingPathComponent("iatlas", isDirectory: true)
             .appendingPathComponent("session-\(safeBundleId).json", isDirectory: false)
     }
 }
 
 enum SessionScrollbackReplayStore {
     static let environmentKey = "CMUX_RESTORE_SCROLLBACK_FILE"
-    private static let directoryName = "cmux-session-scrollback"
+    private static let directoryName = "iatlas-session-scrollback"
     private static let ansiEscape = "\u{001B}"
     private static let ansiReset = "\u{001B}[0m"
 
