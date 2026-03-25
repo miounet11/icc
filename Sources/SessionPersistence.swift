@@ -170,7 +170,9 @@ struct SessionDisplaySnapshot: Codable, Sendable {
 enum SessionSidebarSelection: String, Codable, Sendable, Equatable {
     case tabs
     case files
+    case sourceControl
     case remote
+    case wechat
     case supervisor
     case notifications
 
@@ -180,8 +182,12 @@ enum SessionSidebarSelection: String, Codable, Sendable, Equatable {
             self = .tabs
         case .files:
             self = .files
+        case .sourceControl:
+            self = .sourceControl
         case .remote:
             self = .remote
+        case .wechat:
+            self = .wechat
         case .supervisor:
             self = .supervisor
         case .notifications:
@@ -195,8 +201,12 @@ enum SessionSidebarSelection: String, Codable, Sendable, Equatable {
             return .tabs
         case .files:
             return .files
+        case .sourceControl:
+            return .sourceControl
         case .remote:
             return .remote
+        case .wechat:
+            return .wechat
         case .supervisor:
             return .supervisor
         case .notifications:

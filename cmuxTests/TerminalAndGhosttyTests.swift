@@ -3242,6 +3242,18 @@ final class TerminalWindowPortalLifecycleTests: XCTestCase {
 
 
 final class TerminalOpenURLTargetResolutionTests: XCTestCase {
+    private func makeTemporaryFile(
+        named name: String = UUID().uuidString,
+        contents: String = "test"
+    ) throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("icc-terminal-link-tests", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent(name, isDirectory: false)
+        try Data(contents.utf8).write(to: fileURL)
+        return fileURL
+    }
+
     func testResolvesHTTPSAsEmbeddedBrowser() throws {
         let target = try XCTUnwrap(resolveTerminalOpenURLTarget("https://example.com/path?q=1"))
         switch target {
@@ -3266,25 +3278,27 @@ final class TerminalOpenURLTargetResolutionTests: XCTestCase {
         }
     }
 
-    func testResolvesFileSchemeAsExternal() throws {
-        let target = try XCTUnwrap(resolveTerminalOpenURLTarget("file:///tmp/cmux.txt"))
+    func testResolvesFileSchemeAsRevealFile() throws {
+        let fileURL = try makeTemporaryFile(named: "file-scheme.txt")
+        let target = try XCTUnwrap(resolveTerminalOpenURLTarget(fileURL.absoluteString))
         switch target {
-        case let .external(url):
+        case let .revealFile(url):
             XCTAssertTrue(url.isFileURL)
-            XCTAssertEqual(url.path, "/tmp/cmux.txt")
+            XCTAssertEqual(url.path, fileURL.path)
         default:
-            XCTFail("Expected file URL to open externally")
+            XCTFail("Expected file URL to reveal in Finder")
         }
     }
 
-    func testResolvesAbsolutePathAsExternalFileURL() throws {
-        let target = try XCTUnwrap(resolveTerminalOpenURLTarget("/tmp/cmux-path.txt"))
+    func testResolvesAbsolutePathAsRevealFile() throws {
+        let fileURL = try makeTemporaryFile(named: "absolute-path.txt")
+        let target = try XCTUnwrap(resolveTerminalOpenURLTarget(fileURL.path))
         switch target {
-        case let .external(url):
+        case let .revealFile(url):
             XCTAssertTrue(url.isFileURL)
-            XCTAssertEqual(url.path, "/tmp/cmux-path.txt")
+            XCTAssertEqual(url.path, fileURL.path)
         default:
-            XCTFail("Expected absolute file path to open externally")
+            XCTFail("Expected absolute file path to reveal in Finder")
         }
     }
 
@@ -3307,6 +3321,41 @@ final class TerminalOpenURLTargetResolutionTests: XCTestCase {
             XCTAssertEqual(url.path, "/tmp/cmux.txt")
         default:
             XCTFail("Expected hostless HTTPS URL to open externally")
+        }
+    }
+
+    func testResolvesAbsolutePathWithLineAndColumnAsRevealFile() throws {
+        let fileURL = try makeTemporaryFile(named: "line-column.swift")
+        let target = try XCTUnwrap(resolveTerminalOpenURLTarget("\(fileURL.path):42:7"))
+        switch target {
+        case let .revealFile(url):
+            XCTAssertEqual(url.path, fileURL.path)
+        default:
+            XCTFail("Expected line-qualified file path to reveal in Finder")
+        }
+    }
+
+    func testResolvesRelativePathAgainstBaseDirectoryAsRevealFile() throws {
+        let baseDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("icc-terminal-link-relative", isDirectory: true)
+        try FileManager.default.createDirectory(at: baseDirectory, withIntermediateDirectories: true)
+        let nestedDirectory = baseDirectory.appendingPathComponent("Sources", isDirectory: true)
+        try FileManager.default.createDirectory(at: nestedDirectory, withIntermediateDirectories: true)
+        let fileURL = nestedDirectory.appendingPathComponent("App.swift", isDirectory: false)
+        try Data("print(\"hello\")".utf8).write(to: fileURL)
+
+        let target = try XCTUnwrap(
+            resolveTerminalOpenURLTarget(
+                "Sources/App.swift:8",
+                relativeTo: baseDirectory.path
+            )
+        )
+
+        switch target {
+        case let .revealFile(url):
+            XCTAssertEqual(url.path, fileURL.path)
+        default:
+            XCTFail("Expected relative file path to resolve against workspace directory")
         }
     }
 }

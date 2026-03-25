@@ -3362,12 +3362,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 hasher.combine(0)
             case .files:
                 hasher.combine(1)
-            case .remote:
+            case .sourceControl:
                 hasher.combine(2)
-            case .supervisor:
+            case .remote:
                 hasher.combine(3)
-            case .notifications:
+            case .wechat:
                 hasher.combine(4)
+            case .supervisor:
+                hasher.combine(5)
+            case .notifications:
+                hasher.combine(6)
             }
 
             if let window = context.window ?? windowForMainWindowId(context.windowId) {
@@ -8540,7 +8544,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             switch sidebarSelection {
             case .tabs: return "tabs"
             case .files: return "files"
+            case .sourceControl: return "sourceControl"
             case .remote: return "remote"
+            case .wechat: return "wechat"
             case .supervisor: return "supervisor"
             case .notifications: return "notifications"
             }

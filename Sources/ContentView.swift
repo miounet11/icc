@@ -2358,7 +2358,7 @@ struct ContentView: View {
 
     private var explorerPaneVisible: Bool {
         switch sidebarSelectionState.selection {
-        case .files, .remote, .supervisor:
+        case .files, .sourceControl, .remote, .wechat, .supervisor:
             return true
         case .tabs, .notifications:
             return false
@@ -2369,8 +2369,12 @@ struct ContentView: View {
         switch sidebarSelectionState.selection {
         case .files:
             return "文件"
+        case .sourceControl:
+            return "源代码管理"
         case .remote:
             return "远程资源管理器"
+        case .wechat:
+            return "微信绑定"
         case .supervisor:
             return "监督器"
         case .tabs:
@@ -2384,11 +2388,15 @@ struct ContentView: View {
         switch sidebarSelectionState.selection {
         case .files:
             return SidebarPathFormatter.shortenedPath(activeSidebarDirectory)
+        case .sourceControl:
+            return SidebarPathFormatter.shortenedPath(activeSidebarDirectory)
         case .remote:
             if let workspace = tabManager.selectedWorkspace {
                 return workspace.remoteDisplayTarget ?? "从左侧选择远程主机并建立连接"
             }
             return "从左侧选择远程主机并建立连接"
+        case .wechat:
+            return "把微信会话绑定到窗口或工作区"
         case .supervisor:
             return tabManager.selectedWorkspace?.customTitle ?? tabManager.selectedWorkspace?.title ?? "当前工作区"
         case .tabs:
@@ -2526,6 +2534,16 @@ struct ContentView: View {
                             }
                         }
                     }
+                case .sourceControl:
+                    if let workspace = tabManager.selectedWorkspace {
+                        SourceControlSidebarPaneView(workspace: workspace)
+                    } else {
+                        ContentUnavailableView(
+                            "No Workspace Selected",
+                            systemImage: "arrow.triangle.branch",
+                            description: Text("Select a workspace to inspect its Git and GitHub state.")
+                        )
+                    }
                 case .remote:
                     if let workspace = tabManager.selectedWorkspace,
                        workspace.remoteConfiguration != nil {
@@ -2590,6 +2608,8 @@ struct ContentView: View {
                             }
                         )
                     }
+                case .wechat:
+                    WeChatSidebarPaneView()
                 case .supervisor:
                     if let workspace = tabManager.selectedWorkspace {
                         SupervisorPaneView(workspace: workspace)
@@ -9829,6 +9849,1106 @@ private final class SidebarShortcutHintModifierMonitor: ObservableObject {
     }
 }
 
+@MainActor
+private struct WeChatSidebarPaneView: View {
+    @ObservedObject private var store = WeChatChannelSettingsStore.shared
+    @ObservedObject private var bindingCatalog = WeChatBindingTargetCatalog.shared
+
+    private let metricColumns = [
+        GridItem(.adaptive(minimum: 94, maximum: 160), spacing: 8, alignment: .top)
+    ]
+
+    private var configuration: WeChatChannelConfiguration {
+        store.configuration
+    }
+
+    private var accounts: [WeChatBotAccountConfiguration] {
+        configuration.accounts
+    }
+
+    private var enabledAccountCount: Int {
+        accounts.filter(\.isEnabled).count
+    }
+
+    private var connectedAccountCount: Int {
+        accounts.filter { $0.connectionState == .connected }.count
+    }
+
+    private var routeCount: Int {
+        accounts.reduce(0) { partialResult, account in
+            partialResult + account.bindings.count
+        }
+    }
+
+    private var boundRouteCount: Int {
+        accounts.reduce(0) { partialResult, account in
+            partialResult + account.bindings.filter { $0.destination.kind != .unbound }.count
+        }
+    }
+
+    private var integrationEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { configuration.integrationEnabled },
+            set: { newValue in
+                var updated = configuration
+                updated.integrationEnabled = newValue
+                store.configuration = updated
+            }
+        )
+    }
+
+    private var autoCreateBinding: Binding<Bool> {
+        Binding(
+            get: { configuration.autoCreateWindowForNewChats },
+            set: { newValue in
+                var updated = configuration
+                updated.autoCreateWindowForNewChats = newValue
+                store.configuration = updated
+            }
+        )
+    }
+
+    private var typingBinding: Binding<Bool> {
+        Binding(
+            get: { configuration.sendTypingWhileWorking },
+            set: { newValue in
+                var updated = configuration
+                updated.sendTypingWhileWorking = newValue
+                store.configuration = updated
+            }
+        )
+    }
+
+    private var progressBinding: Binding<Bool> {
+        Binding(
+            get: { configuration.mirrorWindowProgressIntoReplies },
+            set: { newValue in
+                var updated = configuration
+                updated.mirrorWindowProgressIntoReplies = newValue
+                store.configuration = updated
+            }
+        )
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                overviewCard
+                quickOptionsCard
+
+                if accounts.isEmpty {
+                    emptyStateCard
+                } else {
+                    metricsCard
+
+                    ForEach(accounts) { account in
+                        accountCard(account)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+        }
+        .onAppear {
+            bindingCatalog.refresh()
+        }
+    }
+
+    private var overviewCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.green.opacity(0.88),
+                                    Color.blue.opacity(0.7)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 42, height: 42)
+                        .overlay {
+                            Image(systemName: "message")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("微信 Bot 绑定")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text("左侧进入绑定面板，右侧快速检查账号、路由和当前窗口绑定情况。详细字段仍在设置里统一管理。")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Toggle("", isOn: integrationEnabledBinding)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+                }
+
+                HStack(spacing: 8) {
+                    Button("添加账号") {
+                        store.addAccount()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+
+                    Button("打开设置") {
+                        SettingsWindowController.shared.show(navigationTarget: .wechat)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Spacer(minLength: 0)
+
+                    WeChatSidebarStatusPill(
+                        text: configuration.integrationEnabled ? "已启用" : "未启用",
+                        tint: configuration.integrationEnabled ? .green : .secondary,
+                        emphasized: configuration.integrationEnabled
+                    )
+                }
+            }
+        }
+    }
+
+    private var quickOptionsCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("快速选项")
+                    .font(.system(size: 13, weight: .semibold))
+                    .padding(.bottom, 10)
+
+                WeChatSidebarToggleRow(
+                    title: "新聊天自动创建窗口",
+                    subtitle: "没有显式路由时，自动新建窗口隔离会话。",
+                    isOn: autoCreateBinding
+                )
+                .disabled(!configuration.integrationEnabled)
+
+                Divider()
+                    .padding(.vertical, 10)
+
+                WeChatSidebarToggleRow(
+                    title: "执行期间发送“正在输入”",
+                    subtitle: "绑定窗口仍在执行任务时，通过协议发送输入状态。",
+                    isOn: typingBinding
+                )
+                .disabled(!configuration.integrationEnabled)
+
+                Divider()
+                    .padding(.vertical, 10)
+
+                WeChatSidebarToggleRow(
+                    title: "回复附带窗口进度",
+                    subtitle: "把当前窗口的目标、状态和进度摘要同步到微信回复。",
+                    isOn: progressBinding
+                )
+                .disabled(!configuration.integrationEnabled)
+            }
+        }
+    }
+
+    private var emptyStateCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("还没有微信账号")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("先添加一个 Bot 账号，再为不同微信会话分配独立窗口或工作区。这样左侧按钮就不只是入口，而是完整的操作面板。")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button("添加首个账号") {
+                        store.addAccount()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+
+                    Button("前往详细设置") {
+                        SettingsWindowController.shared.show(navigationTarget: .wechat)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    private var metricsCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("概览")
+                    .font(.system(size: 13, weight: .semibold))
+
+                LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
+                    WeChatSidebarMetricCard(title: "账号", value: "\(accounts.count)")
+                    WeChatSidebarMetricCard(title: "已启用", value: "\(enabledAccountCount)")
+                    WeChatSidebarMetricCard(title: "已连接", value: "\(connectedAccountCount)")
+                    WeChatSidebarMetricCard(title: "路由", value: "\(routeCount)")
+                    WeChatSidebarMetricCard(title: "已绑定", value: "\(boundRouteCount)")
+                }
+            }
+        }
+    }
+
+    private func accountCard(_ account: WeChatBotAccountConfiguration) -> some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(account.displayName.isEmpty ? "微信机器人" : account.displayName)
+                            .font(.system(size: 13.5, weight: .semibold))
+                        Text(accountBaseURL(account) + " · \(account.bindings.count) 条路由")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Toggle("启用", isOn: accountEnabledBinding(account.id))
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+                        .font(.system(size: 11, weight: .medium))
+                        .labelsHidden()
+
+                    WeChatSidebarStatusPill(
+                        text: account.connectionState.label,
+                        tint: accountStateTint(account.connectionState),
+                        emphasized: account.connectionState == .connected
+                    )
+                }
+
+                HStack(spacing: 8) {
+                    if WeChatBotTokenStore.hasToken(for: account.id) {
+                        WeChatSidebarStatusPill(text: "Token 已保存", tint: .green)
+                    }
+                    if !account.isEnabled {
+                        WeChatSidebarStatusPill(text: "已停用", tint: .secondary)
+                    }
+                    if !account.routeTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        WeChatSidebarStatusPill(text: "#\(account.routeTag)", tint: .blue)
+                    }
+                }
+
+                if account.bindings.isEmpty {
+                    Text("还没有聊天路由。至少添加一个路由，微信会话才能知道该连接到哪个窗口。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(account.bindings) { binding in
+                            routeCard(accountId: account.id, binding: binding)
+                        }
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    Button("添加路由") {
+                        store.addBinding(to: account.id)
+                        bindingCatalog.refresh()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Button("更多设置") {
+                        SettingsWindowController.shared.show(navigationTarget: .wechat)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+
+    private func routeCard(accountId: UUID, binding: WeChatConversationBinding) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(routeTitle(binding))
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .lineLimit(1)
+
+                WeChatSidebarStatusPill(
+                    text: destinationSummary(binding.destination),
+                    tint: destinationTint(binding.destination)
+                )
+
+                Spacer(minLength: 0)
+
+                if binding.sendTypingIndicator {
+                    WeChatSidebarStatusPill(text: "输入提示", tint: .blue)
+                }
+            }
+
+            Text(routeSubtitle(binding))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+
+            HStack(alignment: .center, spacing: 8) {
+                Text("目标")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Picker("", selection: bindingDestinationBinding(accountId: accountId, bindingId: binding.id)) {
+                    ForEach(bindingCatalog.options) { option in
+                        Text(option.label).tag(option.id)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack(spacing: 8) {
+                Button("绑定当前窗口") {
+                    bindRouteToCurrentWindow(accountId: accountId, bindingId: binding.id)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(AppDelegate.shared?.currentWindowMoveTarget() == nil)
+
+                Button("绑定当前工作区") {
+                    bindRouteToCurrentWorkspace(accountId: accountId, bindingId: binding.id)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(AppDelegate.shared?.currentWorkspaceMoveTarget() == nil)
+
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.72))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        }
+    }
+
+    private func accountEnabledBinding(_ accountId: UUID) -> Binding<Bool> {
+        Binding(
+            get: {
+                accounts.first(where: { $0.id == accountId })?.isEnabled ?? false
+            },
+            set: { newValue in
+                store.updateAccount(accountId) { account in
+                    account.isEnabled = newValue
+                }
+            }
+        )
+    }
+
+    private func bindingDestinationBinding(accountId: UUID, bindingId: UUID) -> Binding<String> {
+        Binding(
+            get: {
+                let destination = accounts
+                    .first(where: { $0.id == accountId })?
+                    .bindings.first(where: { $0.id == bindingId })?.destination ?? .unbound
+                return bindingCatalog.optionId(for: destination)
+            },
+            set: { optionId in
+                let destination = bindingCatalog.destination(for: optionId)
+                store.updateBinding(accountId: accountId, bindingId: bindingId) { binding in
+                    binding.destination = destination
+                }
+            }
+        )
+    }
+
+    private func bindRouteToCurrentWindow(accountId: UUID, bindingId: UUID) {
+        guard let target = AppDelegate.shared?.currentWindowMoveTarget() else { return }
+        store.updateBinding(accountId: accountId, bindingId: bindingId) { binding in
+            binding.destination = WeChatBindingDestination(kind: .window, windowId: target.windowId, workspaceId: nil)
+        }
+        bindingCatalog.refresh()
+    }
+
+    private func bindRouteToCurrentWorkspace(accountId: UUID, bindingId: UUID) {
+        guard let target = AppDelegate.shared?.currentWorkspaceMoveTarget() else { return }
+        store.updateBinding(accountId: accountId, bindingId: bindingId) { binding in
+            binding.destination = WeChatBindingDestination(kind: .workspace, windowId: target.windowId, workspaceId: target.workspaceId)
+        }
+        bindingCatalog.refresh()
+    }
+
+    private func routeTitle(_ binding: WeChatConversationBinding) -> String {
+        let trimmed = binding.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "新聊天路由" : trimmed
+    }
+
+    private func routeSubtitle(_ binding: WeChatConversationBinding) -> String {
+        let contact = binding.contactLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sessionId = binding.sessionId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !contact.isEmpty, !sessionId.isEmpty {
+            return "\(contact) · session_id: \(sessionId)"
+        }
+        if !contact.isEmpty {
+            return contact
+        }
+        if !sessionId.isEmpty {
+            return "session_id: \(sessionId)"
+        }
+        return "等待首个进入的微信会话。"
+    }
+
+    private func destinationSummary(_ destination: WeChatBindingDestination) -> String {
+        if let option = bindingCatalog.options.first(where: { $0.destination == destination }) {
+            return option.label
+        }
+
+        switch destination.kind {
+        case .unbound:
+            return "未绑定"
+        case .autoCreateWindow:
+            return "自动建窗"
+        case .window:
+            return "窗口"
+        case .workspace:
+            return "工作区"
+        }
+    }
+
+    private func destinationTint(_ destination: WeChatBindingDestination) -> Color {
+        switch destination.kind {
+        case .unbound:
+            return .secondary
+        case .autoCreateWindow:
+            return .orange
+        case .window, .workspace:
+            return .blue
+        }
+    }
+
+    private func accountStateTint(_ state: WeChatAccountConnectionState) -> Color {
+        switch state {
+        case .connected:
+            return .green
+        case .qrReady:
+            return .orange
+        case .paused:
+            return .secondary
+        case .draft:
+            return .blue
+        }
+    }
+
+    private func accountBaseURL(_ account: WeChatBotAccountConfiguration) -> String {
+        let trimmed = account.baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "https://ilinkai.weixin.qq.com" : trimmed
+    }
+}
+
+private struct WeChatSidebarCard<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content()
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(nsColor: .windowBackgroundColor).opacity(0.86))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        }
+    }
+}
+
+private struct WeChatSidebarMetricCard: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(size: 16, weight: .semibold))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(Color.primary.opacity(0.045))
+        )
+    }
+}
+
+private struct WeChatSidebarStatusPill: View {
+    let text: String
+    let tint: Color
+    var emphasized: Bool = false
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 10.5, weight: .semibold))
+            .lineLimit(1)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .foregroundStyle(emphasized ? Color.white : tint)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(emphasized ? tint : tint.opacity(0.12))
+            )
+    }
+}
+
+private struct WeChatSidebarToggleRow: View {
+    let title: String
+    let subtitle: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 12.5, weight: .semibold))
+                Text(subtitle)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+
+            Toggle("", isOn: $isOn)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.small)
+        }
+    }
+}
+
+@MainActor
+private struct SourceControlSidebarPaneView: View {
+    @ObservedObject var workspace: Workspace
+    @State private var snapshot: SourceControlSidebarSnapshot?
+    @State private var isRefreshing = false
+
+    private var currentDirectory: String {
+        let trimmed = workspace.currentDirectory.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? FileManager.default.currentDirectoryPath : trimmed
+    }
+
+    private var branchStates: [SidebarGitBranchState] {
+        workspace.sidebarGitBranchesInDisplayOrder()
+    }
+
+    private var pullRequests: [SidebarPullRequestState] {
+        workspace.sidebarPullRequestsInDisplayOrder()
+    }
+
+    private var primaryRepositoryURL: URL? {
+        guard let slug = snapshot?.githubRepoSlugs.first else { return nil }
+        return URL(string: "https://github.com/\(slug)")
+    }
+
+    private var repositoryRoot: String? {
+        snapshot?.repositoryRoot
+    }
+
+    private var branchHeadline: String {
+        if let headline = snapshot?.branchHeadline,
+           !headline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return headline
+        }
+        if let branch = workspace.gitBranch?.branch {
+            return branch + (workspace.gitBranch?.isDirty == true ? " *" : "")
+        }
+        return "未检测到 Git 分支"
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                overviewCard
+
+                if let snapshot, snapshot.isRepository {
+                    if !snapshot.githubRepoSlugs.isEmpty || !snapshot.remotes.isEmpty {
+                        repositoryBindingCard(snapshot)
+                    }
+
+                    changesCard(snapshot)
+
+                    if !pullRequests.isEmpty {
+                        pullRequestsCard
+                    }
+                } else {
+                    emptyStateCard
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+        }
+        .task(id: currentDirectory) {
+            await refreshSnapshot()
+        }
+    }
+
+    private var overviewCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.blue.opacity(0.88),
+                                    Color.teal.opacity(0.72)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 42, height: 42)
+                        .overlay {
+                            Image(systemName: "arrow.triangle.branch")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("源代码管理")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text(repositoryRoot.map { SidebarPathFormatter.shortenedPath($0) } ?? SidebarPathFormatter.shortenedPath(currentDirectory))
+                            .font(.system(size: 11.5, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                        Text(branchHeadline)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if isRefreshing {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        WeChatSidebarStatusPill(
+                            text: snapshot?.isRepository == true ? "Git 已连接" : "非仓库目录",
+                            tint: snapshot?.isRepository == true ? .green : .secondary,
+                            emphasized: snapshot?.isRepository == true
+                        )
+                    }
+                }
+
+                if !branchStates.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(branchStates, id: \.branch) { branch in
+                                WeChatSidebarStatusPill(
+                                    text: branch.branch + (branch.isDirty ? " *" : ""),
+                                    tint: branch.isDirty ? .orange : .blue
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    Button("刷新") {
+                        Task {
+                            await refreshSnapshot()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Button("打开仓库") {
+                        openRepositoryInFinder()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+
+                    Button("打开 GitHub") {
+                        openPrimaryRepositoryOnGitHub()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(primaryRepositoryURL == nil)
+
+                    Button("复制分支") {
+                        copyBranchHeadline()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(branchHeadline == "未检测到 Git 分支")
+
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+
+    private func repositoryBindingCard(_ snapshot: SourceControlSidebarSnapshot) -> some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("GitHub 绑定")
+                    .font(.system(size: 13, weight: .semibold))
+
+                if !snapshot.githubRepoSlugs.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(snapshot.githubRepoSlugs, id: \.self) { slug in
+                            HStack(spacing: 8) {
+                                WeChatSidebarStatusPill(text: slug, tint: .blue)
+                                Spacer(minLength: 0)
+                                Button("打开") {
+                                    guard let url = URL(string: "https://github.com/\(slug)") else { return }
+                                    NSWorkspace.shared.open(url)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                    }
+                }
+
+                if !snapshot.remotes.isEmpty {
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("远程")
+                            .font(.system(size: 12.5, weight: .semibold))
+
+                        ForEach(snapshot.remotes) { remote in
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(spacing: 8) {
+                                    Text(remote.name)
+                                        .font(.system(size: 11.5, weight: .semibold))
+                                    WeChatSidebarStatusPill(text: remote.kind, tint: .secondary)
+                                }
+                                Text(remote.url)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                                    .lineLimit(2)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func changesCard(_ snapshot: SourceControlSidebarSnapshot) -> some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("工作区状态")
+                        .font(.system(size: 13, weight: .semibold))
+                    Spacer(minLength: 0)
+                    WeChatSidebarStatusPill(
+                        text: snapshot.changes.isEmpty ? "干净" : "\(snapshot.changes.count) 处变更",
+                        tint: snapshot.changes.isEmpty ? .green : .orange,
+                        emphasized: snapshot.changes.isEmpty
+                    )
+                }
+
+                if snapshot.changes.isEmpty {
+                    Text("当前工作区没有未提交变更。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(snapshot.changes) { change in
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(change.status)
+                                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                    .foregroundStyle(change.statusColor)
+                                    .frame(width: 28, alignment: .leading)
+                                Text(change.path)
+                                    .font(.system(size: 11.5))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(2)
+                                    .textSelection(.enabled)
+                                Spacer(minLength: 0)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var pullRequestsCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("关联 PR")
+                    .font(.system(size: 13, weight: .semibold))
+
+                ForEach(pullRequests, id: \.url.absoluteString) { pullRequest in
+                    HStack(alignment: .top, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(pullRequest.label) #\(pullRequest.number)")
+                                .font(.system(size: 12.5, weight: .semibold))
+                            Text(pullRequest.branch ?? pullRequest.url.absoluteString)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+
+                        Spacer(minLength: 0)
+
+                        WeChatSidebarStatusPill(
+                            text: pullRequestStatusText(pullRequest),
+                            tint: pullRequestStatusColor(pullRequest)
+                        )
+
+                        Button("打开") {
+                            NSWorkspace.shared.open(pullRequest.url)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+            }
+        }
+    }
+
+    private var emptyStateCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("当前目录不是 Git 仓库")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("切到一个包含 `.git` 的项目目录后，这里会展示分支、变更、远程仓库和 GitHub 绑定关系。")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("打开当前目录") {
+                    NSWorkspace.shared.open(URL(fileURLWithPath: currentDirectory))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+    }
+
+    private func refreshSnapshot() async {
+        let directory = currentDirectory
+        isRefreshing = true
+        let nextSnapshot = await Task.detached(priority: .utility) {
+            SourceControlSidebarProbe.snapshot(for: directory)
+        }.value
+        guard directory == currentDirectory else { return }
+        snapshot = nextSnapshot
+        isRefreshing = false
+    }
+
+    private func openRepositoryInFinder() {
+        guard let repositoryRoot else { return }
+        NSWorkspace.shared.open(URL(fileURLWithPath: repositoryRoot))
+    }
+
+    private func openPrimaryRepositoryOnGitHub() {
+        guard let primaryRepositoryURL else { return }
+        NSWorkspace.shared.open(primaryRepositoryURL)
+    }
+
+    private func copyBranchHeadline() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(branchHeadline, forType: .string)
+    }
+
+    private func pullRequestStatusText(_ pullRequest: SidebarPullRequestState) -> String {
+        let status: String
+        switch pullRequest.status {
+        case .open:
+            status = "open"
+        case .merged:
+            status = "merged"
+        case .closed:
+            status = "closed"
+        }
+
+        guard let checks = pullRequest.checks else { return status }
+        return status + " · " + checks.rawValue
+    }
+
+    private func pullRequestStatusColor(_ pullRequest: SidebarPullRequestState) -> Color {
+        if let checks = pullRequest.checks {
+            switch checks {
+            case .fail:
+                return .red
+            case .pending:
+                return .orange
+            case .pass:
+                return .green
+            }
+        }
+
+        switch pullRequest.status {
+        case .open:
+            return .blue
+        case .merged:
+            return .purple
+        case .closed:
+            return .secondary
+        }
+    }
+}
+
+private struct SourceControlSidebarSnapshot: Equatable {
+    struct Remote: Identifiable, Equatable {
+        let name: String
+        let url: String
+        let kind: String
+
+        var id: String { "\(name)|\(kind)|\(url)" }
+    }
+
+    struct Change: Identifiable, Equatable {
+        let status: String
+        let path: String
+
+        var id: String { "\(status)|\(path)" }
+
+        var statusColor: Color {
+            if status.contains("?") {
+                return .blue
+            }
+            if status.contains("D") {
+                return .red
+            }
+            if status.contains("M") || status.contains("A") || status.contains("R") || status.contains("C") {
+                return .orange
+            }
+            return .secondary
+        }
+    }
+
+    let requestedDirectory: String
+    let repositoryRoot: String?
+    let branchHeadline: String?
+    let remotes: [Remote]
+    let githubRepoSlugs: [String]
+    let changes: [Change]
+
+    var isRepository: Bool {
+        repositoryRoot != nil
+    }
+}
+
+private enum SourceControlSidebarProbe {
+    static func snapshot(for directory: String) -> SourceControlSidebarSnapshot {
+        let trimmedDirectory = directory.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedDirectory.isEmpty else {
+            return SourceControlSidebarSnapshot(
+                requestedDirectory: directory,
+                repositoryRoot: nil,
+                branchHeadline: nil,
+                remotes: [],
+                githubRepoSlugs: [],
+                changes: []
+            )
+        }
+
+        guard let repositoryRoot = runGitCommand(
+            directory: trimmedDirectory,
+            arguments: ["rev-parse", "--show-toplevel"]
+        )?.trimmingCharacters(in: .whitespacesAndNewlines),
+        !repositoryRoot.isEmpty else {
+            return SourceControlSidebarSnapshot(
+                requestedDirectory: trimmedDirectory,
+                repositoryRoot: nil,
+                branchHeadline: nil,
+                remotes: [],
+                githubRepoSlugs: [],
+                changes: []
+            )
+        }
+
+        let statusOutput = runGitCommand(
+            directory: repositoryRoot,
+            arguments: ["status", "--short", "--branch"]
+        ) ?? ""
+        let remoteOutput = runGitCommand(
+            directory: repositoryRoot,
+            arguments: ["remote", "-v"]
+        ) ?? ""
+
+        return SourceControlSidebarSnapshot(
+            requestedDirectory: trimmedDirectory,
+            repositoryRoot: repositoryRoot,
+            branchHeadline: parseBranchHeadline(from: statusOutput),
+            remotes: parseRemotes(from: remoteOutput),
+            githubRepoSlugs: TabManager.githubRepositorySlugs(fromGitRemoteVOutput: remoteOutput),
+            changes: parseChanges(from: statusOutput)
+        )
+    }
+
+    private static func parseBranchHeadline(from output: String) -> String? {
+        output
+            .split(whereSeparator: \.isNewline)
+            .first(where: { $0.hasPrefix("## ") })
+            .map { String($0.dropFirst(3)).trimmingCharacters(in: .whitespacesAndNewlines) }
+    }
+
+    private static func parseChanges(from output: String) -> [SourceControlSidebarSnapshot.Change] {
+        output.split(whereSeparator: \.isNewline).compactMap { line in
+            let raw = String(line)
+            guard !raw.hasPrefix("## ") else { return nil }
+            let status = String(raw.prefix(2)).trimmingCharacters(in: .whitespacesAndNewlines)
+            let path = String(raw.dropFirst(min(3, raw.count))).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !path.isEmpty else { return nil }
+            return SourceControlSidebarSnapshot.Change(status: status.isEmpty ? "--" : status, path: path)
+        }
+    }
+
+    private static func parseRemotes(from output: String) -> [SourceControlSidebarSnapshot.Remote] {
+        output.split(whereSeparator: \.isNewline).compactMap { line in
+            let parts = line.split(whereSeparator: \.isWhitespace)
+            guard parts.count >= 3 else { return nil }
+            let name = String(parts[0])
+            let url = String(parts[1])
+            let kind = String(parts[2]).trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+            return SourceControlSidebarSnapshot.Remote(name: name, url: url, kind: kind)
+        }
+    }
+
+    private static func runGitCommand(directory: String, arguments: [String]) -> String? {
+        let process = Process()
+        let stdout = Pipe()
+        let stderr = Pipe()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["git"] + arguments
+        process.currentDirectoryURL = URL(fileURLWithPath: directory)
+        process.standardOutput = stdout
+        process.standardError = stderr
+
+        do {
+            try process.run()
+        } catch {
+            return nil
+        }
+
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { return nil }
+        let data = stdout.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)
+    }
+}
+
 private struct SidebarActivityRail: View {
     @ObservedObject var updateViewModel: UpdateViewModel
     @Binding var selection: SidebarSelection
@@ -9842,7 +10962,9 @@ private struct SidebarActivityRail: View {
             VStack(spacing: 6) {
                 SidebarActivityRailButton(selection: $selection, target: .tabs, systemImage: "square.grid.2x2", label: "工作区")
                 SidebarActivityRailButton(selection: $selection, target: .files, systemImage: "folder", label: "文件")
+                SidebarActivityRailButton(selection: $selection, target: .sourceControl, systemImage: "arrow.triangle.branch", label: "源码")
                 SidebarActivityRailButton(selection: $selection, target: .remote, systemImage: "network", label: "远程")
+                SidebarActivityRailButton(selection: $selection, target: .wechat, systemImage: "message", label: "微信")
                 SidebarActivityRailButton(selection: $selection, target: .supervisor, systemImage: "brain", label: "监督器")
             }
             .padding(.top, 18)
@@ -10026,7 +11148,9 @@ private struct SidebarModeSwitcher<TrailingAccessory: View>: View {
                 HStack(spacing: 6) {
                     SidebarSwitcherChip(selection: $selection, target: .tabs, label: "工作区", systemImage: "square.grid.2x2")
                     SidebarSwitcherChip(selection: $selection, target: .files, label: "文件", systemImage: "folder")
+                    SidebarSwitcherChip(selection: $selection, target: .sourceControl, label: "源码", systemImage: "arrow.triangle.branch")
                     SidebarSwitcherChip(selection: $selection, target: .remote, label: "远程", systemImage: "network")
+                    SidebarSwitcherChip(selection: $selection, target: .wechat, label: "微信", systemImage: "message")
                     SidebarSwitcherChip(selection: $selection, target: .supervisor, label: "监督器", systemImage: "brain")
                     SidebarSwitcherChip(selection: $selection, target: .notifications, label: "提醒", systemImage: "bell")
                 }
@@ -13746,7 +14870,9 @@ private final class MiddleClickCaptureView: NSView {
 enum SidebarSelection {
     case tabs
     case files
+    case sourceControl
     case remote
+    case wechat
     case supervisor
     case notifications
 }

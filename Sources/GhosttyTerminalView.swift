@@ -414,10 +414,11 @@ func cmuxPasteboardImagePathForTesting(_ pasteboard: NSPasteboard) -> String? {
 enum TerminalOpenURLTarget: Equatable {
     case embeddedBrowser(URL)
     case external(URL)
+    case revealFile(URL)
 
     var url: URL {
         switch self {
-        case let .embeddedBrowser(url), let .external(url):
+        case let .embeddedBrowser(url), let .external(url), let .revealFile(url):
             return url
         }
     }
@@ -496,7 +497,104 @@ final class GhosttyDefaultBackgroundNotificationDispatcher {
     }
 }
 
-func resolveTerminalOpenURLTarget(_ rawValue: String) -> TerminalOpenURLTarget? {
+private let terminalLinkBoundaryCharacters = CharacterSet(charactersIn: "\"'`()[]{}<>,;")
+
+private func revealTerminalFileURL(_ url: URL) -> Bool {
+    let standardized = url.standardizedFileURL
+    var isDirectory = ObjCBool(false)
+    guard FileManager.default.fileExists(atPath: standardized.path, isDirectory: &isDirectory) else {
+        NSSound.beep()
+        return false
+    }
+
+    if isDirectory.boolValue {
+        return NSWorkspace.shared.open(standardized)
+    }
+
+    NSWorkspace.shared.activateFileViewerSelecting([standardized])
+    return true
+}
+
+private func resolveTerminalFileURL(
+    from rawValue: String,
+    relativeTo baseDirectory: String? = nil
+) -> URL? {
+    let candidate = rawValue.trimmingCharacters(
+        in: .whitespacesAndNewlines.union(terminalLinkBoundaryCharacters)
+    )
+    guard !candidate.isEmpty else { return nil }
+
+    if let parsed = URL(string: candidate), parsed.isFileURL {
+        let fileURL = parsed.standardizedFileURL
+        return FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : nil
+    }
+
+    for pathCandidate in terminalFilePathCandidates(from: candidate) {
+        if let url = resolvedExistingTerminalFileURL(fromPath: pathCandidate, relativeTo: baseDirectory) {
+            return url
+        }
+    }
+
+    return nil
+}
+
+private func terminalFilePathCandidates(from rawValue: String) -> [String] {
+    var results: [String] = []
+
+    func appendIfNeeded(_ candidate: String) {
+        guard !candidate.isEmpty, !results.contains(candidate) else { return }
+        results.append(candidate)
+    }
+
+    appendIfNeeded(rawValue)
+    appendIfNeeded(rawValue.trimmingCharacters(in: CharacterSet(charactersIn: ".,:;")))
+
+    var colonComponents = rawValue.split(separator: ":").map(String.init)
+    while colonComponents.count > 1,
+          let last = colonComponents.last,
+          !last.isEmpty,
+          last.unicodeScalars.allSatisfy(CharacterSet.decimalDigits.contains) {
+        colonComponents.removeLast()
+        appendIfNeeded(colonComponents.joined(separator: ":"))
+    }
+
+    return results
+}
+
+private func resolvedExistingTerminalFileURL(
+    fromPath rawPath: String,
+    relativeTo baseDirectory: String?
+) -> URL? {
+    let fileManager = FileManager.default
+    let expandedPath = NSString(string: rawPath).expandingTildeInPath
+
+    if NSString(string: expandedPath).isAbsolutePath {
+        let url = URL(fileURLWithPath: expandedPath).standardizedFileURL
+        return fileManager.fileExists(atPath: url.path) ? url : nil
+    }
+
+    let pathLooksRelative = rawPath.hasPrefix("./")
+        || rawPath.hasPrefix("../")
+        || rawPath.contains("/")
+        || rawPath.contains("\\")
+        || (rawPath.contains(".") && !rawPath.contains("://"))
+
+    guard pathLooksRelative,
+          let baseDirectory,
+          !baseDirectory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        return nil
+    }
+
+    let url = URL(fileURLWithPath: baseDirectory)
+        .appendingPathComponent(rawPath)
+        .standardizedFileURL
+    return fileManager.fileExists(atPath: url.path) ? url : nil
+}
+
+func resolveTerminalOpenURLTarget(
+    _ rawValue: String,
+    relativeTo baseDirectory: String? = nil
+) -> TerminalOpenURLTarget? {
     let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
     #if DEBUG
     dlog("link.resolve input=\(trimmed)")
@@ -508,15 +606,21 @@ func resolveTerminalOpenURLTarget(_ rawValue: String) -> TerminalOpenURLTarget? 
         return nil
     }
 
-    if NSString(string: trimmed).isAbsolutePath {
+    if let fileURL = resolveTerminalFileURL(from: trimmed, relativeTo: baseDirectory) {
         #if DEBUG
-        dlog("link.resolve result=external(absolutePath) url=\(trimmed)")
+        dlog("link.resolve result=revealFile url=\(fileURL)")
         #endif
-        return .external(URL(fileURLWithPath: trimmed))
+        return .revealFile(fileURL)
     }
 
     if let parsed = URL(string: trimmed),
        let scheme = parsed.scheme?.lowercased() {
+        if parsed.isFileURL {
+            #if DEBUG
+            dlog("link.resolve result=revealFile(fileURL) url=\(parsed)")
+            #endif
+            return .revealFile(parsed)
+        }
         if scheme == "http" || scheme == "https" {
             guard BrowserInsecureHTTPSettings.normalizeHost(parsed.host ?? "") != nil else {
                 #if DEBUG
@@ -2442,74 +2546,64 @@ class GhosttyApp {
                 data: Data(bytes: cstr, count: Int(openUrl.len)),
                 encoding: .utf8
             ) ?? ""
+            let sourceWorkspaceId = callbackTabId ?? surfaceView.tabId
+            let sourcePanelId = callbackSurfaceId ?? surfaceView.terminalSurface?.id
             #if DEBUG
             dlog("link.openURL raw=\(urlString)")
             #endif
-            guard let target = resolveTerminalOpenURLTarget(urlString) else {
-                #if DEBUG
-                dlog("link.openURL resolve failed, returning false")
-                #endif
-                return false
-            }
-            if !BrowserLinkOpenSettings.openTerminalLinksInCmuxBrowser() {
-                #if DEBUG
-                dlog("link.openURL cmuxBrowser=disabled, opening externally url=\(target.url)")
-                #endif
-                return performOnMain {
-                    NSWorkspace.shared.open(target.url)
-                }
-            }
-            switch target {
-            case let .external(url):
-                #if DEBUG
-                dlog("link.openURL target=external, opening externally url=\(url)")
-                #endif
-                return performOnMain {
-                    NSWorkspace.shared.open(url)
-                }
-            case let .embeddedBrowser(url):
-                if BrowserLinkOpenSettings.shouldOpenExternally(url) {
+            let openResolvedTargetOnMain: @MainActor (TerminalOpenURLTarget) -> Bool = { target in
+                switch target {
+                case let .revealFile(url):
                     #if DEBUG
-                    dlog("link.openURL target=embedded but shouldOpenExternally=true url=\(url)")
+                    dlog("link.openURL target=revealFile url=\(url)")
                     #endif
-                    return performOnMain {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                guard let host = BrowserInsecureHTTPSettings.normalizeHost(url.host ?? "") else {
+                    return revealTerminalFileURL(url)
+                case let .external(url):
                     #if DEBUG
-                    dlog("link.openURL target=embedded but normalizeHost=nil host=\(url.host ?? "nil") url=\(url)")
+                    dlog("link.openURL target=external, opening externally url=\(url)")
                     #endif
-                    return performOnMain {
-                        NSWorkspace.shared.open(url)
+                    return NSWorkspace.shared.open(url)
+                case let .embeddedBrowser(url):
+                    if !BrowserLinkOpenSettings.openTerminalLinksInCmuxBrowser() {
+                        #if DEBUG
+                        dlog("link.openURL cmuxBrowser=disabled, opening externally url=\(url)")
+                        #endif
+                        return NSWorkspace.shared.open(url)
                     }
-                }
+                    if BrowserLinkOpenSettings.shouldOpenExternally(url) {
+                        #if DEBUG
+                        dlog("link.openURL target=embedded but shouldOpenExternally=true url=\(url)")
+                        #endif
+                        return NSWorkspace.shared.open(url)
+                    }
+                    guard let host = BrowserInsecureHTTPSettings.normalizeHost(url.host ?? "") else {
+                        #if DEBUG
+                        dlog("link.openURL target=embedded but normalizeHost=nil host=\(url.host ?? "nil") url=\(url)")
+                        #endif
+                        return NSWorkspace.shared.open(url)
+                    }
 
-                // If a host whitelist is configured and this host isn't in it, open externally.
-                if !BrowserLinkOpenSettings.hostMatchesWhitelist(host) {
-                    #if DEBUG
-                    dlog("link.openURL target=embedded but hostWhitelist miss host=\(host) url=\(url)")
-                    #endif
-                    return performOnMain {
-                        NSWorkspace.shared.open(url)
+                    if !BrowserLinkOpenSettings.hostMatchesWhitelist(host) {
+                        #if DEBUG
+                        dlog("link.openURL target=embedded but hostWhitelist miss host=\(host) url=\(url)")
+                        #endif
+                        return NSWorkspace.shared.open(url)
                     }
-                }
-                let sourceWorkspaceId = callbackTabId ?? surfaceView.tabId
-                let sourcePanelId = callbackSurfaceId ?? surfaceView.terminalSurface?.id
-                guard let sourceWorkspaceId,
-                      let sourcePanelId else {
+                    guard let sourceWorkspaceId,
+                          let sourcePanelId else {
+                        #if DEBUG
+                        dlog("link.openURL target=embedded but tabId/surfaceId=nil")
+                        #endif
+                        return false
+                    }
+
                     #if DEBUG
-                    dlog("link.openURL target=embedded but tabId/surfaceId=nil")
+                    dlog(
+                        "link.openURL target=embedded, opening in browser pane " +
+                        "host=\(host) url=\(url) tabId=\(sourceWorkspaceId) surfaceId=\(sourcePanelId)"
+                    )
                     #endif
-                    return false
-                }
-                #if DEBUG
-                dlog(
-                    "link.openURL target=embedded, opening in browser pane " +
-                    "host=\(host) url=\(url) tabId=\(sourceWorkspaceId) surfaceId=\(sourcePanelId)"
-                )
-                #endif
-                return performOnMain {
+
                     guard let app = AppDelegate.shared,
                           let resolved = app.workspaceContainingPanel(
                             panelId: sourcePanelId,
@@ -2544,6 +2638,40 @@ class GhosttyApp {
                         return workspace.newBrowserSplit(from: sourcePanelId, orientation: .horizontal, url: url) != nil
                     }
                 }
+            }
+
+            if let target = resolveTerminalOpenURLTarget(urlString) {
+                return performOnMain {
+                    openResolvedTargetOnMain(target)
+                }
+            }
+
+            guard let sourceWorkspaceId,
+                  let sourcePanelId else {
+                #if DEBUG
+                dlog("link.openURL resolve failed and no workspace context available")
+                #endif
+                return false
+            }
+
+            return performOnMain {
+                guard let app = AppDelegate.shared,
+                      let resolved = app.workspaceContainingPanel(
+                        panelId: sourcePanelId,
+                        preferredWorkspaceId: sourceWorkspaceId
+                      ) else {
+                    return false
+                }
+                let baseDirectory =
+                    resolved.workspace.panelDirectories[sourcePanelId]
+                    ?? resolved.workspace.currentDirectory
+                guard let target = resolveTerminalOpenURLTarget(urlString, relativeTo: baseDirectory) else {
+                    #if DEBUG
+                    dlog("link.openURL resolve failed even with baseDirectory=\(baseDirectory)")
+                    #endif
+                    return false
+                }
+                return openResolvedTargetOnMain(target)
             }
         default:
             return false

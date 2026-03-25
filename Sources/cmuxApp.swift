@@ -2733,6 +2733,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
 enum SettingsNavigationTarget: String {
     case notifications
+    case wechat
     case browser
     case browserImport
     case keyboardShortcuts
@@ -3972,6 +3973,8 @@ struct WeChatChannelConfiguration: Codable, Equatable {
 
 @MainActor
 final class WeChatChannelSettingsStore: ObservableObject {
+    static let shared = WeChatChannelSettingsStore()
+
     @Published var configuration: WeChatChannelConfiguration {
         didSet { persist() }
     }
@@ -4076,6 +4079,8 @@ struct WeChatBindingTargetOption: Identifiable, Hashable {
 
 @MainActor
 final class WeChatBindingTargetCatalog: ObservableObject {
+    static let shared = WeChatBindingTargetCatalog()
+
     @Published private(set) var options: [WeChatBindingTargetOption] = []
     private var observer: NSObjectProtocol?
 
@@ -4270,8 +4275,8 @@ struct SettingsView: View {
     @AppStorage("sidebarTintOpacity") private var sidebarTintOpacity = SidebarTintDefaults.opacity
 
     @ObservedObject private var notificationStore = TerminalNotificationStore.shared
-    @StateObject private var weChatChannelStore = WeChatChannelSettingsStore()
-    @StateObject private var weChatBindingCatalog = WeChatBindingTargetCatalog()
+    @ObservedObject private var weChatChannelStore = WeChatChannelSettingsStore.shared
+    @ObservedObject private var weChatBindingCatalog = WeChatBindingTargetCatalog.shared
     @State private var shortcutResetToken = UUID()
     @State private var topBlurOpacity: Double = 0
     @State private var topBlurBaselineOffset: CGFloat?
@@ -7532,6 +7537,8 @@ private enum SettingsSidebarSection: String, CaseIterable, Identifiable {
         switch navigationTarget {
         case .notifications:
             return .notifications
+        case .wechat:
+            return .automation
         case .browser, .browserImport:
             return .browser
         case .keyboardShortcuts:
