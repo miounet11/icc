@@ -20,6 +20,7 @@ export function SiteHeader({
   descriptor = siteConfig.descriptor,
   nav,
   downloadLabel = "Download for macOS",
+  links,
 }: {
   section?: string;
   hideLogo?: boolean;
@@ -35,8 +36,13 @@ export function SiteHeader({
     toggleTheme: string;
     openMenu: string;
     closeMenu: string;
-  };
+    };
   downloadLabel?: string;
+  links?: Array<{
+    href: string;
+    label: string;
+    external?: boolean;
+  }>;
 }) {
   const { open, toggle, close, drawerRef, buttonRef } = useMobileDrawer();
   const labels = nav ?? {
@@ -50,6 +56,12 @@ export function SiteHeader({
     closeMenu: "Close menu",
   };
   const resolvedHomeHref = homeHref ?? getLocalizedHomePath(locale);
+  const navLinks = links ?? [
+    { href: "#capabilities", label: labels.capabilities },
+    { href: "#workflow", label: labels.workflow },
+    { href: "#faq", label: labels.faq },
+    { href: siteConfig.repoUrl, label: labels.github, external: true },
+  ];
 
   return (
     <>
@@ -88,23 +100,17 @@ export function SiteHeader({
 
           {/* Center: nav links */}
           <nav className="hidden md:flex items-center justify-center gap-5 text-sm text-muted shrink-0">
-            <a href="#capabilities" className="hover:text-foreground transition-colors">
-              {labels.capabilities}
-            </a>
-            <a href="#workflow" className="hover:text-foreground transition-colors">
-              {labels.workflow}
-            </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">
-              {labels.faq}
-            </a>
-            <a
-              href={siteConfig.repoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              {labels.github}
-            </a>
+            {navLinks.map((link) => (
+              <a
+                key={`${link.href}-${link.label}`}
+                href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </nav>
 
           {/* Right: GitHub stars + Download + theme + mobile */}
@@ -162,24 +168,18 @@ export function SiteHeader({
         </div>
 
         <div className="flex flex-col gap-3 text-sm text-muted px-4 pb-4">
-          <a href="#capabilities" onClick={close} className="hover:text-foreground transition-colors py-1">
-            {labels.capabilities}
-          </a>
-          <a href="#workflow" onClick={close} className="hover:text-foreground transition-colors py-1">
-            {labels.workflow}
-          </a>
-          <a href="#faq" onClick={close} className="hover:text-foreground transition-colors py-1">
-            {labels.faq}
-          </a>
-          <a
-            href={siteConfig.repoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={close}
-            className="hover:text-foreground transition-colors py-1"
-          >
-            {labels.github}
-          </a>
+          {navLinks.map((link) => (
+            <a
+              key={`${link.href}-${link.label}`}
+              href={link.href}
+              target={link.external ? "_blank" : undefined}
+              rel={link.external ? "noopener noreferrer" : undefined}
+              onClick={close}
+              className="hover:text-foreground transition-colors py-1"
+            >
+              {link.label}
+            </a>
+          ))}
           <div className="pt-1">
             <LanguageSwitcher currentLocale={locale} label={labels.language} />
           </div>

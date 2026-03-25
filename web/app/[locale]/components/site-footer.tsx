@@ -19,6 +19,7 @@ export function SiteFooter({
     copyright: "© {year} icc. One cockpit for terminal-first AI execution.",
   },
   languageLabel = "Language",
+  exploreLinks,
 }: {
   locale?: string;
   descriptor?: string;
@@ -36,8 +37,18 @@ export function SiteFooter({
     copyright: string;
   };
   languageLabel?: string;
+  exploreLinks?: Array<{
+    href: string;
+    label: string;
+    external?: boolean;
+  }>;
 }) {
   const year = new Date().getFullYear();
+  const resolvedExploreLinks = exploreLinks ?? [
+    { href: "#capabilities", label: labels.capabilities },
+    { href: "#workflow", label: labels.workflow },
+    { href: "#faq", label: labels.faq },
+  ];
 
   return (
     <footer className="mt-24 border-t border-border/70">
@@ -65,9 +76,17 @@ export function SiteFooter({
               {labels.explore}
             </div>
             <div className="space-y-2 text-sm text-muted">
-              <a href="#capabilities" className="block hover:text-foreground transition-colors">{labels.capabilities}</a>
-              <a href="#workflow" className="block hover:text-foreground transition-colors">{labels.workflow}</a>
-              <a href="#faq" className="block hover:text-foreground transition-colors">{labels.faq}</a>
+              {resolvedExploreLinks.map((link) => (
+                <a
+                  key={`${link.href}-${link.label}`}
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                  className="block hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
             </div>
           </div>
 

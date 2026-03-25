@@ -3,11 +3,29 @@ import { GitHubButton } from "./[locale]/components/github-button";
 import { SiteFooter } from "./[locale]/components/site-footer";
 import { SiteHeader } from "./[locale]/components/site-header";
 import { getLocalizedHomePath, getMarketingCopy } from "./marketing-copy";
+import { getLocalizedProductPath, getProductPagesCopy } from "./product-pages-copy";
 import { siteConfig } from "./site-config";
 
 export default function MarketingHome({ locale = "en" }: { locale?: string }) {
   const copy = getMarketingCopy(locale);
+  const productCopy = getProductPagesCopy(locale);
   const homeHref = getLocalizedHomePath(locale);
+  const guideHref = getLocalizedProductPath(locale, "guide");
+  const changelogHref = getLocalizedProductPath(locale, "changelog");
+  const homeHeaderLinks = [
+    { href: "#capabilities", label: copy.header.capabilities },
+    { href: guideHref, label: productCopy.nav.guide },
+    { href: changelogHref, label: productCopy.nav.changelog },
+    { href: "#faq", label: copy.header.faq },
+    { href: siteConfig.repoUrl, label: copy.header.github, external: true },
+  ];
+  const footerExploreLinks = [
+    { href: "#capabilities", label: copy.footer.capabilities },
+    { href: "#workflow", label: copy.footer.workflow },
+    { href: guideHref, label: productCopy.nav.guide },
+    { href: changelogHref, label: productCopy.nav.changelog },
+    { href: "#faq", label: copy.footer.faq },
+  ];
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(35,93,255,0.14),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(249,115,22,0.14),_transparent_34%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(245,243,238,0.96))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_36%),radial-gradient(circle_at_top_right,_rgba(249,115,22,0.14),_transparent_28%),linear-gradient(180deg,_rgba(9,14,26,1),_rgba(7,10,20,1))]">
@@ -17,6 +35,7 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
         descriptor={copy.descriptor}
         nav={copy.header}
         downloadLabel={copy.buttons.download}
+        links={homeHeaderLinks}
       />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-10 pt-12 md:pt-16">
@@ -190,6 +209,46 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
           </div>
         </section>
 
+        <section className="space-y-6">
+          <div className="max-w-2xl space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">{productCopy.resources.eyebrow}</div>
+            <h2 className="text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-4xl">
+              {productCopy.resources.title}
+            </h2>
+            <p className="text-base leading-7 text-muted">{productCopy.resources.body}</p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {[
+              {
+                href: guideHref,
+                title: productCopy.resources.guide.title,
+                body: productCopy.resources.guide.body,
+                cta: productCopy.resources.guide.cta,
+              },
+              {
+                href: changelogHref,
+                title: productCopy.resources.changelog.title,
+                body: productCopy.resources.changelog.body,
+                cta: productCopy.resources.changelog.cta,
+              },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="group rounded-[28px] border border-border/70 bg-background/84 p-7 shadow-[0_18px_60px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5"
+              >
+                <div className="text-lg font-semibold tracking-tight text-foreground">{item.title}</div>
+                <p className="mt-3 text-sm leading-7 text-muted">{item.body}</p>
+                <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground">
+                  {item.cta}
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
         <section id="faq" className="space-y-6">
           <div className="max-w-2xl space-y-3">
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">{copy.faq.eyebrow}</div>
@@ -235,6 +294,7 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
         descriptor={copy.descriptor}
         labels={copy.footer}
         languageLabel={copy.header.language}
+        exploreLinks={footerExploreLinks}
       />
     </div>
   );
