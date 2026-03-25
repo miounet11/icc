@@ -1,6 +1,9 @@
 import type { Locale } from "../i18n/routing";
 import { siteConfig } from "./site-config";
 
+export const marketingLocales = ["en", "zh-CN", "zh-TW", "ja"] as const;
+export type MarketingLocale = (typeof marketingLocales)[number];
+
 type SummaryCard = {
   label: string;
   title: string;

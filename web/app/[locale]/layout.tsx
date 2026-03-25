@@ -6,7 +6,7 @@ import {
 } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "../../i18n/routing";
-import { getLocalizedHomePath, getMarketingCopy } from "../marketing-copy";
+import { getLocalizedHomePath, getMarketingCopy, marketingLocales } from "../marketing-copy";
 import { siteConfig } from "../site-config";
 
 export async function generateMetadata({
@@ -19,7 +19,7 @@ export async function generateMetadata({
   const url = path === "/" ? siteConfig.canonicalUrl : `${siteConfig.canonicalUrl}${path}`;
   const copy = getMarketingCopy(locale);
   const alternates = Object.fromEntries(
-    routing.locales.map((item) => [
+    marketingLocales.map((item) => [
       item,
       item === "en" ? siteConfig.canonicalUrl : `${siteConfig.canonicalUrl}/${item}`,
     ]),

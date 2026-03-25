@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { locales } from "../i18n/routing";
+import { marketingLocales } from "./marketing-copy";
 import { siteConfig } from "./site-config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
   const alternates: Record<string, string> = {};
-  for (const locale of locales) {
+  for (const locale of marketingLocales) {
     alternates[locale] = locale === "en" ? base : `${base}/${locale}`;
   }
   alternates["x-default"] = base;

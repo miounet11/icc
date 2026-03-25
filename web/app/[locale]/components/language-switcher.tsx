@@ -1,12 +1,13 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { locales, localeNames, type Locale } from "../../../i18n/routing";
+import { localeNames, type Locale } from "../../../i18n/routing";
+import { marketingLocales } from "../../marketing-copy";
 
 function localizePathname(pathname: string, nextLocale: Locale): string {
   const segments = pathname.split("/").filter(Boolean);
   const maybeLocale = segments[0];
-  const hasLocale = locales.includes(maybeLocale as Locale);
+  const hasLocale = marketingLocales.includes(maybeLocale as (typeof marketingLocales)[number]);
   const rest = hasLocale ? segments.slice(1) : segments;
   const nextSegments = nextLocale === "en" ? rest : [nextLocale, ...rest];
 
@@ -20,7 +21,9 @@ export function LanguageSwitcher({
   currentLocale?: string;
   label?: string;
 }) {
-  const locale = locales.includes(currentLocale as Locale) ? (currentLocale as Locale) : "en";
+  const locale = marketingLocales.includes(currentLocale as (typeof marketingLocales)[number])
+    ? (currentLocale as Locale)
+    : "en";
   const router = useRouter();
   const pathname = usePathname();
 
@@ -56,7 +59,7 @@ export function LanguageSwitcher({
         className="text-xs text-muted bg-transparent border-none cursor-pointer hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         aria-label={label}
       >
-        {locales.map((loc) => (
+        {marketingLocales.map((loc) => (
           <option key={loc} value={loc}>
             {localeNames[loc]}
           </option>
