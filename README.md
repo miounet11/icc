@@ -2,7 +2,7 @@
 
 > AI Command Center for macOS
 
-`icc` is a native macOS command center for AI work. It combines Ghostty-grade terminal rendering, local and remote explorers, in-app file editing, browser-assisted execution, and a supervisor layer that can prepare plans, monitor progress, and coordinate active workspaces.
+`icc` is a native macOS command center for serious AI work. It brings Ghostty-grade terminal rendering, local and remote explorers, in-app file editing, browser-assisted execution, and a supervisor layer into one focused workspace so you can move from idea to execution without losing context.
 
 Repository: <https://github.com/miounet11/icc>
 
@@ -10,11 +10,23 @@ Language docs: English | [简体中文](README.zh-CN.md) | [繁體中文](README
 
 Brand guide: [docs/brand-guidelines.md](docs/brand-guidelines.md)
 
-## Brand promise
+## Why icc lands differently
 
-- Keep terminals, files, remote hosts, and browser-assisted execution inside one native macOS workspace.
-- Help a user reach a workable plan after only a few turns, not after a long setup phase.
-- Preserve Ghostty-level terminal quality while adding operational context that a plain terminal does not provide.
+- One cockpit for terminal execution, files, remote hosts, browser workflows, and supervision.
+- Native macOS feel, low-latency rendering, and a layout built for long working sessions.
+- Fast path from a few user turns to a real execution plan instead of another setup ritual.
+- Stronger operational visibility than a plain terminal, without giving up terminal-first speed.
+
+## What people notice first
+
+- The terminal stays first-class.
+- Files and remote hosts stay visible beside the active conversation.
+- The supervisor can turn fragmented context into a concrete next move.
+- Local work and remote work use the same mental model.
+
+## Positioning
+
+`icc` is for operators, founders, engineers, and power users who are already running multiple tools to get AI-assisted work done and want one sharper control surface instead of more window sprawl.
 
 ## What icc ships today
 
@@ -75,6 +87,13 @@ Build and launch the release app:
 4. Connect to a host, then browse and edit remote files in the right-side panel.
 5. Open Settings and configure Automation if you want supervisor and LLM-assisted orchestration.
 6. Install the bundled CLI into `PATH` from the in-app shell command action if you want `icc` commands in Terminal.
+
+## Why teams evaluate icc
+
+- Replace the usual split between terminal app, SFTP client, scratch notes, and remote SSH helper with one workspace.
+- Keep execution context visible while an agent or operator is working.
+- Reduce friction when moving between local repos, remote machines, and browser-backed flows.
+- Give every active workspace a control layer that can summarize status and propose the next action.
 
 ## CLI notes
 

@@ -28,6 +28,18 @@ The product promise is simple:
 - keep project context visible while working
 - handle local and remote work from one workspace
 
+## Desired impression
+
+User-facing copy should make `icc` feel:
+
+- fast
+- serious
+- premium
+- operator-focused
+- capable of handling dense, real work
+
+The emotional target is not playful experimentation. It is confidence, control, and momentum.
+
 ## Messaging pillars
 
 When describing `icc`, emphasize these ideas:
@@ -50,6 +62,28 @@ When describing `icc`, emphasize these ideas:
 - Emphasize speed, visibility, control, and execution.
 - Avoid describing `icc` as only a terminal emulator or only a Ghostty fork.
 - Avoid mixing old and new product names in the same user-facing paragraph unless the paragraph is explicitly about migration or compatibility.
+
+## Approved marketing language
+
+These phrases are safe to reuse when they fit the context:
+
+- AI Command Center for macOS
+- one cockpit for AI execution
+- terminal-first command center
+- native workspace for serious AI work
+- local and remote execution in one control surface
+- built for operators, builders, and power users
+- move from intent to execution without losing context
+
+Avoid empty hype such as:
+
+- revolutionary
+- magical
+- world-changing
+- perfect
+- fully autonomous
+
+The product can sound strong without sounding fake.
 
 ## Release and documentation checklist
 
