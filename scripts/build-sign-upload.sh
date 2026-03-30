@@ -48,6 +48,8 @@ if [[ $# -ne 1 ]]; then
 fi
 
 TAG="$1"
+VERSION="$(icc_release_version "$TAG")"
+ICC_RELEASE_DMG_NAME="$(icc_release_dmg_name "$VERSION")"
 SIGN_HASH="A050CC7E193C8221BDBA204E731B046CDCCC1B30"
 ENTITLEMENTS="cmux.entitlements"
 APP_PATH="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}"
@@ -175,7 +177,7 @@ cask "icc" do
   version "${VERSION}"
   sha256 "${DMG_SHA256}"
 
-  url "https://github.com/miounet11/icc/releases/download/v#{version}/icc-macos.dmg"
+  url "https://github.com/miounet11/icc/releases/download/v#{version}/icc-v#{version}-macos.dmg"
   name "icc"
   desc "Native macOS terminal workspace app for AI execution"
   homepage "https://github.com/miounet11/icc"

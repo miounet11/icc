@@ -1,6 +1,10 @@
+const version = "v1.0.4";
+const releaseDmgName = `icc-${version}-macos.dmg`;
+
 export const siteConfig = {
   name: "icc",
-  version: "v1.0.4",
+  version,
+  releaseDmgName,
   descriptor: "AI Command Center for macOS",
   title: "icc",
   tagline: "One cockpit for terminal-first AI execution.",
@@ -10,7 +14,7 @@ export const siteConfig = {
   domain: "www.iccjk.com",
   repoUrl: "https://github.com/miounet11/icc",
   releasesUrl: "https://www.iccjk.com/changelog",
-  downloadUrl: "https://www.iccjk.com/downloads/icc-macos.dmg",
+  downloadUrl: `https://www.iccjk.com/downloads/archive/${version}/${releaseDmgName}`,
   appcastUrl: "https://www.iccjk.com/downloads/appcast.xml",
   latestManifestUrl: "https://www.iccjk.com/downloads/latest.json",
   remoteManifestUrl: "https://www.iccjk.com/downloads/remote/cmuxd-remote-manifest.json",

@@ -51,17 +51,18 @@ Compatibility note:
 
 Stable release assets:
 
-- `icc-macos.dmg`
+- `icc-v1.0.4-macos.dmg`
 - `appcast.xml`
 - `latest.json`
 
 Website-hosted archive copies:
 
-- `downloads/archive/v1.0.4/icc-macos.dmg`
+- `downloads/archive/v1.0.4/icc-v1.0.4-macos.dmg`
 - `downloads/archive/v1.0.4/appcast.xml`
 
 Website-hosted latest aliases:
 
+- `downloads/icc-v1.0.4-macos.dmg`
 - `downloads/icc-macos.dmg`
 - `downloads/appcast.xml`
 - `downloads/latest.json`
@@ -91,9 +92,10 @@ Nightly release assets:
 2. Keep `CURRENT_PROJECT_VERSION` increasing even if the marketing version resets for branding reasons.
 3. Build the signed and notarized macOS app, then generate `appcast.xml` with the matching Sparkle private key.
 4. Stage the DMG, appcast, release manifest, and remote helper assets into `web/public/downloads` or the production site's `public/downloads` directory.
-5. Deploy the website so `iccjk.com` serves the new DMG, `appcast.xml`, `latest.json`, and remote helper manifest.
-6. Push the branch to `miounet11/icc`.
-7. Create and push a tag such as `v1.0.4` after the website-hosted artifacts have been verified.
+5. Push the staged `web/public/downloads` update onto `main` so the website deployment picks up the same release state as the tag build.
+6. Deploy the website so `iccjk.com` serves the new DMG, `appcast.xml`, `latest.json`, and remote helper manifest.
+7. Push the branch to `miounet11/icc`.
+8. Create and push a tag such as `v1.0.4` after the website-hosted artifacts have been verified.
 
 ## Important migration note
 

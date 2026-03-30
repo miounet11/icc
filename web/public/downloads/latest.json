@@ -3,12 +3,12 @@
   "downloads": {
     "macos": {
       "appcastUrl": "https://www.iccjk.com/downloads/appcast.xml",
-      "archiveUrl": "https://www.iccjk.com/downloads/archive/v0.0.1/icc-macos.dmg",
+      "archiveUrl": "https://www.iccjk.com/downloads/archive/v0.0.1/icc-v0.0.1-macos.dmg",
       "artifactType": "dmg",
       "bundleId": "com.icc.app",
       "sha256": "08ced3720b9aac50b962c5a1043256df330ad0818fbaf29ddc21d2b5cbd5ac64",
       "size": 48838855,
-      "url": "https://www.iccjk.com/downloads/icc-macos.dmg"
+      "url": "https://www.iccjk.com/downloads/icc-v0.0.1-macos.dmg"
     },
     "windows": {
       "available": false,

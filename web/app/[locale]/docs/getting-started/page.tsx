@@ -31,7 +31,7 @@ export default function GettingStartedPage() {
       <p>{t("dmgDesc")}</p>
 
       <p>{t("updateLater")}</p>
-      <CodeBlock lang="bash">{`curl -L -o ~/Downloads/icc-macos.dmg ${siteConfig.downloadUrl}`}</CodeBlock>
+      <CodeBlock lang="bash">{`curl -L -o ~/Downloads/${siteConfig.releaseDmgName} ${siteConfig.downloadUrl}`}</CodeBlock>
 
       <Callout>
         {t.rich("firstLaunchCallout", {

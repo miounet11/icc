@@ -17,7 +17,6 @@ permissions:
 
 env:
   ICC_HOMEBREW_TAP_REPOSITORY: ""
-  ICC_RELEASE_DMG_NAME: icc-macos.dmg
   ICC_REPO_URL: https://github.com/miounet11/icc
 
 jobs:
@@ -53,6 +52,7 @@ jobs:
           fi
           echo "skip=false" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "dmg_name=icc-v${VERSION}-macos.dmg" >> $GITHUB_OUTPUT
           echo "Updating homebrew cask to version $VERSION"
 
       - name: Download DMG and get SHA256
@@ -60,7 +60,8 @@ jobs:
         if: steps.version.outputs.skip != 'true' && env.ICC_HOMEBREW_TAP_REPOSITORY != ''
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          URL="${ICC_REPO_URL}/releases/download/v${VERSION}/${ICC_RELEASE_DMG_NAME}"
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          URL="${ICC_REPO_URL}/releases/download/v${VERSION}/${DMG_NAME}"
           MAX_RETRIES=5
           for i in $(seq 1 $MAX_RETRIES); do
             HTTP_CODE=$(curl -sL -w '%{http_code}' "$URL" -o icc.dmg)
@@ -99,7 +100,7 @@ jobs:
             version "${VERSION}"
             sha256 "${SHA256}"
 
-            url "https://github.com/miounet11/icc/releases/download/v#{version}/icc-macos.dmg"
+            url "https://github.com/miounet11/icc/releases/download/v#{version}/icc-v#{version}-macos.dmg"
             name "icc"
             desc "Native macOS terminal workspace app for AI execution"
             homepage "https://github.com/miounet11/icc"

@@ -15,6 +15,7 @@ export ICC_CLI_NAME="icc"
 export ICC_HELPER_NAME="ghostty"
 
 export ICC_RELEASE_TAG_PREFIX="v"
+export ICC_RELEASE_DMG_PREFIX="icc"
 export ICC_RELEASE_DMG_NAME="icc-macos.dmg"
 export ICC_NIGHTLY_DMG_NAME="icc-nightly-macos.dmg"
 export ICC_NIGHTLY_APP_NAME="icc NIGHTLY"
@@ -43,3 +44,21 @@ export ICC_REMOTE_DAEMON_REPO="${ICC_REPO_SLUG}"
 
 # Homebrew tap is optional for now. Keep empty to disable automation.
 export ICC_HOMEBREW_TAP_REPOSITORY=""
+
+icc_release_version() {
+  local value="${1:-}"
+  value="${value#${ICC_RELEASE_TAG_PREFIX}}"
+  printf '%s\n' "$value"
+}
+
+icc_release_tag() {
+  local version
+  version="$(icc_release_version "${1:-}")"
+  printf '%s%s\n' "$ICC_RELEASE_TAG_PREFIX" "$version"
+}
+
+icc_release_dmg_name() {
+  local version
+  version="$(icc_release_version "${1:-}")"
+  printf '%s-v%s-macos.dmg\n' "$ICC_RELEASE_DMG_PREFIX" "$version"
+}

@@ -47,10 +47,11 @@ ${siteConfig.remoteManifestUrl}`}</CodeBlock>
       </ol>
 
       <h2>{t("artifactsTitle")}</h2>
-      <CodeBlock lang="text">{`downloads/icc-macos.dmg
+      <CodeBlock lang="text">{`downloads/${siteConfig.releaseDmgName}
+downloads/icc-macos.dmg
 downloads/appcast.xml
 downloads/latest.json
-downloads/archive/v1.0.4/icc-macos.dmg
+downloads/archive/v1.0.4/${siteConfig.releaseDmgName}
 downloads/archive/v1.0.4/appcast.xml
 downloads/remote/cmuxd-remote-manifest.json`}</CodeBlock>
 

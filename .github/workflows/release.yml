@@ -22,11 +22,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          fetch-depth: 0
           submodules: recursive
 
       - name: Load release config
         run: |
           source ./scripts/release-config.sh
+          if [[ "$GITHUB_REF_NAME" == v* ]]; then
+            ICC_RELEASE_DMG_NAME="$(icc_release_dmg_name "$GITHUB_REF_NAME")"
+          fi
           {
             echo "ICC_REPO_SLUG=$ICC_REPO_SLUG"
             echo "ICC_APP_BUNDLE_NAME=$ICC_APP_BUNDLE_NAME"
@@ -42,8 +46,9 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const { evaluateReleaseAssetGuard } = require('./scripts/release_asset_guard');
+            const { evaluateReleaseAssetGuard, immutableReleaseAssetsForTag } = require('./scripts/release_asset_guard');
             const tag = context.ref.replace('refs/tags/', '');
+            const immutableAssetNames = immutableReleaseAssetsForTag(tag);
             core.setOutput('skip_all', 'false');
             core.setOutput('skip_upload', 'false');
             core.setOutput('release_state', 'clear');
@@ -60,7 +65,7 @@ jobs:
                 guardState,
                 hasPartialConflict,
                 shouldSkipBuildAndUpload,
-              } = evaluateReleaseAssetGuard({ existingAssetNames });
+              } = evaluateReleaseAssetGuard({ existingAssetNames, immutableAssetNames });
 
               core.setOutput('release_state', guardState);
 
@@ -329,6 +334,45 @@ jobs:
           fi
           ./scripts/sparkle_generate_appcast.sh "$ICC_RELEASE_DMG_NAME" "$GITHUB_REF_NAME" "$ICC_STABLE_APPCAST_NAME"
 
+      - name: Stage website release assets
+        if: steps.guard_release_assets.outputs.skip_all != 'true'
+        run: |
+          set -euo pipefail
+          APP_PLIST="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}/Contents/Info.plist"
+          APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_PLIST")
+          rm -rf website-release-assets
+          mkdir -p website-release-assets
+          ./scripts/stage-website-release-assets.sh \
+            --tag "$GITHUB_REF_NAME" \
+            --version "$APP_VERSION" \
+            --dmg "$ICC_RELEASE_DMG_NAME" \
+            --appcast "$ICC_STABLE_APPCAST_NAME" \
+            --output-dir website-release-assets/downloads \
+            --remote-assets-dir remote-daemon-assets
+
+      - name: Sync website release assets to main
+        if: steps.guard_release_assets.outputs.skip_all != 'true'
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          SYNC_DIR="$(mktemp -d)"
+          cleanup() {
+            git worktree remove --force "$SYNC_DIR" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          git worktree add --detach "$SYNC_DIR" origin/main
+          rsync -a --delete website-release-assets/downloads/ "$SYNC_DIR/web/public/downloads/"
+          cd "$SYNC_DIR"
+          if git diff --quiet -- web/public/downloads; then
+            echo "Website release assets already match main"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add web/public/downloads
+          git commit -m "Stage website release assets for $GITHUB_REF_NAME"
+          git push origin HEAD:main
+
       - name: Attest remote daemon release assets
         if: steps.guard_release_assets.outputs.skip_all != 'true'
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
@@ -346,7 +390,7 @@ jobs:
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           files: |
-            icc-macos.dmg
+            ${{ env.ICC_RELEASE_DMG_NAME }}
             appcast.xml
             remote-daemon-assets/cmuxd-remote-darwin-arm64
             remote-daemon-assets/cmuxd-remote-darwin-amd64

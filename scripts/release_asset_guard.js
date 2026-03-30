@@ -1,7 +1,7 @@
 "use strict";
 
-const IMMUTABLE_RELEASE_ASSETS = [
-  "icc-macos.dmg",
+const DEFAULT_IMMUTABLE_RELEASE_ASSETS = [
+  "icc-v0.0.1-macos.dmg",
   "appcast.xml",
   "cmuxd-remote-darwin-arm64",
   "cmuxd-remote-darwin-amd64",
@@ -16,8 +16,20 @@ const RELEASE_ASSET_GUARD_STATE = Object.freeze({
   COMPLETE: "complete",
 });
 
-function evaluateReleaseAssetGuard({ existingAssetNames, immutableAssetNames = IMMUTABLE_RELEASE_ASSETS }) {
-  const immutableAssets = immutableAssetNames || IMMUTABLE_RELEASE_ASSETS;
+function releaseDmgNameForTag(tagName) {
+  const version = String(tagName || "").replace(/^v/, "");
+  return `icc-v${version}-macos.dmg`;
+}
+
+function immutableReleaseAssetsForTag(tagName) {
+  return [
+    releaseDmgNameForTag(tagName),
+    ...DEFAULT_IMMUTABLE_RELEASE_ASSETS.filter((assetName) => !assetName.endsWith(".dmg")),
+  ];
+}
+
+function evaluateReleaseAssetGuard({ existingAssetNames, immutableAssetNames = DEFAULT_IMMUTABLE_RELEASE_ASSETS }) {
+  const immutableAssets = immutableAssetNames || DEFAULT_IMMUTABLE_RELEASE_ASSETS;
   const existing = new Set(existingAssetNames || []);
   const conflicts = immutableAssets.filter((assetName) => existing.has(assetName));
   const missingImmutableAssets = immutableAssets.filter((assetName) => !existing.has(assetName));
@@ -40,7 +52,9 @@ function evaluateReleaseAssetGuard({ existingAssetNames, immutableAssetNames = I
 }
 
 module.exports = {
-  IMMUTABLE_RELEASE_ASSETS,
+  IMMUTABLE_RELEASE_ASSETS: DEFAULT_IMMUTABLE_RELEASE_ASSETS,
   RELEASE_ASSET_GUARD_STATE,
+  immutableReleaseAssetsForTag,
+  releaseDmgNameForTag,
   evaluateReleaseAssetGuard,
 };

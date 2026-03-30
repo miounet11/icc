@@ -90,7 +90,9 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
-LATEST_DMG_PATH="${OUTPUT_DIR}/icc-macos.dmg"
+VERSIONED_DMG_NAME="$(source "$(cd "$(dirname "$0")" && pwd)/release-config.sh"; icc_release_dmg_name "$VERSION")"
+LATEST_DMG_PATH="${OUTPUT_DIR}/${VERSIONED_DMG_NAME}"
+LEGACY_DMG_PATH="${OUTPUT_DIR}/icc-macos.dmg"
 LATEST_APPCAST_PATH="${OUTPUT_DIR}/appcast.xml"
 LATEST_MANIFEST_PATH="${OUTPUT_DIR}/latest.json"
 ARCHIVE_DIR="${OUTPUT_DIR}/archive/${TAG}"
@@ -100,8 +102,9 @@ REMOTE_MANIFEST_PATH="${REMOTE_LATEST_DIR}/cmuxd-remote-manifest.json"
 
 mkdir -p "$ARCHIVE_DIR" "$REMOTE_LATEST_DIR"
 cp "$DMG_PATH" "$LATEST_DMG_PATH"
+cp "$DMG_PATH" "$LEGACY_DMG_PATH"
 cp "$APPCAST_PATH" "$LATEST_APPCAST_PATH"
-cp "$DMG_PATH" "${ARCHIVE_DIR}/icc-macos.dmg"
+cp "$DMG_PATH" "${ARCHIVE_DIR}/${VERSIONED_DMG_NAME}"
 cp "$APPCAST_PATH" "${ARCHIVE_DIR}/appcast.xml"
 
 if [[ -n "$REMOTE_ASSETS_DIR" ]]; then
@@ -143,12 +146,12 @@ Path(manifest_path).write_text(json.dumps(manifest, indent=2, sort_keys=True) + 
 PY
 fi
 
-python3 - <<'PY' "$LATEST_MANIFEST_PATH" "$TAG" "$VERSION" "$PUBLISHED_AT" "$BASE_URL" "$NOTES_URL" "$DMG_SHA256" "$DMG_SIZE" "$REMOTE_ASSETS_DIR"
+python3 - <<'PY' "$LATEST_MANIFEST_PATH" "$TAG" "$VERSION" "$PUBLISHED_AT" "$BASE_URL" "$NOTES_URL" "$DMG_SHA256" "$DMG_SIZE" "$REMOTE_ASSETS_DIR" "$VERSIONED_DMG_NAME"
 import json
 import sys
 from pathlib import Path
 
-manifest_path, tag, version, published_at, base_url, notes_url, dmg_sha256, dmg_size, remote_assets_dir = sys.argv[1:]
+manifest_path, tag, version, published_at, base_url, notes_url, dmg_sha256, dmg_size, remote_assets_dir, dmg_name = sys.argv[1:]
 manifest = {
     "schemaVersion": 1,
     "product": "icc",
@@ -161,8 +164,8 @@ manifest = {
         "macos": {
             "bundleId": "com.icc.app",
             "artifactType": "dmg",
-            "url": f"{base_url}/icc-macos.dmg",
-            "archiveUrl": f"{base_url}/archive/{tag}/icc-macos.dmg",
+            "url": f"{base_url}/{dmg_name}",
+            "archiveUrl": f"{base_url}/archive/{tag}/{dmg_name}",
             "appcastUrl": f"{base_url}/appcast.xml",
             "sha256": dmg_sha256,
             "size": int(dmg_size),
