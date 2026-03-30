@@ -7,7 +7,7 @@ Historical note:
 - This codebase originated from `cmux`, and older entries intentionally retain legacy names, issue numbers, PR links, and internal binary identifiers where that history still matters.
 - The current product being released from this repository is `icc`.
 
-## [1.0.3] - 2026-03-30
+## [1.0.4] - 2026-03-30
 
 ### Added
 - Quick settings import shortcuts for VS Code, Cursor, Claude Code, and Codex so users can move into `icc` faster without rebuilding their terminal preferences by hand.
@@ -26,6 +26,7 @@ Historical note:
 - The right sidebar collapse control now renders a visible icon again.
 - The sidebar now exposes a footer settings entry so users can reach automation and app preferences more directly.
 - English submit behavior in the native feedback/conversation composer now uses `Return` to send and keeps `Shift+Return` for newline insertion, while preserving IME composition behavior.
+- Updater compatibility handling for older installs now detects disk-image, app-translocation, and non-Applications launch paths before Sparkle fails, and shows a direct recovery message with the current app path.
 
 ## [0.62.2] - 2026-03-14
 

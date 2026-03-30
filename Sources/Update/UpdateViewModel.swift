@@ -210,6 +210,9 @@ class UpdateViewModel: ObservableObject {
     }
 
     static func userFacingErrorTitle(for error: Swift.Error) -> String {
+        if error is UpdateCompatibilityError {
+            return String(localized: "update.error.appLocation.title", defaultValue: "App Location Issue")
+        }
         let nsError = error as NSError
         if let networkError = networkError(from: nsError) {
             switch networkError.code {
@@ -257,6 +260,16 @@ class UpdateViewModel: ObservableObject {
     }
 
     static func userFacingErrorMessage(for error: Swift.Error) -> String {
+        if let compatibilityError = error as? UpdateCompatibilityError {
+            switch compatibilityError {
+            case .runningFromDiskImage:
+                return String(localized: "update.error.runningFromDiskImage.message", defaultValue: "icc is running from a mounted disk image. Drag icc into Applications, relaunch that installed copy, and try again.")
+            case .runningTranslocated:
+                return String(localized: "update.error.runningTranslocated.message", defaultValue: "macOS is running icc from a translocated quarantine location. Move icc into Applications, relaunch it from there, and try again.")
+            case .unsupportedInstallLocation:
+                return String(localized: "update.error.unsupportedInstallLocation.message", defaultValue: "icc must be installed in /Applications or ~/Applications for updates to work reliably. Move it there, relaunch, and try again.")
+            }
+        }
         let nsError = error as NSError
         if let networkError = networkError(from: nsError) {
             switch networkError.code {

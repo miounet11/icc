@@ -4,6 +4,36 @@ import Combine
 import ObjectiveC.runtime
 import SwiftUI
 
+enum UpdateCompatibilityError: LocalizedError {
+    case runningFromDiskImage(path: String)
+    case runningTranslocated(path: String)
+    case unsupportedInstallLocation(path: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .runningFromDiskImage:
+            return "icc is running from a disk image."
+        case .runningTranslocated:
+            return "icc is running from a translocated location."
+        case .unsupportedInstallLocation:
+            return "icc is not installed in Applications."
+        }
+    }
+
+    var failureReason: String? {
+        switch self {
+        case .runningFromDiskImage(let path),
+             .runningTranslocated(let path),
+             .unsupportedInstallLocation(let path):
+            return "Current app path: \(path)"
+        }
+    }
+
+    var recoverySuggestion: String? {
+        "Move icc.app into /Applications or ~/Applications, relaunch that copy, and try the update again."
+    }
+}
+
 enum UpdateSettings {
     static let automaticChecksKey = "SUEnableAutomaticChecks"
     static let automaticallyUpdateKey = "SUAutomaticallyUpdate"
@@ -224,7 +254,43 @@ class UpdateController {
 
     private func requestCheckForUpdates(presentation: UpdateUserInitiatedCheckPresentation) {
         UpdateLogStore.shared.append("checkForUpdates invoked (state=\(viewModel.state.isIdle ? "idle" : "busy"), presentation=\(presentation == .dialog ? "dialog" : "custom"))")
+        if let compatibilityIssue = currentUpdateCompatibilityIssue() {
+            UpdateLogStore.shared.append("update compatibility issue: \(compatibilityIssue.localizedDescription)")
+            viewModel.state = .error(.init(
+                error: compatibilityIssue,
+                retry: { [weak self] in self?.requestCheckForUpdates(presentation: presentation) },
+                dismiss: { [weak self] in self?.viewModel.state = .idle },
+                technicalDetails: Bundle.main.bundleURL.standardizedFileURL.path,
+                feedURLString: userDriver.recordedFeedURLString
+            ))
+            return
+        }
         checkForUpdatesWhenReady(retries: readyRetryCount, presentation: presentation)
+    }
+
+    private func currentUpdateCompatibilityIssue(bundleURL: URL = Bundle.main.bundleURL) -> UpdateCompatibilityError? {
+        let normalizedURL = bundleURL.standardizedFileURL
+        let path = normalizedURL.path
+        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser.path
+        let allowedPrefixes = [
+            "/Applications/",
+            "\(homeDirectory)/Applications/",
+        ]
+
+        if path.contains("/AppTranslocation/") {
+            return .runningTranslocated(path: path)
+        }
+
+        if path.hasPrefix("/Volumes/") {
+            return .runningFromDiskImage(path: path)
+        }
+
+        let isInsideAllowedApplications = allowedPrefixes.contains { path.hasPrefix($0) }
+        if !isInsideAllowedApplications {
+            return .unsupportedInstallLocation(path: path)
+        }
+
+        return nil
     }
 
     private func performCheckForUpdates(presentation: UpdateUserInitiatedCheckPresentation) {

@@ -18,6 +18,10 @@ class UpdateDriver: NSObject, SPUUserDriver {
     private var pendingUserInitiatedCheckPresentation: UpdateUserInitiatedCheckPresentation?
     private var activeUserInitiatedCheckPresentation: UpdateUserInitiatedCheckPresentation?
 
+    var recordedFeedURLString: String? {
+        lastFeedURLString
+    }
+
     init(viewModel: UpdateViewModel, hostBundle: Bundle) {
         self.viewModel = viewModel
         self.standard = SPUStandardUserDriver(hostBundle: hostBundle, delegate: nil)

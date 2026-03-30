@@ -50,8 +50,8 @@ ${siteConfig.remoteManifestUrl}`}</CodeBlock>
       <CodeBlock lang="text">{`downloads/icc-macos.dmg
 downloads/appcast.xml
 downloads/latest.json
-downloads/archive/v1.0.3/icc-macos.dmg
-downloads/archive/v1.0.3/appcast.xml
+downloads/archive/v1.0.4/icc-macos.dmg
+downloads/archive/v1.0.4/appcast.xml
 downloads/remote/cmuxd-remote-manifest.json`}</CodeBlock>
 
       <h2>{t("controlTitle")}</h2>
