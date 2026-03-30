@@ -39,7 +39,7 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
       />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-10 pt-12 md:pt-16">
-        <section className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+        <section className="grid gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/78 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -74,7 +74,7 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative lg:pl-3">
             <div className="absolute inset-0 -translate-x-6 translate-y-6 rounded-[32px] bg-[linear-gradient(135deg,rgba(37,99,235,0.22),rgba(249,115,22,0.14))] blur-3xl" />
             <div className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(250,250,250,0.98),rgba(241,245,249,0.96))] p-5 shadow-[0_30px_120px_rgba(15,23,42,0.18)] dark:border-slate-800/80 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(8,12,22,0.98))]">
               <div className="mb-4 flex items-center justify-between border-b border-border/70 pb-4">
@@ -88,7 +88,7 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-[148px_minmax(0,1fr)_170px]">
+              <div className="grid gap-4 md:grid-cols-[148px_minmax(0,1fr)]">
                 <div className="space-y-3 rounded-3xl border border-border/70 bg-background/88 p-3 dark:bg-white/[0.03]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.preview.rail}</div>
                   {copy.preview.railItems.map((item) => (
@@ -98,37 +98,44 @@ export default function MarketingHome({ locale = "en" }: { locale?: string }) {
                   ))}
                 </div>
 
-                <div className="space-y-3 rounded-3xl border border-border/70 bg-slate-950 p-4 text-slate-200 shadow-inner">
-                  <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                    <span>{copy.preview.terminal}</span>
-                    <span>{copy.preview.ready}</span>
+                <div className="grid gap-4">
+                  <div className="space-y-3 rounded-3xl border border-border/70 bg-slate-950 p-4 text-slate-200 shadow-inner">
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                      <span>{copy.preview.terminal}</span>
+                      <span>{copy.preview.ready}</span>
+                    </div>
+                    <div className="space-y-2 font-mono text-[12px] leading-6">
+                      {copy.preview.lines.map((line, index) => (
+                        <div
+                          key={`${index}-${line}`}
+                          className={index % 2 === 1 ? "text-slate-400" : undefined}
+                        >
+                          {line}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2 font-mono text-[12px] leading-6">
-                    {copy.preview.lines.map((line, index) => (
-                      <div
-                        key={`${index}-${line}`}
-                        className={index % 2 === 1 ? "text-slate-400" : undefined}
-                      >
-                        {line}
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="space-y-3 rounded-3xl border border-border/70 bg-background/88 p-3 dark:bg-white/[0.03]">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.preview.supervisor}</div>
-                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">{copy.preview.status}</div>
-                    <div className="mt-2 text-sm font-semibold">{copy.preview.statusReady}</div>
-                    <div className="mt-1 text-sm leading-6 text-muted">{copy.preview.statusBody}</div>
-                  </div>
-                  <div className="rounded-2xl border border-border/60 p-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-muted">{copy.preview.files}</div>
-                    <div className="mt-2 text-sm leading-6 text-foreground/90">{copy.preview.filesBody}</div>
-                  </div>
-                  <div className="rounded-2xl border border-border/60 p-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-muted">{copy.preview.remote}</div>
-                    <div className="mt-2 text-sm leading-6 text-foreground/90">{copy.preview.remoteBody}</div>
+                  <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
+                    <div className="rounded-3xl border border-border/70 bg-background/88 p-3 dark:bg-white/[0.03]">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.preview.supervisor}</div>
+                      <div className="mt-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3">
+                        <div className="text-xs uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">{copy.preview.status}</div>
+                        <div className="mt-2 text-sm font-semibold">{copy.preview.statusReady}</div>
+                        <div className="mt-1 text-sm leading-6 text-muted">{copy.preview.statusBody}</div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                      <div className="rounded-3xl border border-border/70 bg-background/88 p-3 dark:bg-white/[0.03]">
+                        <div className="text-xs uppercase tracking-[0.18em] text-muted">{copy.preview.files}</div>
+                        <div className="mt-2 text-sm leading-6 text-foreground/90">{copy.preview.filesBody}</div>
+                      </div>
+                      <div className="rounded-3xl border border-border/70 bg-background/88 p-3 dark:bg-white/[0.03]">
+                        <div className="text-xs uppercase tracking-[0.18em] text-muted">{copy.preview.remote}</div>
+                        <div className="mt-2 text-sm leading-6 text-foreground/90">{copy.preview.remoteBody}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

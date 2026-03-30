@@ -222,24 +222,24 @@ struct SwiftTermView: NSViewRepresentable {
         // SwiftTerm uses installColors to set the ANSI color palette
         // Build the color array (16 ANSI colors)
 
-        // Default Monokai Classic palette hex values
+        // Default palette aligned closer to VS Code Dark.
         let defaultPaletteHex: [String] = [
-            "#272822", // 0 - black
-            "#f92672", // 1 - red
-            "#a6e22e", // 2 - green
-            "#e6db74", // 3 - yellow
-            "#fd971f", // 4 - blue (orange in Monokai)
-            "#ae81ff", // 5 - magenta
-            "#66d9ef", // 6 - cyan
-            "#fdfff1", // 7 - white
-            "#6e7066", // 8 - bright black
-            "#f92672", // 9 - bright red
-            "#a6e22e", // 10 - bright green
-            "#e6db74", // 11 - bright yellow
-            "#fd971f", // 12 - bright blue
-            "#ae81ff", // 13 - bright magenta
-            "#66d9ef", // 14 - bright cyan
-            "#fdfff1", // 15 - bright white
+            "#1F1F1F", // 0 - black
+            "#F14C4C", // 1 - red
+            "#23D18B", // 2 - green
+            "#F5F543", // 3 - yellow
+            "#3B8EEA", // 4 - blue
+            "#D670D6", // 5 - magenta
+            "#29B8DB", // 6 - cyan
+            "#CCCCCC", // 7 - white
+            "#666666", // 8 - bright black
+            "#F14C4C", // 9 - bright red
+            "#23D18B", // 10 - bright green
+            "#F5F543", // 11 - bright yellow
+            "#3B8EEA", // 12 - bright blue
+            "#D670D6", // 13 - bright magenta
+            "#29B8DB", // 14 - bright cyan
+            "#FFFFFF", // 15 - bright white
         ]
 
         var colors: [SwiftTerm.Color] = []

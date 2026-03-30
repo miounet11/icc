@@ -18,8 +18,10 @@ if [[ -z "${SPARKLE_PRIVATE_KEY:-}" ]]; then
 fi
 
 SPARKLE_VERSION="${SPARKLE_VERSION:-2.8.1}"
-DOWNLOAD_URL_PREFIX="${DOWNLOAD_URL_PREFIX:-${ICC_REPO_URL}/releases/download/$TAG/}"
+DOWNLOAD_URL_PREFIX="${DOWNLOAD_URL_PREFIX:-${ICC_DOWNLOADS_ARCHIVE_BASE_URL}/$TAG/}"
 RELEASE_NOTES_URL="${RELEASE_NOTES_URL:-${ICC_RELEASE_NOTES_BASE_URL}/$TAG}"
+DEFAULT_LOCAL_SPARKLE_BIN_DIR="${HOME}/Library/Developer/Xcode/DerivedData/GhosttyTabs-eycjkcqwdsptpkapvcdfxosodozb/SourcePackages/artifacts/sparkle/Sparkle/bin"
+SPARKLE_BIN_DIR="${SPARKLE_BIN_DIR:-$DEFAULT_LOCAL_SPARKLE_BIN_DIR}"
 
 work_dir="$(mktemp -d)"
 cleanup() {
@@ -27,29 +29,35 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "Cloning Sparkle ${SPARKLE_VERSION}..."
-git clone --depth 1 --branch "$SPARKLE_VERSION" https://github.com/sparkle-project/Sparkle "$work_dir/Sparkle"
+if [[ -x "${SPARKLE_BIN_DIR}/generate_appcast" && -x "${SPARKLE_BIN_DIR}/sign_update" ]]; then
+  echo "Using local Sparkle binaries from ${SPARKLE_BIN_DIR}"
+  generate_appcast="${SPARKLE_BIN_DIR}/generate_appcast"
+  sign_update="${SPARKLE_BIN_DIR}/sign_update"
+else
+  echo "Cloning Sparkle ${SPARKLE_VERSION}..."
+  git clone --depth 1 --branch "$SPARKLE_VERSION" https://github.com/sparkle-project/Sparkle "$work_dir/Sparkle"
 
-echo "Building Sparkle generate_appcast tool..."
-xcodebuild \
-  -project "$work_dir/Sparkle/Sparkle.xcodeproj" \
-  -scheme generate_appcast \
-  -configuration Release \
-  -derivedDataPath "$work_dir/build" \
-  CODE_SIGNING_ALLOWED=NO \
-  build >/dev/null
+  echo "Building Sparkle generate_appcast tool..."
+  xcodebuild \
+    -project "$work_dir/Sparkle/Sparkle.xcodeproj" \
+    -scheme generate_appcast \
+    -configuration Release \
+    -derivedDataPath "$work_dir/build" \
+    CODE_SIGNING_ALLOWED=NO \
+    build >/dev/null
 
-echo "Building Sparkle sign_update tool..."
-xcodebuild \
-  -project "$work_dir/Sparkle/Sparkle.xcodeproj" \
-  -scheme sign_update \
-  -configuration Release \
-  -derivedDataPath "$work_dir/build" \
-  CODE_SIGNING_ALLOWED=NO \
-  build >/dev/null
+  echo "Building Sparkle sign_update tool..."
+  xcodebuild \
+    -project "$work_dir/Sparkle/Sparkle.xcodeproj" \
+    -scheme sign_update \
+    -configuration Release \
+    -derivedDataPath "$work_dir/build" \
+    CODE_SIGNING_ALLOWED=NO \
+    build >/dev/null
 
-generate_appcast="$work_dir/build/Build/Products/Release/generate_appcast"
-sign_update="$work_dir/build/Build/Products/Release/sign_update"
+  generate_appcast="$work_dir/build/Build/Products/Release/generate_appcast"
+  sign_update="$work_dir/build/Build/Products/Release/sign_update"
+fi
 
 if [[ ! -x "$generate_appcast" ]]; then
   echo "generate_appcast binary not found at $generate_appcast" >&2

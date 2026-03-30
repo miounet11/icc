@@ -21,7 +21,7 @@ Keep all canonical release values there:
 
 Stable Sparkle feed:
 
-- `https://github.com/miounet11/icc/releases/latest/download/appcast.xml`
+- `https://www.iccjk.com/downloads/appcast.xml`
 
 Nightly Sparkle feed:
 
@@ -32,6 +32,7 @@ Nightly Sparkle feed:
 Stable channel:
 
 - `appcast.xml`
+- `latest.json`
 
 Nightly channel:
 
@@ -40,7 +41,7 @@ Nightly channel:
 
 Remote helper manifest:
 
-- `remote-daemon-assets/cmuxd-remote-manifest.json`
+- `https://www.iccjk.com/downloads/remote/cmuxd-remote-manifest.json`
 
 Compatibility note:
 
@@ -52,6 +53,18 @@ Stable release assets:
 
 - `icc-macos.dmg`
 - `appcast.xml`
+- `latest.json`
+
+Website-hosted archive copies:
+
+- `downloads/archive/v0.1.0/icc-macos.dmg`
+- `downloads/archive/v0.1.0/appcast.xml`
+
+Website-hosted latest aliases:
+
+- `downloads/icc-macos.dmg`
+- `downloads/appcast.xml`
+- `downloads/latest.json`
 
 Nightly release assets:
 
@@ -62,23 +75,25 @@ Nightly release assets:
 
 ## Version rules
 
-- Marketing version uses semantic versioning, for example `0.0.1`.
-- Git tags must use the `v` prefix, for example `v0.0.1`.
+- Marketing version uses semantic versioning, for example `0.1.0`.
+- Git tags must use the `v` prefix, for example `v0.1.0`.
 - `CURRENT_PROJECT_VERSION` must remain monotonic for Sparkle.
 - `scripts/bump-version.sh` should remain the normal way to set or bump versions.
 
 ## Current baseline
 
-- Initial repo line: `v0.0.1`
+- Current public stable line: `v0.1.0`
 - Repository: `https://github.com/miounet11/icc`
 
 ## Release workflow rules
 
-1. Update `MARKETING_VERSION` to the target release, currently `0.0.1`.
+1. Update `MARKETING_VERSION` to the target release, currently `0.1.0`.
 2. Keep `CURRENT_PROJECT_VERSION` increasing even if the marketing version resets for branding reasons.
-3. Push the branch to `miounet11/icc`.
-4. Create and push a tag such as `v0.0.1` only after signing and release secrets are ready.
-5. Let `.github/workflows/release.yml` publish the DMG, `appcast.xml`, and remote helper assets.
+3. Build the signed and notarized macOS app, then generate `appcast.xml` with the matching Sparkle private key.
+4. Stage the DMG, appcast, release manifest, and remote helper assets into `web/public/downloads` or the production site's `public/downloads` directory.
+5. Deploy the website so `iccjk.com` serves the new DMG, `appcast.xml`, `latest.json`, and remote helper manifest.
+6. Push the branch to `miounet11/icc`.
+7. Create and push a tag such as `v0.1.0` after the website-hosted artifacts have been verified.
 
 ## Important migration note
 

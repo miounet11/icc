@@ -7,12 +7,25 @@ Historical note:
 - This codebase originated from `cmux`, and older entries intentionally retain legacy names, issue numbers, PR links, and internal binary identifiers where that history still matters.
 - The current product being released from this repository is `icc`.
 
-## [Unreleased] - 2026-03-25
+## [0.1.0] - 2026-03-30
+
+### Added
+- Quick settings import shortcuts for VS Code, Cursor, Claude Code, and Codex so users can move into `icc` faster without rebuilding their terminal preferences by hand.
+- A source-control sidebar workflow for fast `git pull`, fast `git push`, and repo-status actions that opens real terminal panes in the current workspace instead of acting like a disconnected stub.
+- An `AI Command Center` collaboration panel that can add Claude and Codex panes or create a shared dual-model layout directly inside the current workspace.
 
 ### Changed
+- Refreshed the app icon, product logo, welcome copy, and linked website surfaces so the public `icc` brand is more distinct and consistent across the desktop app and the website.
 - Refreshed the release-facing documentation for the `icc` launch: README files, install guidance, contributing notes, remote SSH docs, browser automation notes, notification docs, and legacy Homebrew/web documentation were updated to describe the current product and repository.
 - Added an ICC brand guide and upgraded the translated README files from temporary placeholders into localized landing pages for the public `v0.0.1` release.
 - Strengthened the public-facing product narrative so the main docs and web notes present `icc` as a premium, terminal-first AI command center instead of a plain rename.
+- Updated default terminal presentation to sit closer to a familiar VS Code baseline with a 14pt default font, adjusted terminal palette values, and cleaner sidebar/detail chrome.
+- Reworked user-facing labels that still surfaced legacy `cmux` naming so the shipped product presents itself as `icc` in the main release-facing paths.
+
+### Fixed
+- The right sidebar collapse control now renders a visible icon again.
+- The sidebar now exposes a footer settings entry so users can reach automation and app preferences more directly.
+- English submit behavior in the native feedback/conversation composer now uses `Return` to send and keeps `Shift+Return` for newline insertion, while preserving IME composition behavior.
 
 ## [0.62.2] - 2026-03-14
 

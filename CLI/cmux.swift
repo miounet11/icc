@@ -5994,9 +5994,9 @@ struct CMUXCLI {
             """
         case "welcome":
             return """
-            Usage: cmux welcome
+            Usage: icc welcome
 
-            Show a welcome screen with the cmux logo and useful shortcuts.
+            Show the icc welcome screen with current shortcuts and brand links.
             Auto-runs once on first launch.
             """
         case "shortcuts":
@@ -11005,13 +11005,13 @@ struct CMUXCLI {
 
         let isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
 
-        let c1 = trueColor(0, 212, 255)
-        let c2 = trueColor(24, 181, 250)
-        let c3 = trueColor(48, 150, 245)
-        let c4 = trueColor(72, 119, 241)
-        let c5 = trueColor(96, 88, 239)
-        let c6 = trueColor(110, 73, 238)
-        let c7 = trueColor(124, 58, 237)
+        let c1 = trueColor(239, 173, 63)
+        let c2 = trueColor(216, 138, 52)
+        let c3 = trueColor(187, 109, 43)
+        let c4 = trueColor(51, 143, 146)
+        let c5 = trueColor(65, 169, 172)
+        let c6 = trueColor(87, 197, 198)
+        let c7 = trueColor(111, 220, 218)
 
         let tagline: String
         let subdued: String
@@ -11025,13 +11025,12 @@ struct CMUXCLI {
         }
 
         let logo = """
-        \(c1)  ::\(reset)
-        \(c2)    ::::\(reset)              \(c1)c\(c2)m\(c3)u\(c7)x\(reset)
-        \(c3)      ::::::\(reset)
-        \(c4)        ::::::\(reset)        \(tagline)the open source terminal\(reset)
-        \(c5)      ::::::\(reset)          \(tagline)built for coding agents\(reset)
-        \(c6)    ::::\(reset)
-        \(c7)  ::\(reset)
+        \(c1)    ●\(reset)
+        \(c4)    ││\(reset)                 \(c4)i\(c5)c\(c3)c\(reset)
+        \(c4)    ││\(reset)
+        \(c5)  ╭─╯╰────╮\(reset)            \(tagline)AI Command Center for macOS\(reset)
+        \(c6)  ╰───╮ ╭─╯\(reset)            \(tagline)One cockpit for terminal-first AI execution\(reset)
+        \(c7)      ╰─╯\(reset)
         """
 
         let shortcuts = """
@@ -11053,14 +11052,14 @@ struct CMUXCLI {
         print()
         print(shortcuts)
         print()
-        print("  \(bold)Docs\(reset)\(subdued)                https://cmux.com/docs\(reset)")
-        print("  \(bold)Discord\(reset)\(subdued)             https://discord.gg/xsgFEVrWCZ\(reset)")
-        print("  \(bold)GitHub\(reset)\(subdued)              https://github.com/manaflow-ai/cmux (please leave a star ⭐)\(reset)")
-        print("  \(bold)Email\(reset)\(subdued)               founders@manaflow.com\(reset)")
+        print("  \(bold)Site\(reset)\(subdued)                https://www.iccjk.com\(reset)")
+        print("  \(bold)Docs\(reset)\(subdued)                https://github.com/miounet11/icc#readme\(reset)")
+        print("  \(bold)GitHub\(reset)\(subdued)              https://github.com/miounet11/icc\(reset)")
+        print("  \(bold)Issues\(reset)\(subdued)              https://github.com/miounet11/icc/issues\(reset)")
         print()
-        print("  \(subdued)Run \(reset)\(bold)cmux --help\(reset)\(subdued) for all commands.\(reset)")
-        print("  \(subdued)Run \(reset)\(bold)cmux shortcuts\(reset)\(subdued) to edit shortcuts.\(reset)")
-        print("  \(subdued)Run \(reset)\(bold)cmux feedback\(reset)\(subdued) to report a bug.\(reset)")
+        print("  \(subdued)Run \(reset)\(bold)icc --help\(reset)\(subdued) for all commands.\(reset)")
+        print("  \(subdued)Run \(reset)\(bold)icc shortcuts\(reset)\(subdued) to edit shortcuts.\(reset)")
+        print("  \(subdued)Run \(reset)\(bold)icc feedback\(reset)\(subdued) to report an issue.\(reset)")
         print()
     }
 

@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "icc",
-  version: "v0.0.1",
+  version: "v0.1.0",
   descriptor: "AI Command Center for macOS",
   title: "icc",
   tagline: "One cockpit for terminal-first AI execution.",
@@ -9,9 +9,11 @@ export const siteConfig = {
   canonicalUrl: "https://www.iccjk.com",
   domain: "www.iccjk.com",
   repoUrl: "https://github.com/miounet11/icc",
-  releasesUrl: "https://github.com/miounet11/icc/releases",
-  downloadUrl:
-    "https://github.com/miounet11/icc/releases/latest/download/icc-macos.dmg",
+  releasesUrl: "https://www.iccjk.com/changelog",
+  downloadUrl: "https://www.iccjk.com/downloads/icc-macos.dmg",
+  appcastUrl: "https://www.iccjk.com/downloads/appcast.xml",
+  latestManifestUrl: "https://www.iccjk.com/downloads/latest.json",
+  remoteManifestUrl: "https://www.iccjk.com/downloads/remote/cmuxd-remote-manifest.json",
   issuesUrl: "https://github.com/miounet11/icc/issues",
   githubApiRepo: "https://api.github.com/repos/miounet11/icc",
 } as const;

@@ -2,6 +2,7 @@ import Bonsplit
 import SwiftUI
 
 struct NotificationsPage: View {
+    @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var notificationStore: TerminalNotificationStore
     @EnvironmentObject var tabManager: TabManager
     @Binding var selection: SidebarSelection
@@ -13,7 +14,7 @@ struct NotificationsPage: View {
 
     var body: some View {
         ZStack {
-            Color(nsColor: .windowBackgroundColor)
+            ICCCanvasBackground()
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -58,27 +59,35 @@ struct NotificationsPage: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("通知中心")
-                        .font(.system(size: 26, weight: .semibold))
-                        .foregroundStyle(.primary)
+        ICCSidebarCard(emphasized: true) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    ICCIconBadge(
+                        systemImage: hasUnreadNotifications ? "bell.badge.fill" : "bell",
+                        primary: ICCChrome.accent(for: colorScheme),
+                        secondary: ICCChrome.secondaryAccent(for: colorScheme)
+                    )
 
-                    Text("集中处理任务提醒、终端消息和桌面通知，避免在会话区来回跳转。")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("通知中心")
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
+
+                        Text("集中处理任务提醒、终端消息和桌面通知，避免在会话区来回跳转。")
+                            .font(.system(size: 13.5, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    notificationStatusBadge
                 }
 
-                Spacer(minLength: 12)
-
-                notificationStatusBadge
-            }
-
-            ViewThatFits(in: .horizontal) {
-                actionRow
-                compactActionRow
+                ViewThatFits(in: .horizontal) {
+                    actionRow
+                    compactActionRow
+                }
             }
         }
     }
@@ -108,79 +117,93 @@ struct NotificationsPage: View {
     }
 
     private var notificationStatusBadge: some View {
-        HStack(spacing: 8) {
-            Image(systemName: hasUnreadNotifications ? "bell.badge.fill" : "bell")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(hasUnreadNotifications ? cmuxAccentColor() : .secondary)
-
-            Text(hasUnreadNotifications ? "有未读提醒" : "全部已读")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(hasUnreadNotifications ? .primary : .secondary)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(
-            Capsule(style: .continuous)
-                .fill(Color.primary.opacity(0.06))
+        ICCStatusPill(
+            text: hasUnreadNotifications ? "有未读提醒" : "全部已读",
+            tint: hasUnreadNotifications ? ICCChrome.accent(for: colorScheme) : .secondary,
+            emphasized: hasUnreadNotifications
         )
     }
 
     private var summaryStrip: some View {
-        HStack(spacing: 12) {
-            NotificationsSummaryCard(
-                title: "总数",
-                value: "\(notificationStore.notifications.count)",
-                subtitle: "当前收件箱"
-            )
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                NotificationsSummaryCard(
+                    title: "总数",
+                    value: "\(notificationStore.notifications.count)",
+                    subtitle: "当前收件箱"
+                )
 
-            NotificationsSummaryCard(
-                title: "未读",
-                value: "\(unreadCount)",
-                subtitle: unreadCount == 0 ? "已清空" : "需要处理"
-            )
+                NotificationsSummaryCard(
+                    title: "未读",
+                    value: "\(unreadCount)",
+                    subtitle: unreadCount == 0 ? "已清空" : "需要处理"
+                )
 
-            NotificationsSummaryCard(
-                title: "最新",
-                value: latestNotificationTimeText,
-                subtitle: "最近一条提醒"
-            )
+                NotificationsSummaryCard(
+                    title: "最新",
+                    value: latestNotificationTimeText,
+                    subtitle: "最近一条提醒"
+                )
+            }
+
+            VStack(spacing: 12) {
+                NotificationsSummaryCard(
+                    title: "总数",
+                    value: "\(notificationStore.notifications.count)",
+                    subtitle: "当前收件箱"
+                )
+
+                NotificationsSummaryCard(
+                    title: "未读",
+                    value: "\(unreadCount)",
+                    subtitle: unreadCount == 0 ? "已清空" : "需要处理"
+                )
+
+                NotificationsSummaryCard(
+                    title: "最新",
+                    value: latestNotificationTimeText,
+                    subtitle: "最近一条提醒"
+                )
+            }
         }
     }
 
     private var notificationFeed: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("消息列表")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.secondary)
+        ICCSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("消息列表")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.secondary)
 
-                Spacer()
+                    Spacer()
 
-                Text("点击卡片可直接跳转到对应会话")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-            }
+                    Text("点击卡片可直接跳转到对应会话")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
 
-            LazyVStack(spacing: 10) {
-                ForEach(notificationStore.notifications) { notification in
-                    NotificationRow(
-                        notification: notification,
-                        tabTitle: tabTitle(for: notification.tabId),
-                        onOpen: {
-                            DispatchQueue.main.async {
-                                _ = AppDelegate.shared?.openNotification(
-                                    tabId: notification.tabId,
-                                    surfaceId: notification.surfaceId,
-                                    notificationId: notification.id
-                                )
-                                selection = .tabs
-                            }
-                        },
-                        onClear: {
-                            notificationStore.remove(id: notification.id)
-                        },
-                        focusedNotificationId: $focusedNotificationId
-                    )
+                LazyVStack(spacing: 10) {
+                    ForEach(notificationStore.notifications) { notification in
+                        NotificationRow(
+                            notification: notification,
+                            tabTitle: tabTitle(for: notification.tabId),
+                            onOpen: {
+                                DispatchQueue.main.async {
+                                    _ = AppDelegate.shared?.openNotification(
+                                        tabId: notification.tabId,
+                                        surfaceId: notification.surfaceId,
+                                        notificationId: notification.id
+                                    )
+                                    selection = .tabs
+                                }
+                            },
+                            onClear: {
+                                notificationStore.remove(id: notification.id)
+                            },
+                            focusedNotificationId: $focusedNotificationId
+                        )
+                    }
                 }
             }
         }
@@ -190,31 +213,31 @@ struct NotificationsPage: View {
         VStack {
             Spacer(minLength: 20)
 
-            VStack(spacing: 12) {
-                Image(systemName: "bell.slash")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(.secondary)
+            ICCSidebarCard(emphasized: true) {
+                VStack(spacing: 12) {
+                    ICCIconBadge(
+                        systemImage: "bell.slash",
+                        primary: ICCChrome.accent(for: colorScheme),
+                        secondary: ICCChrome.secondaryAccent(for: colorScheme)
+                    )
 
-                Text("暂时没有通知")
-                    .font(.system(size: 18, weight: .semibold))
+                    Text("暂时没有通知")
+                        .font(.system(size: 18, weight: .semibold))
 
-                Text("新的桌面通知和任务提醒会出现在这里，方便统一查看和回到对应会话。")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
+                    Text("新的桌面通知和任务提醒会出现在这里，方便统一查看和回到对应会话。")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 360)
 
-                HStack(spacing: 10) {
-                    openSettingsButton
-                    jumpToUnreadButton
+                    HStack(spacing: 10) {
+                        openSettingsButton
+                        jumpToUnreadButton
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 26)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 40)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(nsColor: .controlBackgroundColor))
-            )
 
             Spacer()
         }
@@ -318,29 +341,12 @@ private struct NotificationsSummaryCard: View {
     let subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Text(value)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(.primary)
-
-            Text(subtitle)
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor))
-        )
+        ICCMetricCard(title: title, value: value, subtitle: subtitle)
     }
 }
 
 struct ShortcutAnnotation: View {
+    @Environment(\.colorScheme) private var colorScheme
     let text: String
     var accessibilityIdentifier: String? = nil
 
@@ -361,12 +367,17 @@ struct ShortcutAnnotation: View {
             .padding(.vertical, 2)
             .background(
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(Color(nsColor: .controlBackgroundColor))
+                    .fill(ICCChrome.cardGradient(for: colorScheme))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(ICCChrome.borderColor(for: colorScheme, emphasis: 0.9), lineWidth: 1)
+                    )
             )
     }
 }
 
 private struct NotificationRow: View {
+    @Environment(\.colorScheme) private var colorScheme
     let notification: TerminalNotification
     let tabTitle: String?
     let onOpen: () -> Void
@@ -448,7 +459,7 @@ private struct NotificationRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(cardBackgroundColor)
+                .fill(cardBackgroundGradient)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .strokeBorder(cardBorderColor, lineWidth: 1)
@@ -469,15 +480,17 @@ private struct NotificationRow: View {
             .padding(.top, 6)
     }
 
-    private var cardBackgroundColor: Color {
+    private var cardBackgroundGradient: LinearGradient {
         if isHovering {
-            return Color.primary.opacity(0.055)
+            return ICCChrome.cardGradient(for: colorScheme, emphasized: true)
         }
-        return Color(nsColor: .controlBackgroundColor)
+        return ICCChrome.cardGradient(for: colorScheme)
     }
 
     private var cardBorderColor: Color {
-        notification.isRead ? Color.primary.opacity(0.08) : cmuxAccentColor().opacity(0.24)
+        notification.isRead
+            ? ICCChrome.borderColor(for: colorScheme, emphasis: 1.05)
+            : ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.34 : 0.26)
     }
 
     private func notificationMetaPill(systemImage: String, text: String) -> some View {
@@ -491,7 +504,7 @@ private struct NotificationRow: View {
         .padding(.vertical, 5)
         .background(
             Capsule(style: .continuous)
-                .fill(Color.primary.opacity(0.05))
+                .fill(ICCChrome.mutedFill(for: colorScheme))
         )
     }
 }

@@ -251,6 +251,11 @@ struct TitlebarControlButton<Content: View>: View {
 }
 
 struct TitlebarControlsView: View {
+    enum LayoutMode {
+        case full
+        case compactMenu
+    }
+
     @ObservedObject var notificationStore: TerminalNotificationStore
     @ObservedObject var viewModel: TitlebarControlsViewModel
     let onToggleSidebar: () -> Void
@@ -260,6 +265,7 @@ struct TitlebarControlsView: View {
     let onNewWorkspace: () -> Void
     let onOpenRemoteExplorer: () -> Void
     let visibilityMode: TitlebarControlsVisibilityMode
+    let layoutMode: LayoutMode
     @AppStorage("titlebarControlsStyle") private var styleRawValue = TitlebarControlsStyle.classic.rawValue
     @AppStorage(ShortcutHintDebugSettings.titlebarHintXKey) private var titlebarShortcutHintXOffset = ShortcutHintDebugSettings.defaultTitlebarHintX
     @AppStorage(ShortcutHintDebugSettings.titlebarHintYKey) private var titlebarShortcutHintYOffset = ShortcutHintDebugSettings.defaultTitlebarHintY
@@ -298,7 +304,8 @@ struct TitlebarControlsView: View {
     }
 
     private var shouldShowTitlebarShortcutHints: Bool {
-        alwaysShowShortcutHints || modifierKeyMonitor.isModifierPressed
+        guard layoutMode == .full else { return false }
+        return alwaysShowShortcutHints || modifierKeyMonitor.isModifierPressed
     }
 
     private var shouldShowControls: Bool {
@@ -360,44 +367,46 @@ struct TitlebarControlsView: View {
     private func controlsGroup(config: TitlebarControlsStyleConfig) -> some View {
         let hintLayoutItems = titlebarHintLayoutItems(config: config)
         let content = HStack(spacing: config.spacing) {
-            TitlebarControlButton(config: config, action: {
-                #if DEBUG
-                dlog("titlebar.toggleSidebar")
-                #endif
-                onToggleSidebar()
-            }) {
-                iconLabel(systemName: "sidebar.left", config: config)
-            }
-            .accessibilityIdentifier("titlebarControl.toggleSidebar")
-            .accessibilityLabel(String(localized: "titlebar.sidebar.accessibilityLabel", defaultValue: "Toggle Sidebar"))
-            .safeHelp(KeyboardShortcutSettings.Action.toggleSidebar.tooltip(String(localized: "titlebar.sidebar.tooltip", defaultValue: "Show or hide the sidebar")))
-
-            TitlebarControlButton(config: config, action: {
-                #if DEBUG
-                dlog("titlebar.notifications")
-                #endif
-                onToggleNotifications()
-            }) {
-                ZStack(alignment: .topTrailing) {
-                    iconLabel(systemName: "bell", config: config)
-
-                    if notificationStore.unreadCount > 0 {
-                        Text("\(min(notificationStore.unreadCount, 99))")
-                            .font(.system(size: max(8, config.badgeSize - 5), weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: config.badgeSize, height: config.badgeSize)
-                            .background(
-                                Circle().fill(cmuxAccentColor())
-                            )
-                            .offset(x: config.badgeOffset.width, y: config.badgeOffset.height)
-                    }
+            if layoutMode == .full {
+                TitlebarControlButton(config: config, action: {
+                    #if DEBUG
+                    dlog("titlebar.toggleSidebar")
+                    #endif
+                    onToggleSidebar()
+                }) {
+                    iconLabel(systemName: "sidebar.left", config: config)
                 }
-                .frame(width: config.buttonSize, height: config.buttonSize)
+                .accessibilityIdentifier("titlebarControl.toggleSidebar")
+                .accessibilityLabel(String(localized: "titlebar.sidebar.accessibilityLabel", defaultValue: "Toggle Sidebar"))
+                .safeHelp(KeyboardShortcutSettings.Action.toggleSidebar.tooltip(String(localized: "titlebar.sidebar.tooltip", defaultValue: "Show or hide the sidebar")))
+
+                TitlebarControlButton(config: config, action: {
+                    #if DEBUG
+                    dlog("titlebar.notifications")
+                    #endif
+                    onToggleNotifications()
+                }) {
+                    ZStack(alignment: .topTrailing) {
+                        iconLabel(systemName: "bell", config: config)
+
+                        if notificationStore.unreadCount > 0 {
+                            Text("\(min(notificationStore.unreadCount, 99))")
+                                .font(.system(size: max(8, config.badgeSize - 5), weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: config.badgeSize, height: config.badgeSize)
+                                .background(
+                                    Circle().fill(cmuxAccentColor())
+                                )
+                                .offset(x: config.badgeOffset.width, y: config.badgeOffset.height)
+                        }
+                    }
+                    .frame(width: config.buttonSize, height: config.buttonSize)
+                }
+                .accessibilityIdentifier("titlebarControl.showNotifications")
+                .background(NotificationsAnchorView { viewModel.notificationsAnchorView = $0 })
+                .accessibilityLabel(String(localized: "titlebar.notifications.accessibilityLabel", defaultValue: "Notifications"))
+                .safeHelp(KeyboardShortcutSettings.Action.showNotifications.tooltip(String(localized: "titlebar.notifications.tooltip", defaultValue: "Show notifications")))
             }
-            .accessibilityIdentifier("titlebarControl.showNotifications")
-            .background(NotificationsAnchorView { viewModel.notificationsAnchorView = $0 })
-            .accessibilityLabel(String(localized: "titlebar.notifications.accessibilityLabel", defaultValue: "Notifications"))
-            .safeHelp(KeyboardShortcutSettings.Action.showNotifications.tooltip(String(localized: "titlebar.notifications.tooltip", defaultValue: "Show notifications")))
 
             creationMenuButton(config: config)
         }
@@ -610,7 +619,8 @@ struct HiddenTitlebarSidebarControlsView: View {
                 }
             },
             onOpenRemoteExplorer: { AppDelegate.shared?.openRemoteExplorerPage() },
-            visibilityMode: .onHover
+            visibilityMode: .onHover,
+            layoutMode: .full
         )
         .frame(width: hostWidth, height: hostHeight, alignment: .leading)
     }
@@ -852,7 +862,8 @@ final class TitlebarControlsAccessoryViewController: NSTitlebarAccessoryViewCont
                 onNewWindow: newWindow,
                 onNewWorkspace: newWorkspace,
                 onOpenRemoteExplorer: openRemoteExplorer,
-                visibilityMode: .alwaysVisible
+                visibilityMode: .onHover,
+                layoutMode: .compactMenu
             )
         )
 

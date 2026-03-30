@@ -185,9 +185,37 @@ export default async function ChangelogPage({
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href={siteConfig.releasesUrl}
+              href={siteConfig.downloadUrl}
+              className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground transition-colors hover:bg-code-bg"
+            >
+              {copy.changelog.supportDownloadLabel}
+            </a>
+            <a
+              href={siteConfig.appcastUrl}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground transition-colors hover:bg-code-bg"
+            >
+              {copy.changelog.supportAppcastLabel}
+            </a>
+            <a
+              href={siteConfig.latestManifestUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground transition-colors hover:bg-code-bg"
+            >
+              {copy.changelog.supportManifestLabel}
+            </a>
+            <a
+              href={siteConfig.remoteManifestUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground transition-colors hover:bg-code-bg"
+            >
+              {copy.changelog.supportRemoteManifestLabel}
+            </a>
+            <a
+              href={siteConfig.releasesUrl}
               className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground transition-colors hover:bg-code-bg"
             >
               {copy.shared.viewReleases}
@@ -206,6 +234,12 @@ export default async function ChangelogPage({
             >
               {copy.changelog.secondaryCta}
             </a>
+          </div>
+          <div className="mt-6 rounded-2xl border border-border/60 bg-background/72 px-5 py-5">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+              {copy.changelog.platformStatusTitle}
+            </div>
+            <p className="mt-3 text-sm leading-7 text-foreground/90">{copy.changelog.platformStatusBody}</p>
           </div>
         </section>
       </main>

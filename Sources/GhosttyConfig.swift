@@ -12,7 +12,7 @@ struct GhosttyConfig {
     private static var cachedConfigsByColorScheme: [ColorSchemePreference: GhosttyConfig] = [:]
 
     var fontFamily: String = "Menlo"
-    var fontSize: CGFloat = 12
+    var fontSize: CGFloat = 14
     var theme: String?
     var workingDirectory: String?
     var scrollbackLimit: Int = 10000
@@ -21,13 +21,13 @@ struct GhosttyConfig {
     var splitDividerColor: NSColor?
 
     // Colors (from theme or config)
-    var backgroundColor: NSColor = NSColor(hex: "#272822")!
+    var backgroundColor: NSColor = NSColor(hex: "#1F1F1F")!
     var backgroundOpacity: Double = 1.0
-    var foregroundColor: NSColor = NSColor(hex: "#fdfff1")!
-    var cursorColor: NSColor = NSColor(hex: "#c0c1b5")!
-    var cursorTextColor: NSColor = NSColor(hex: "#8d8e82")!
-    var selectionBackground: NSColor = NSColor(hex: "#57584f")!
-    var selectionForeground: NSColor = NSColor(hex: "#fdfff1")!
+    var foregroundColor: NSColor = NSColor(hex: "#CCCCCC")!
+    var cursorColor: NSColor = NSColor(hex: "#AEAFAD")!
+    var cursorTextColor: NSColor = NSColor(hex: "#1F1F1F")!
+    var selectionBackground: NSColor = NSColor(hex: "#264F78")!
+    var selectionForeground: NSColor = NSColor(hex: "#FFFFFF")!
 
     // Sidebar appearance
     var rawSidebarBackground: String?

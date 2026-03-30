@@ -36,7 +36,7 @@ export function LanguageSwitcher({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <svg
         width="14"
         height="14"
@@ -56,7 +56,7 @@ export function LanguageSwitcher({
       <select
         value={locale}
         onChange={onChange}
-        className="text-xs text-muted bg-transparent border-none cursor-pointer hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+        className="max-w-[5.75rem] cursor-pointer border-none bg-transparent text-xs text-muted transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         aria-label={label}
       >
         {marketingLocales.map((loc) => (

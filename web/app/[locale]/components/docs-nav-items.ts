@@ -1,5 +1,6 @@
 export const navItems = [
   { titleKey: "gettingStarted" as const, href: "/docs/getting-started" },
+  { titleKey: "releaseUpdates" as const, href: "/docs/release-updates" },
   { titleKey: "concepts" as const, href: "/docs/concepts" },
   { titleKey: "configuration" as const, href: "/docs/configuration" },
   { titleKey: "keyboardShortcuts" as const, href: "/docs/keyboard-shortcuts" },

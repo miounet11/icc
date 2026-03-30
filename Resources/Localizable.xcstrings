@@ -1032,13 +1032,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Welcome to iatlas!"
+            "value": "Welcome to icc!"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "iatlasへようこそ！"
+            "value": "iccへようこそ！"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "欢迎使用 icc"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "歡迎使用 icc"
           }
         }
       }
@@ -1056,6 +1068,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "更新履歴"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新日志"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新日誌"
           }
         }
       }
@@ -1091,6 +1115,18 @@
             "state": "translated",
             "value": "GitHub Issues"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub Issues"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub Issues"
+          }
         }
       }
     },
@@ -1107,6 +1143,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "フィードバックを送信"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送反馈"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "傳送回饋"
           }
         }
       }
@@ -32696,25 +32744,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "About iatlas"
+            "value": "About icc"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "iatlasについて"
+            "value": "iccについて"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "关于 iatlas"
+            "value": "关于 icc"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "關於 iatlas"
+            "value": "關於 icc"
           }
         },
         "ko": {
@@ -32821,13 +32869,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "检查更新..."
+            "value": "检查更新…"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "檢查更新..."
+            "value": "檢查更新…"
           }
         },
         "ko": {
@@ -38370,6 +38418,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "ブラウザーデータを取り込む…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入浏览器数据…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯入瀏覽器資料…"
           }
         }
       }

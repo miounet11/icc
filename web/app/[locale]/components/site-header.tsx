@@ -66,40 +66,38 @@ export function SiteHeader({
   return (
     <>
       <header className="sticky top-0 z-30 w-full border-b border-border/60 bg-background/88 backdrop-blur-xl">
-        <div className="w-full max-w-6xl mx-auto flex items-center px-6 h-14">
-          {/* Left: logo + section */}
-          <div className="flex flex-1 items-center gap-3 min-w-0">
+        <div className="mx-auto flex h-15 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             {!hideLogo && (
               <>
-                <a href={resolvedHomeHref} className="flex items-center gap-3">
+                <a href={resolvedHomeHref} className="flex min-w-0 items-center gap-3">
                   <img
                     src="/logo.png"
                     alt={siteConfig.name}
                     width={28}
                     height={28}
-                    className="rounded-lg"
+                    className="rounded-xl shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
                   />
-                  <div className="flex flex-col leading-none">
-                    <span className="text-sm font-semibold tracking-tight">
+                  <div className="min-w-0">
+                    <span className="block text-sm font-semibold tracking-tight">
                       {siteConfig.name}
                     </span>
-                    <span className="text-[11px] text-muted">
+                    <span className="hidden truncate text-[11px] text-muted xl:block">
                       {descriptor}
                     </span>
                   </div>
                 </a>
                 {section && (
-                  <>
+                  <div className="hidden min-w-0 items-center gap-2 lg:flex">
                     <span className="text-border text-[13px]">/</span>
-                    <span className="text-[13px] text-muted">{section}</span>
-                  </>
+                    <span className="truncate text-[13px] text-muted">{section}</span>
+                  </div>
                 )}
               </>
             )}
           </div>
 
-          {/* Center: nav links */}
-          <nav className="hidden md:flex items-center justify-center gap-5 text-sm text-muted shrink-0">
+          <nav className="hidden shrink-0 items-center justify-center gap-5 text-sm text-muted xl:flex">
             {navLinks.map((link) => (
               <a
                 key={`${link.href}-${link.label}`}
@@ -113,16 +111,19 @@ export function SiteHeader({
             ))}
           </nav>
 
-          {/* Right: GitHub stars + Download + theme + mobile */}
-          <div className="flex flex-1 items-center justify-end gap-3 min-w-0">
-            <GitHubStarsBadge />
-            <div className="hidden md:flex items-center rounded-full border border-border/70 px-2.5 py-1">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2 lg:gap-3">
+            <div className="hidden xl:flex">
+              <GitHubStarsBadge />
+            </div>
+            <div className="hidden items-center rounded-full border border-border/70 px-2.5 py-1 lg:flex">
               <LanguageSwitcher currentLocale={locale} label={labels.language} />
             </div>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <DownloadButton size="sm" location="navbar" label={downloadLabel} />
             </div>
-            <ThemeToggle label={labels.toggleTheme} />
+            <div className="hidden sm:block">
+              <ThemeToggle label={labels.toggleTheme} />
+            </div>
             <MobileDrawerToggle
               open={open}
               onClick={toggle}
@@ -140,7 +141,7 @@ export function SiteHeader({
         ref={drawerRef}
         role="navigation"
         aria-label="Main navigation"
-        className={`fixed inset-y-0 right-0 z-50 w-56 bg-background border-l border-border overflow-y-auto transition-transform md:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 w-56 bg-background border-l border-border overflow-y-auto transition-transform xl:hidden ${
           open ? "translate-x-0" : "translate-x-full invisible"
         }`}
       >

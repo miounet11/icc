@@ -42,8 +42,6 @@ export function GitHubStarsBadge({
       .catch(() => {});
   }, []);
 
-  if (stars === null) return null;
-
   return (
     <a
       href={siteConfig.repoUrl}
@@ -52,10 +50,19 @@ export function GitHubStarsBadge({
       onClick={() =>
         posthog.capture("icc_github_clicked", { location })
       }
-      className={className ?? "inline-flex items-center gap-1.5 pr-1 text-sm text-muted hover:text-foreground transition-colors animate-fade-in"}
+      className={
+        className ??
+        "inline-flex min-w-[2.9rem] items-center gap-1.5 pr-1 text-sm text-muted transition-colors hover:text-foreground"
+      }
     >
       {GITHUB_ICON}
-      <span className="text-xs tabular-nums">{formatStars(stars)}</span>
+      <span
+        className={`min-w-[1.6rem] text-xs tabular-nums ${
+          stars === null ? "opacity-0" : "animate-fade-in"
+        }`}
+      >
+        {stars === null ? "0.0k" : formatStars(stars)}
+      </span>
     </a>
   );
 }

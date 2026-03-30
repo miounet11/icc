@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { CodeBlock } from "../../components/code-block";
 import { Callout } from "../../components/callout";
 import { DownloadButton } from "../../components/download-button";
+import { siteConfig } from "../../../site-config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -29,11 +30,8 @@ export default function GettingStartedPage() {
       </div>
       <p>{t("dmgDesc")}</p>
 
-      <h3>{t("homebrew")}</h3>
-      <CodeBlock lang="bash">{`brew tap manaflow-ai/cmux
-brew install --cask cmux`}</CodeBlock>
       <p>{t("updateLater")}</p>
-      <CodeBlock lang="bash">{`brew upgrade --cask cmux`}</CodeBlock>
+      <CodeBlock lang="bash">{`curl -L -o ~/Downloads/icc-macos.dmg ${siteConfig.downloadUrl}`}</CodeBlock>
 
       <Callout>
         {t.rich("firstLaunchCallout", {
@@ -51,13 +49,15 @@ brew install --cask cmux`}</CodeBlock>
 
       <h2>{t("cliSetup")}</h2>
       <p>{t("cliDesc")}</p>
-      <CodeBlock lang="bash">{`sudo ln -sf "/Applications/cmux.app/Contents/Resources/bin/cmux" /usr/local/bin/cmux`}</CodeBlock>
+      <CodeBlock lang="bash">{`sudo ln -sf "/Applications/icc.app/Contents/Resources/bin/icc" /usr/local/bin/icc`}</CodeBlock>
       <p>{t("cliThen")}</p>
-      <CodeBlock lang="bash">{`cmux list-workspaces
-cmux notify --title "Build Complete" --body "Your build finished"`}</CodeBlock>
+      <CodeBlock lang="bash">{`icc --help
+icc notify --title "Build Complete" --body "Your build finished"`}</CodeBlock>
 
       <h2>{t("autoUpdates")}</h2>
       <p>{t("autoUpdatesDesc")}</p>
+      <CodeBlock lang="bash">{`${siteConfig.appcastUrl}
+${siteConfig.latestManifestUrl}`}</CodeBlock>
 
       <h2>{t("sessionRestore")}</h2>
       <p>{t("sessionRestoreDesc")}</p>

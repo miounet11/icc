@@ -75,6 +75,275 @@ func cmuxAccentColor() -> Color {
     Color(nsColor: cmuxAccentNSColor())
 }
 
+enum ICCChrome {
+    static func accent(for colorScheme: ColorScheme) -> Color {
+        Color(nsColor: cmuxAccentNSColor(for: colorScheme))
+    }
+
+    static func secondaryAccent(for colorScheme: ColorScheme) -> Color {
+        switch colorScheme {
+        case .dark:
+            return Color(hex: "#47D7C2")!
+        default:
+            return Color(hex: "#0F766E")!
+        }
+    }
+
+    static func canvasGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        switch colorScheme {
+        case .dark:
+            return LinearGradient(
+                colors: [
+                    Color(hex: "#040813")!,
+                    Color(hex: "#091220")!,
+                    Color(hex: "#101B2D")!
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            return LinearGradient(
+                colors: [
+                    Color(hex: "#F4F7FB")!,
+                    Color(hex: "#ECF3FF")!,
+                    Color(hex: "#F9FBFF")!
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    static func railGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        switch colorScheme {
+        case .dark:
+            return LinearGradient(
+                colors: [
+                    Color(hex: "#08111E")!,
+                    Color(hex: "#0D1728")!,
+                    Color(hex: "#111C30")!
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        default:
+            return LinearGradient(
+                colors: [
+                    Color(hex: "#ECF4FF")!,
+                    Color(hex: "#F4F8FF")!,
+                    Color(hex: "#F8FBFF")!
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    static func panelGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        switch colorScheme {
+        case .dark:
+            return LinearGradient(
+                colors: [
+                    Color(hex: "#0A1321")!,
+                    Color(hex: "#101A2B")!,
+                    Color(hex: "#111B2E")!
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            return LinearGradient(
+                colors: [
+                    Color.white.opacity(0.94),
+                    Color(hex: "#F3F7FF")!.opacity(0.98),
+                    Color(hex: "#EEF4FD")!.opacity(0.94)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    static func cardGradient(for colorScheme: ColorScheme, emphasized: Bool = false) -> LinearGradient {
+        switch colorScheme {
+        case .dark:
+            let top = emphasized ? Color(hex: "#111D31")! : Color(hex: "#0E1829")!
+            let bottom = emphasized ? Color(hex: "#16233A")! : Color(hex: "#131F34")!
+            return LinearGradient(colors: [top, bottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+        default:
+            let top = emphasized ? Color.white.opacity(0.98) : Color.white.opacity(0.92)
+            let bottom = emphasized ? Color(hex: "#F1F6FF")! : Color(hex: "#F7FAFF")!
+            return LinearGradient(colors: [top, bottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
+    }
+
+    static func borderColor(for colorScheme: ColorScheme, emphasis: Double = 1.0) -> Color {
+        switch colorScheme {
+        case .dark:
+            return Color.white.opacity(0.08 * emphasis)
+        default:
+            return Color.black.opacity(0.07 * emphasis)
+        }
+    }
+
+    static func elevatedShadow(for colorScheme: ColorScheme) -> Color {
+        switch colorScheme {
+        case .dark:
+            return Color.black.opacity(0.28)
+        default:
+            return Color.black.opacity(0.10)
+        }
+    }
+
+    static func mutedFill(for colorScheme: ColorScheme) -> Color {
+        switch colorScheme {
+        case .dark:
+            return Color.white.opacity(0.045)
+        default:
+            return Color.black.opacity(0.04)
+        }
+    }
+
+    static func secondaryTextOpacity(for colorScheme: ColorScheme) -> Double {
+        colorScheme == .dark ? 0.82 : 0.72
+    }
+}
+
+struct ICCCanvasBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        ZStack {
+            ICCChrome.canvasGradient(for: colorScheme)
+            RadialGradient(
+                colors: [
+                    ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.20 : 0.09),
+                    Color.clear
+                ],
+                center: .topTrailing,
+                startRadius: 20,
+                endRadius: 420
+            )
+            RadialGradient(
+                colors: [
+                    ICCChrome.secondaryAccent(for: colorScheme).opacity(colorScheme == .dark ? 0.16 : 0.08),
+                    Color.clear
+                ],
+                center: .bottomLeading,
+                startRadius: 10,
+                endRadius: 360
+            )
+        }
+    }
+}
+
+struct ICCSidebarCard<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
+    var emphasized: Bool = false
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(ICCChrome.cardGradient(for: colorScheme, emphasized: emphasized))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(ICCChrome.borderColor(for: colorScheme, emphasis: emphasized ? 1.35 : 1), lineWidth: 1)
+                )
+        )
+        .shadow(color: ICCChrome.elevatedShadow(for: colorScheme), radius: emphasized ? 18 : 12, x: 0, y: 8)
+    }
+}
+
+struct ICCMetricCard: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    let value: String
+    let subtitle: String?
+    var tint: Color? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            Text(value)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(tint ?? .primary)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(.secondary.opacity(ICCChrome.secondaryTextOpacity(for: colorScheme)))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(ICCChrome.cardGradient(for: colorScheme))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(ICCChrome.borderColor(for: colorScheme, emphasis: 0.9), lineWidth: 1)
+                )
+        )
+    }
+}
+
+struct ICCStatusPill: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let text: String
+    let tint: Color
+    var emphasized: Bool = false
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 10.5, weight: .semibold))
+            .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .foregroundStyle(emphasized ? Color.white : tint)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(emphasized ? tint : tint.opacity(colorScheme == .dark ? 0.20 : 0.12))
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .stroke(tint.opacity(emphasized ? 0 : 0.2), lineWidth: 1)
+            )
+    }
+}
+
+struct ICCIconBadge: View {
+    let systemImage: String
+    let primary: Color
+    let secondary: Color
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 15, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [primary, secondary],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 44, height: 44)
+            .overlay {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+    }
+}
+
 struct SidebarRemoteErrorCopyEntry: Equatable {
     let workspaceTitle: String
     let target: String
@@ -1546,6 +1815,7 @@ func installFileDropOverlay(on window: NSWindow, tabManager: TabManager) {
 struct ContentView: View {
     @ObservedObject var updateViewModel: UpdateViewModel
     let windowId: UUID
+    @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var tabManager: TabManager
     @EnvironmentObject var notificationStore: TerminalNotificationStore
     @EnvironmentObject var sidebarState: SidebarState
@@ -2328,6 +2598,16 @@ struct ContentView: View {
             SidebarActivityRail(
                 updateViewModel: updateViewModel,
                 selection: $sidebarSelectionState.selection,
+                onOpenSettings: {
+                    if let appDelegate = AppDelegate.shared {
+                        appDelegate.openPreferencesWindow(
+                            debugSource: "sidebarRail.settings",
+                            navigationTarget: .automation
+                        )
+                    } else {
+                        AppDelegate.presentPreferencesWindow(navigationTarget: .automation)
+                    }
+                },
                 onSendFeedback: presentFeedbackComposer
             )
             .frame(width: Self.activityRailWidth)
@@ -2370,7 +2650,7 @@ struct ContentView: View {
         case .files:
             return "文件"
         case .sourceControl:
-            return "源代码管理"
+            return "源码管理器"
         case .remote:
             return "远程资源管理器"
         case .wechat:
@@ -2406,14 +2686,39 @@ struct ContentView: View {
         }
     }
 
+    private func explorerPaneSystemImage(for selection: SidebarSelection) -> String {
+        switch selection {
+        case .files:
+            return "folder"
+        case .sourceControl:
+            return "arrow.triangle.branch"
+        case .remote:
+            return "network"
+        case .wechat:
+            return "message"
+        case .supervisor:
+            return "brain"
+        case .tabs:
+            return "square.grid.2x2"
+        case .notifications:
+            return "bell"
+        }
+    }
+
     private var explorerPaneHeader: some View {
         HStack(alignment: .center, spacing: 12) {
+            ICCIconBadge(
+                systemImage: explorerPaneSystemImage(for: sidebarSelectionState.selection),
+                primary: ICCChrome.accent(for: colorScheme),
+                secondary: ICCChrome.secondaryAccent(for: colorScheme)
+            )
+
             VStack(alignment: .leading, spacing: 3) {
                 Text(explorerPaneTitle)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14, weight: .bold))
                 if !explorerPaneSubtitle.isEmpty {
                     Text(explorerPaneSubtitle)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -2425,23 +2730,38 @@ struct ContentView: View {
             Button {
                 sidebarSelectionState.selection = .tabs
             } label: {
-                Image(systemName: "panel.right.close")
+                Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.primary.opacity(0.78))
                     .frame(width: 30, height: 30)
                     .background(
                         RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .fill(Color.primary.opacity(0.06))
+                            .fill(ICCChrome.mutedFill(for: colorScheme))
                     )
             }
             .buttonStyle(.plain)
             .help("收起右侧面板")
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 12)
-        .padding(.bottom, 10)
-        .background(.ultraThinMaterial)
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 14)
+        .background(
+            ZStack {
+                ICCChrome.panelGradient(for: colorScheme)
+                LinearGradient(
+                    colors: [
+                        ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.14 : 0.08),
+                        Color.clear
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        )
         .overlay(alignment: .bottom) {
-            Divider()
+            Rectangle()
+                .fill(ICCChrome.borderColor(for: colorScheme))
+                .frame(height: 1)
         }
     }
 
@@ -2629,14 +2949,16 @@ struct ContentView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .background(
             ZStack {
-                SidebarBackdrop().ignoresSafeArea()
-                Color.primary.opacity(0.015)
+                ICCCanvasBackground().ignoresSafeArea()
+                ICCChrome.panelGradient(for: colorScheme).opacity(colorScheme == .dark ? 0.9 : 0.95)
             }
         )
         .overlay(alignment: .leading) {
-            Divider()
+            Rectangle()
+                .fill(ICCChrome.borderColor(for: colorScheme))
+                .frame(width: 1)
         }
-        .shadow(color: Color.black.opacity(0.08), radius: 18, x: -4, y: 0)
+        .shadow(color: ICCChrome.elevatedShadow(for: colorScheme), radius: 22, x: -8, y: 0)
         .onChange(of: sidebarSelectionState.selection) {
             if sidebarSelectionState.selection != .files && sidebarSelectionState.selection != .remote {
                 selectedExplorerLocation = nil
@@ -2780,7 +3102,8 @@ struct ContentView: View {
                 }
             },
             onOpenRemoteExplorer: { AppDelegate.shared?.openRemoteExplorerPage() },
-            visibilityMode: .alwaysVisible
+            visibilityMode: .alwaysVisible,
+            layoutMode: .full
         )
     }
 
@@ -2798,8 +3121,8 @@ struct ContentView: View {
                     fullscreenControls
                 }
 
-                // Draggable folder icon + focused command name
-                if let directory = focusedDirectory {
+                // Keep the standard titlebar quieter when the sidebar is visible.
+                if !sidebarState.isVisible, let directory = focusedDirectory {
                     DraggableFolderIcon(directory: directory)
                 }
 
@@ -8763,6 +9086,7 @@ private struct SidebarResizerAccessibilityModifier: ViewModifier {
 }
 
 struct VerticalTabsSidebar: View {
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var updateViewModel: UpdateViewModel
     let onSendFeedback: () -> Void
     @EnvironmentObject var tabManager: TabManager
@@ -8785,9 +9109,65 @@ struct VerticalTabsSidebar: View {
     private var selectWorkspaceByNumberShortcutData = Data()
 
     /// Space at top of sidebar for traffic light buttons
-    private let trafficLightPadding: CGFloat = 28
-    private let tabRowSpacing: CGFloat = 2
+    private let trafficLightPadding: CGFloat = 30
+    private let tabRowSpacing: CGFloat = 4
     private let hiddenTitlebarControlsLeadingInset: CGFloat = 72
+
+    private var workspaceHeader: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("工作区")
+                    .font(.system(size: 11.5, weight: .bold))
+                    .tracking(0.6)
+                    .foregroundStyle(.secondary)
+
+                Text(tabManager.tabs.count == 1 ? "1 个窗口已打开" : "\(tabManager.tabs.count) 个窗口已打开")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary.opacity(0.82))
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: 6) {
+                Button {
+                    tabManager.addWorkspace(placementOverride: .end)
+                    if let selectedId = tabManager.selectedTabId {
+                        selectedTabIds = [selectedId]
+                        lastSidebarSelectionIndex = tabManager.tabs.firstIndex { $0.id == selectedId }
+                    }
+                    selection = .tabs
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 11, weight: .bold))
+                        .frame(width: 26, height: 26)
+                }
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(ICCChrome.mutedFill(for: colorScheme))
+                )
+                .help("新建工作区")
+
+                Button {
+                    AppDelegate.shared?.openFolderFromTitlebar()
+                } label: {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.system(size: 11, weight: .semibold))
+                        .frame(width: 26, height: 26)
+                }
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(ICCChrome.mutedFill(for: colorScheme))
+                )
+                .help("打开文件夹")
+            }
+            .foregroundStyle(.primary.opacity(0.84))
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+    }
 
     private var isMinimalMode: Bool {
         WorkspacePresentationModeSettings.mode(for: workspacePresentationMode) == .minimal
@@ -8826,6 +9206,8 @@ struct VerticalTabsSidebar: View {
                     // Space for traffic lights / fullscreen controls
                     Spacer()
                         .frame(height: trafficLightPadding)
+
+                    workspaceHeader
 
                     LazyVStack(spacing: tabRowSpacing) {
                         ForEach(Array(tabManager.tabs.enumerated()), id: \.element.id) { index, tab in
@@ -8874,7 +9256,9 @@ struct VerticalTabsSidebar: View {
                             .equatable()
                         }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 8)
+                    .padding(.top, 2)
+                    .padding(.bottom, 10)
 
                     SidebarEmptyArea(
                         rowSpacing: tabRowSpacing,
@@ -8912,12 +9296,25 @@ struct VerticalTabsSidebar: View {
                         .padding(.top, 2)
                 }
             }
-            .background(Color.clear)
+            .background(
+                ZStack {
+                    SidebarBackdrop().ignoresSafeArea()
+                    ICCChrome.panelGradient(for: colorScheme)
+                        .opacity(colorScheme == .dark ? 0.82 : 0.90)
+                    LinearGradient(
+                        colors: [
+                            ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.08 : 0.05),
+                            Color.clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+            )
             .modifier(ClearScrollBackground())
         }
         .accessibilityIdentifier("Sidebar")
         .ignoresSafeArea()
-        .background(SidebarBackdrop().ignoresSafeArea())
         .background(
             WindowAccessor { window in
                 modifierKeyMonitor.setHostWindow(window)
@@ -10355,22 +10752,14 @@ private struct WeChatSidebarCard<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ICCSidebarCard {
             content()
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(nsColor: .windowBackgroundColor).opacity(0.86))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         }
     }
 }
 
 private struct WeChatSidebarMetricCard: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let value: String
 
@@ -10386,8 +10775,12 @@ private struct WeChatSidebarMetricCard: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 9)
         .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.primary.opacity(0.045))
+            RoundedRectangle(cornerRadius: 13, style: .continuous)
+                .fill(ICCChrome.cardGradient(for: colorScheme))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        .stroke(ICCChrome.borderColor(for: colorScheme, emphasis: 0.9), lineWidth: 1)
+                )
         )
     }
 }
@@ -10398,16 +10791,7 @@ private struct WeChatSidebarStatusPill: View {
     var emphasized: Bool = false
 
     var body: some View {
-        Text(text)
-            .font(.system(size: 10.5, weight: .semibold))
-            .lineLimit(1)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 5)
-            .foregroundStyle(emphasized ? Color.white : tint)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(emphasized ? tint : tint.opacity(0.12))
-            )
+        ICCStatusPill(text: text, tint: tint, emphasized: emphasized)
     }
 }
 
@@ -10440,8 +10824,11 @@ private struct WeChatSidebarToggleRow: View {
 @MainActor
 private struct SourceControlSidebarPaneView: View {
     @ObservedObject var workspace: Workspace
+    @Environment(\.colorScheme) private var colorScheme
     @State private var snapshot: SourceControlSidebarSnapshot?
     @State private var isRefreshing = false
+    @State private var actionStatusMessage: String?
+    @State private var actionStatusIsError = false
 
     private var currentDirectory: String {
         let trimmed = workspace.currentDirectory.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -10482,6 +10869,9 @@ private struct SourceControlSidebarPaneView: View {
                 overviewCard
 
                 if let snapshot, snapshot.isRepository {
+                    repositoryActionsCard
+                    aiCollaborationCard
+
                     if !snapshot.githubRepoSlugs.isEmpty || !snapshot.remotes.isEmpty {
                         repositoryBindingCard(snapshot)
                     }
@@ -10507,26 +10897,14 @@ private struct SourceControlSidebarPaneView: View {
         WeChatSidebarCard {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 12) {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.blue.opacity(0.88),
-                                    Color.teal.opacity(0.72)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 42, height: 42)
-                        .overlay {
-                            Image(systemName: "arrow.triangle.branch")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(.white)
-                        }
+                    ICCIconBadge(
+                        systemImage: "arrow.triangle.branch",
+                        primary: ICCChrome.accent(for: colorScheme),
+                        secondary: ICCChrome.secondaryAccent(for: colorScheme)
+                    )
 
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("源代码管理")
+                        Text("源码管理器")
                             .font(.system(size: 15, weight: .semibold))
                         Text(repositoryRoot.map { SidebarPathFormatter.shortenedPath($0) } ?? SidebarPathFormatter.shortenedPath(currentDirectory))
                             .font(.system(size: 11.5, weight: .medium))
@@ -10597,6 +10975,93 @@ private struct SourceControlSidebarPaneView: View {
 
                     Spacer(minLength: 0)
                 }
+
+                if let actionStatusMessage {
+                    Text(actionStatusMessage)
+                        .font(.caption)
+                        .foregroundStyle(actionStatusIsError ? Color.red : Color.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var repositoryActionsCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("仓库操作")
+                    .font(.system(size: 13, weight: .semibold))
+
+                Text("直接为当前项目打开一个新的终端分屏执行 Pull / Push / Status，保留完整输出，避免把 Git 操作做成不可见的后台按钮。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button("快速 Pull") {
+                        runRepositoryAction(title: "Git Pull", command: "git pull --rebase --autostash")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+
+                    Button("快速 Push") {
+                        runRepositoryAction(title: "Git Push", command: "git push")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+
+                    Button("状态") {
+                        runRepositoryAction(title: "Git Status", command: "git status -sb")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+                }
+            }
+        }
+    }
+
+    private var aiCollaborationCard: some View {
+        WeChatSidebarCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("AI Command Center")
+                    .font(.system(size: 13, weight: .semibold))
+
+                Text("参考 smux 的跨模型协作思路，但直接使用 icc 自己的 pane read/send/send-key 能力。你可以为当前工作区一键添加 Claude、Codex，或创建双模型协作布局。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button("添加 Claude") {
+                        addAgentPane(tool: .claude)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+
+                    Button("添加 Codex") {
+                        addAgentPane(tool: .codex)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+
+                    Button("创建协作布局") {
+                        createAgentPairLayout()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .disabled(repositoryRoot == nil)
+                }
+
+                Button("复制协作命令") {
+                    copyAgentBridgeCheatSheet()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
         }
     }
@@ -10768,6 +11233,185 @@ private struct SourceControlSidebarPaneView: View {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(branchHeadline, forType: .string)
+        actionStatusIsError = false
+        actionStatusMessage = "Current branch copied."
+    }
+
+    private enum AgentTool {
+        case claude
+        case codex
+
+        var displayName: String {
+            switch self {
+            case .claude:
+                return "Claude Code"
+            case .codex:
+                return "Codex"
+            }
+        }
+
+        var launchCommand: String {
+            switch self {
+            case .claude:
+                return "command -v claude >/dev/null 2>&1 && claude || echo 'Claude Code is not installed in PATH.'"
+            case .codex:
+                return "command -v codex >/dev/null 2>&1 && codex || echo 'Codex is not installed in PATH.'"
+            }
+        }
+    }
+
+    private func runRepositoryAction(title: String, command: String) {
+        guard let repositoryRoot else {
+            actionStatusIsError = true
+            actionStatusMessage = "Open a Git repository first."
+            return
+        }
+        guard let panel = createExecutionPane() else {
+            actionStatusIsError = true
+            actionStatusMessage = "Couldn’t create a terminal pane for \(title)."
+            return
+        }
+
+        let wrappedCommand = [
+            "clear",
+            "printf 'AI Command Center · \(title)\\n\\n'",
+            "pwd",
+            "printf '\\n'",
+            command,
+            "STATUS=$?",
+            "printf '\\n'",
+            "git status -sb || true",
+            "printf '\\nExit status: %s\\n' \"$STATUS\"",
+            "exec ${SHELL:-/bin/zsh} -l"
+        ].joined(separator: "\n")
+
+        queueCommand(wrappedCommand, for: panel, workingDirectory: repositoryRoot)
+        actionStatusIsError = false
+        actionStatusMessage = "\(title) opened in a new pane."
+    }
+
+    private func addAgentPane(tool: AgentTool) {
+        guard let repositoryRoot else {
+            actionStatusIsError = true
+            actionStatusMessage = "Open a Git repository first."
+            return
+        }
+        guard let panel = createExecutionPane() else {
+            actionStatusIsError = true
+            actionStatusMessage = "Couldn’t create a terminal pane for \(tool.displayName)."
+            return
+        }
+
+        queueCommand(agentBootstrapCommand(for: tool), for: panel, workingDirectory: repositoryRoot)
+        actionStatusIsError = false
+        actionStatusMessage = "\(tool.displayName) pane created."
+    }
+
+    private func createAgentPairLayout() {
+        guard let repositoryRoot else {
+            actionStatusIsError = true
+            actionStatusMessage = "Open a Git repository first."
+            return
+        }
+        guard let anchorPanelId = workspace.focusedPanelId ?? workspace.focusedTerminalPanel?.id ?? workspace.panels.keys.first else {
+            actionStatusIsError = true
+            actionStatusMessage = "No active pane is available for the collaboration layout."
+            return
+        }
+        guard let claudePanel = workspace.newTerminalSplit(
+            from: anchorPanelId,
+            orientation: .horizontal,
+            insertFirst: false,
+            focus: false
+        ) else {
+            actionStatusIsError = true
+            actionStatusMessage = "Couldn’t create the Claude pane."
+            return
+        }
+        guard let codexPanel = workspace.newTerminalSplit(
+            from: claudePanel.id,
+            orientation: .vertical,
+            insertFirst: false,
+            focus: false
+        ) else {
+            actionStatusIsError = true
+            actionStatusMessage = "Claude pane created, but Codex pane could not be added."
+            return
+        }
+
+        queueCommand(agentBootstrapCommand(for: .claude), for: claudePanel, workingDirectory: repositoryRoot)
+        queueCommand(agentBootstrapCommand(for: .codex), for: codexPanel, workingDirectory: repositoryRoot)
+        actionStatusIsError = false
+        actionStatusMessage = "Claude + Codex collaboration layout created."
+    }
+
+    private func copyAgentBridgeCheatSheet() {
+        let lines = [
+            "# AI Command Center bridge",
+            "icc list-panes",
+            "icc read-screen --surface <surface-id> --scrollback --lines 80",
+            "icc send --surface <surface-id> \"review Sources/AppDelegate.swift\\n\"",
+            "icc send-key --surface <surface-id> enter"
+        ]
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(lines.joined(separator: "\n"), forType: .string)
+        actionStatusIsError = false
+        actionStatusMessage = "icc bridge commands copied."
+    }
+
+    private func createExecutionPane() -> TerminalPanel? {
+        if let anchorPanelId = workspace.focusedPanelId ?? workspace.focusedTerminalPanel?.id ?? workspace.panels.keys.first,
+           let newPanel = workspace.newTerminalSplit(
+                from: anchorPanelId,
+                orientation: .horizontal,
+                insertFirst: false,
+                focus: false
+           ) {
+            return newPanel
+        }
+        return workspace.newTerminalSurfaceInFocusedPane(focus: false)
+    }
+
+    private func queueCommand(
+        _ command: String,
+        for panel: TerminalPanel,
+        workingDirectory: String,
+        attempt: Int = 0
+    ) {
+        guard attempt < 12 else {
+            actionStatusIsError = true
+            actionStatusMessage = "The new terminal pane was created, but the command could not be delivered."
+            return
+        }
+
+        guard panel.surface.surface != nil else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                queueCommand(command, for: panel, workingDirectory: workingDirectory, attempt: attempt + 1)
+            }
+            return
+        }
+
+        panel.sendText("cd \(shellQuote(workingDirectory))\n\(command)\n")
+    }
+
+    private func agentBootstrapCommand(for tool: AgentTool) -> String {
+        [
+            "clear",
+            "printf 'AI Command Center · \(tool.displayName)\\n\\n'",
+            "printf 'Bridge commands:\\n'",
+            "printf '  icc list-panes\\n'",
+            "printf '  icc read-screen --surface <surface-id> --scrollback --lines 80\\n'",
+            "printf '  icc send --surface <surface-id> \"prompt here\\\\n\"\\n'",
+            "printf '  icc send-key --surface <surface-id> enter\\n\\n'",
+            tool.launchCommand,
+            "exec ${SHELL:-/bin/zsh} -l"
+        ].joined(separator: "\n")
+    }
+
+    private func shellQuote(_ value: String) -> String {
+        if value.isEmpty { return "''" }
+        return "'" + value.replacingOccurrences(of: "'", with: "'\"'\"'") + "'"
     }
 
     private func pullRequestStatusText(_ pullRequest: SidebarPullRequestState) -> String {
@@ -10950,14 +11594,16 @@ private enum SourceControlSidebarProbe {
 }
 
 private struct SidebarActivityRail: View {
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var updateViewModel: UpdateViewModel
     @Binding var selection: SidebarSelection
+    let onOpenSettings: () -> Void
     let onSendFeedback: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
-                .frame(height: 10)
+                .frame(height: 12)
 
             VStack(spacing: 6) {
                 SidebarActivityRailButton(selection: $selection, target: .tabs, systemImage: "square.grid.2x2", label: "工作区")
@@ -10967,11 +11613,13 @@ private struct SidebarActivityRail: View {
                 SidebarActivityRailButton(selection: $selection, target: .wechat, systemImage: "message", label: "微信")
                 SidebarActivityRailButton(selection: $selection, target: .supervisor, systemImage: "brain", label: "监督器")
             }
-            .padding(.top, 18)
+            .padding(.top, 16)
 
             Spacer(minLength: 10)
 
             VStack(spacing: 6) {
+                SidebarSettingsButton(action: onOpenSettings)
+
                 SidebarHelpMenuButton(onSendFeedback: onSendFeedback)
                     .help("更多")
 
@@ -10999,10 +11647,10 @@ private struct SidebarActivityRail: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(
             ZStack {
-                Color(nsColor: .windowBackgroundColor).opacity(0.82)
+                ICCChrome.railGradient(for: colorScheme)
                 LinearGradient(
                     colors: [
-                        Color.primary.opacity(0.02),
+                        ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.08 : 0.05),
                         Color.clear
                     ],
                     startPoint: .top,
@@ -11011,16 +11659,45 @@ private struct SidebarActivityRail: View {
             }
         )
         .overlay(alignment: .trailing) {
-            Divider()
+            Rectangle()
+                .fill(ICCChrome.borderColor(for: colorScheme))
+                .frame(width: 1)
         }
     }
 }
 
+private struct SidebarSettingsButton: View {
+    private let buttonSize: CGFloat = 22
+    private let iconSize: CGFloat = 11
+
+    let action: () -> Void
+
+    var body: some View {
+        let title = String(localized: "sidebar.settings.button", defaultValue: "Settings")
+
+        Button(action: action) {
+            Image(systemName: "gearshape")
+                .symbolRenderingMode(.monochrome)
+                .font(.system(size: iconSize, weight: .medium))
+                .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                .frame(width: buttonSize, height: buttonSize, alignment: .center)
+        }
+        .buttonStyle(SidebarFooterIconButtonStyle())
+        .frame(width: buttonSize, height: buttonSize, alignment: .center)
+        .accessibilityElement(children: .ignore)
+        .safeHelp(title)
+        .accessibilityLabel(title)
+        .accessibilityIdentifier("SidebarSettingsButton")
+    }
+}
+
 private struct SidebarActivityRailButton: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var selection: SidebarSelection
     let target: SidebarSelection
     let systemImage: String
     let label: String
+    @State private var isHovered = false
 
     private var isActive: Bool {
         selection == target
@@ -11033,24 +11710,29 @@ private struct SidebarActivityRailButton: View {
             }
         } label: {
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(isActive ? Color.accentColor.opacity(0.12) : Color.clear)
+                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                    .fill(
+                        isActive
+                            ? ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.18 : 0.14)
+                            : (isHovered ? ICCChrome.mutedFill(for: colorScheme) : Color.clear)
+                    )
 
                 if isActive {
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(Color.accentColor)
-                        .frame(width: 3, height: 14)
+                        .fill(ICCChrome.accent(for: colorScheme))
+                        .frame(width: 3, height: 16)
                 }
 
                 Image(systemName: systemImage)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isActive ? Color.accentColor : Color.primary.opacity(0.76))
+                    .foregroundStyle(isActive ? ICCChrome.accent(for: colorScheme) : Color.primary.opacity(0.76))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(width: 30, height: 30)
-            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .frame(width: 34, height: 34)
+            .contentShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
         }
         .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
         .help(label)
         .accessibilityLabel(Text(label))
     }
@@ -11201,6 +11883,7 @@ private struct FeedbackComposerMessageEditor: NSViewRepresentable {
     let placeholder: String
     let accessibilityLabel: String
     let accessibilityIdentifier: String
+    let onSubmit: () -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -11237,6 +11920,26 @@ private struct FeedbackComposerMessageEditor: NSViewRepresentable {
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
             parent.text = textView.string
+        }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            guard commandSelector == #selector(NSResponder.insertNewline(_:)) else {
+                return false
+            }
+            guard textView.hasMarkedText() == false else {
+                return false
+            }
+
+            let modifiers = NSApp.currentEvent?.modifierFlags.intersection(.deviceIndependentFlagsMask) ?? []
+            if modifiers == [.shift] {
+                return false
+            }
+            guard modifiers.isEmpty else {
+                return false
+            }
+
+            parent.onSubmit()
+            return true
         }
     }
 }
@@ -11510,7 +12213,11 @@ private struct SidebarFeedbackComposerSheet: View {
                         defaultValue: "Share feedback, feature requests, or issues."
                     ),
                     accessibilityLabel: String(localized: "sidebar.help.feedback.message", defaultValue: "Message"),
-                    accessibilityIdentifier: "SidebarFeedbackMessageEditor"
+                    accessibilityIdentifier: "SidebarFeedbackMessageEditor",
+                    onSubmit: {
+                        guard canSubmit else { return }
+                        Task { await submitFeedback() }
+                    }
                 )
                 .frame(minHeight: 180)
             }
@@ -11948,8 +12655,12 @@ private struct SidebarHelpMenuButton: View {
                 title: String(localized: "sidebar.help.welcome", defaultValue: "Welcome to icc!"),
                 action: .welcome,
                 accessibilityIdentifier: "SidebarHelpMenuOptionWelcome",
-                isExternalLink: false
+                isExternalLink: false,
+                showsAppIcon: true
             )
+            Divider()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
             helpOptionButton(
                 title: String(localized: "sidebar.help.sendFeedback", defaultValue: "Send Feedback"),
                 action: .sendFeedback,
@@ -12017,8 +12728,8 @@ private struct SidebarHelpMenuButton: View {
                 isExternalLink: false
             )
         }
-        .padding(8)
-        .frame(minWidth: 200)
+        .padding(10)
+        .frame(minWidth: 220)
     }
 
     private func helpOptionButton(
@@ -12026,6 +12737,7 @@ private struct SidebarHelpMenuButton: View {
         action: SidebarHelpMenuAction,
         accessibilityIdentifier: String,
         isExternalLink: Bool,
+        showsAppIcon: Bool = false,
         shortcutHint: String? = nil,
         trailingSystemImage: String? = nil
     ) -> some View {
@@ -12034,8 +12746,16 @@ private struct SidebarHelpMenuButton: View {
             perform(action)
         } label: {
             HStack(spacing: 8) {
+                if showsAppIcon {
+                    Image(nsImage: NSApplication.shared.applicationIconImage)
+                        .resizable()
+                        .renderingMode(.original)
+                        .interpolation(.high)
+                        .frame(width: 15, height: 15)
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                }
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: showsAppIcon ? .semibold : .regular))
                 Spacer(minLength: 0)
                 if let shortcutHint {
                     helpOptionShortcutHint(text: shortcutHint)
@@ -12322,6 +13042,7 @@ private struct SidebarFooterIconButtonStyleBody: View {
 private struct SidebarDevFooter: View {
     @ObservedObject var updateViewModel: UpdateViewModel
     @Binding var selection: SidebarSelection
+    let onOpenSettings: () -> Void
     let onSendFeedback: () -> Void
     @AppStorage(DevBuildBannerDebugSettings.sidebarBannerVisibleKey)
     private var showSidebarDevBuildBanner = DevBuildBannerDebugSettings.defaultShowSidebarBanner
@@ -12331,6 +13052,7 @@ private struct SidebarDevFooter: View {
             SidebarActivityRail(
                 updateViewModel: updateViewModel,
                 selection: $selection,
+                onOpenSettings: onOpenSettings,
                 onSendFeedback: onSendFeedback
             )
             if showSidebarDevBuildBanner {
@@ -12427,36 +13149,74 @@ private struct SidebarEmptyArea: View {
     @Binding var dropIndicator: SidebarDropIndicator?
 
     var body: some View {
-        Color.clear
-            .contentShape(Rectangle())
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onTapGesture(count: 2) {
-                tabManager.addWorkspace(placementOverride: .end)
-                if let selectedId = tabManager.selectedTabId {
-                    selectedTabIds = [selectedId]
-                    lastSidebarSelectionIndex = tabManager.tabs.firstIndex { $0.id == selectedId }
+        ZStack {
+            Color.clear
+                .contentShape(Rectangle())
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onTapGesture(count: 2) {
+                    tabManager.addWorkspace(placementOverride: .end)
+                    if let selectedId = tabManager.selectedTabId {
+                        selectedTabIds = [selectedId]
+                        lastSidebarSelectionIndex = tabManager.tabs.firstIndex { $0.id == selectedId }
+                    }
+                    selection = .tabs
                 }
-                selection = .tabs
-            }
-            .onDrop(of: SidebarTabDragPayload.dropContentTypes, delegate: SidebarTabDropDelegate(
-                targetTabId: nil,
-                tabManager: tabManager,
-                draggedTabId: $draggedTabId,
-                selectedTabIds: $selectedTabIds,
-                lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
-                targetRowHeight: nil,
-                dragAutoScrollController: dragAutoScrollController,
-                dropIndicator: $dropIndicator
-            ))
-            .overlay(alignment: .top) {
-                if shouldShowTopDropIndicator {
-                    Rectangle()
-                        .fill(cmuxAccentColor())
-                        .frame(height: 2)
-                        .padding(.horizontal, 8)
-                        .offset(y: -(rowSpacing / 2))
+                .onDrop(of: SidebarTabDragPayload.dropContentTypes, delegate: SidebarTabDropDelegate(
+                    targetTabId: nil,
+                    tabManager: tabManager,
+                    draggedTabId: $draggedTabId,
+                    selectedTabIds: $selectedTabIds,
+                    lastSidebarSelectionIndex: $lastSidebarSelectionIndex,
+                    targetRowHeight: nil,
+                    dragAutoScrollController: dragAutoScrollController,
+                    dropIndicator: $dropIndicator
+                ))
+                .overlay(alignment: .top) {
+                    if shouldShowTopDropIndicator {
+                        Rectangle()
+                            .fill(cmuxAccentColor())
+                            .frame(height: 2)
+                            .padding(.horizontal, 8)
+                            .offset(y: -(rowSpacing / 2))
+                    }
                 }
+
+            if tabManager.tabs.count <= 1 {
+                ICCSidebarCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("继续扩展")
+                            .font(.system(size: 13, weight: .semibold))
+
+                        Text("新建更多工作区，或直接打开一个项目文件夹，让左侧区域保持高效而不是空置。")
+                            .font(.system(size: 11.5, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        HStack(spacing: 8) {
+                            Button("新建工作区") {
+                                tabManager.addWorkspace(placementOverride: .end)
+                                if let selectedId = tabManager.selectedTabId {
+                                    selectedTabIds = [selectedId]
+                                    lastSidebarSelectionIndex = tabManager.tabs.firstIndex { $0.id == selectedId }
+                                }
+                                selection = .tabs
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+
+                            Button("打开文件夹") {
+                                AppDelegate.shared?.openFolderFromTitlebar()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.top, 18)
+                .frame(maxHeight: .infinity, alignment: .top)
             }
+        }
     }
 
     private var shouldShowTopDropIndicator: Bool {
@@ -12665,12 +13425,15 @@ private struct TabItemView: View, Equatable {
     }
 
     private var activeBorderColor: Color {
+        if isHovering && !isActive {
+            return ICCChrome.borderColor(for: colorScheme, emphasis: 0.7)
+        }
         guard isActive else { return .clear }
         switch activeTabIndicatorStyle {
         case .leftRail:
             return .clear
         case .solidFill:
-            return Color.primary.opacity(0.5)
+            return ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.42 : 0.28)
         }
     }
 
@@ -12832,7 +13595,10 @@ private struct TabItemView: View, Equatable {
         let moveUpActionText = String(localized: "sidebar.workspace.moveUpAction", defaultValue: "Move Up")
         let moveDownActionText = String(localized: "sidebar.workspace.moveDownAction", defaultValue: "Move Down")
         let latestNotificationSubtitle = latestNotificationText
-        let effectiveSubtitle = latestNotificationSubtitle
+        let normalizedTitle = tab.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let effectiveSubtitle = latestNotificationSubtitle?.trimmingCharacters(in: .whitespacesAndNewlines) == normalizedTitle
+            ? nil
+            : latestNotificationSubtitle
         let detailVisibility = visibleAuxiliaryDetails
         let orderedPanelIds: [UUID]? = (detailVisibility.showsBranchDirectory || detailVisibility.showsPullRequests)
             ? tab.sidebarOrderedPanelIds()
@@ -12854,17 +13620,31 @@ private struct TabItemView: View, Equatable {
             }
             return directorySummaryText(orderedPanelIds: orderedPanelIds)
         }()
-        let compactBranchDirectoryRow = branchDirectoryRow(
-            gitSummary: compactGitBranchSummaryText,
-            directorySummary: compactDirectorySummaryText
-        )
+        let compactBranchDirectoryRow: String? = {
+            let candidate = branchDirectoryRow(
+                gitSummary: compactGitBranchSummaryText,
+                directorySummary: compactDirectorySummaryText
+            )
+            guard let candidate else { return nil }
+            if compactGitBranchSummaryText == nil,
+               candidate.trimmingCharacters(in: .whitespacesAndNewlines) == normalizedTitle {
+                return nil
+            }
+            return candidate
+        }()
         let branchDirectoryLines: [VerticalBranchDirectoryLine] = {
             guard detailVisibility.showsBranchDirectory,
                   sidebarBranchVerticalLayout,
                   let orderedPanelIds else {
                 return []
             }
-            return verticalBranchDirectoryLines(orderedPanelIds: orderedPanelIds)
+            let lines = verticalBranchDirectoryLines(orderedPanelIds: orderedPanelIds)
+            if lines.count == 1,
+               lines.first?.branch == nil,
+               lines.first?.directory?.trimmingCharacters(in: .whitespacesAndNewlines) == normalizedTitle {
+                return []
+            }
+            return lines
         }()
         let branchLinesContainBranch = sidebarShowGitBranch && branchDirectoryLines.contains { $0.branch != nil }
         let pullRequestRows: [PullRequestDisplay] = {
@@ -13106,12 +13886,12 @@ private struct TabItemView: View, Equatable {
         .animation(.easeInOut(duration: 0.2), value: tab.progress != nil)
         .animation(.easeInOut(duration: 0.2), value: tab.metadataBlocks.count)
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.vertical, 7)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(backgroundColor)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .strokeBorder(activeBorderColor, lineWidth: activeBorderLineWidth)
                 }
                 .overlay(alignment: .leading) {
@@ -13125,7 +13905,7 @@ private struct TabItemView: View, Equatable {
                     }
                 }
         )
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 4)
         .background {
             GeometryReader { proxy in
                 Color.clear
@@ -13417,16 +14197,19 @@ private struct TabItemView: View, Equatable {
     private var backgroundColor: Color {
         switch activeTabIndicatorStyle {
         case .leftRail:
-            if isActive        { return Color(nsColor: sidebarSelectedWorkspaceBackgroundNSColor(for: colorScheme)) }
-            if isMultiSelected { return cmuxAccentColor().opacity(0.25) }
+            if isActive        { return Color(nsColor: sidebarSelectedWorkspaceBackgroundNSColor(for: colorScheme)).opacity(colorScheme == .dark ? 0.92 : 0.96) }
+            if isMultiSelected { return cmuxAccentColor().opacity(0.20) }
+            if isHovering { return ICCChrome.mutedFill(for: colorScheme) }
             return Color.clear
         case .solidFill:
-            if isActive { return Color(nsColor: sidebarSelectedWorkspaceBackgroundNSColor(for: colorScheme)) }
+            if isActive { return Color(nsColor: sidebarSelectedWorkspaceBackgroundNSColor(for: colorScheme)).opacity(colorScheme == .dark ? 0.92 : 0.96) }
             if let custom = resolvedCustomTabColor {
-                if isMultiSelected { return custom.opacity(0.35) }
-                return custom.opacity(0.7)
+                if isMultiSelected { return custom.opacity(0.28) }
+                if isHovering { return custom.opacity(0.22) }
+                return custom.opacity(0.14)
             }
-            if isMultiSelected { return cmuxAccentColor().opacity(0.25) }
+            if isMultiSelected { return cmuxAccentColor().opacity(0.20) }
+            if isHovering { return ICCChrome.mutedFill(for: colorScheme) }
             return Color.clear
         }
     }

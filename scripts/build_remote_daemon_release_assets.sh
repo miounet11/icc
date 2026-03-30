@@ -6,7 +6,8 @@ usage() {
 Usage: scripts/build_remote_daemon_release_assets.sh \
   --version <app-version> \
   --release-tag <tag> \
-  --repo <owner/repo> \
+  [--repo <owner/repo>] \
+  [--download-base-url <url>] \
   --output-dir <dir>
 
 Builds cmuxd-remote release assets for the supported remote platforms and emits:
@@ -20,6 +21,7 @@ VERSION=""
 RELEASE_TAG=""
 REPO=""
 OUTPUT_DIR=""
+DOWNLOAD_BASE_URL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -33,6 +35,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --repo)
       REPO="${2:-}"
+      shift 2
+      ;;
+    --download-base-url)
+      DOWNLOAD_BASE_URL="${2:-}"
       shift 2
       ;;
     --output-dir)
@@ -51,8 +57,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$VERSION" || -z "$RELEASE_TAG" || -z "$REPO" || -z "$OUTPUT_DIR" ]]; then
-  echo "error: --version, --release-tag, --repo, and --output-dir are required" >&2
+if [[ -z "$VERSION" || -z "$RELEASE_TAG" || -z "$OUTPUT_DIR" ]]; then
+  echo "error: --version, --release-tag, and --output-dir are required" >&2
+  usage
+  exit 1
+fi
+
+if [[ -z "$REPO" && -z "$DOWNLOAD_BASE_URL" ]]; then
+  echo "error: either --repo or --download-base-url must be provided" >&2
   usage
   exit 1
 fi
@@ -115,15 +127,18 @@ for target in "${TARGETS[@]}"; do
   printf '%s\t%s\t%s\t%s\n' "$GOOS" "$GOARCH" "$ASSET_NAME" "$SHA256" >> "$ENTRIES_FILE"
 done
 
-python3 - <<'PY' "$VERSION" "$RELEASE_TAG" "$REPO" "$CHECKSUMS_ASSET_NAME" "$CHECKSUMS_PATH" "$MANIFEST_PATH" "$ENTRIES_FILE"
+python3 - <<'PY' "$VERSION" "$RELEASE_TAG" "$REPO" "$CHECKSUMS_ASSET_NAME" "$CHECKSUMS_PATH" "$MANIFEST_PATH" "$ENTRIES_FILE" "$DOWNLOAD_BASE_URL"
 import json
 import sys
 import urllib.parse
 from pathlib import Path
 
-version, release_tag, repo, checksums_asset_name, checksums_path, manifest_path, entries_file = sys.argv[1:]
+version, release_tag, repo, checksums_asset_name, checksums_path, manifest_path, entries_file, download_base_url = sys.argv[1:]
 quoted_tag = urllib.parse.quote(release_tag, safe="")
-release_url = f"https://github.com/{repo}/releases/download/{quoted_tag}"
+if download_base_url:
+    release_url = download_base_url.rstrip("/")
+else:
+    release_url = f"https://github.com/{repo}/releases/download/{quoted_tag}"
 checksums_url = f"{release_url}/{urllib.parse.quote(checksums_asset_name, safe='')}"
 
 entries = []

@@ -81,6 +81,12 @@ type ProductPageCopy = {
     supportBody: string;
     supportChecklistTitle: string;
     supportChecklist: string[];
+    supportDownloadLabel: string;
+    supportAppcastLabel: string;
+    supportManifestLabel: string;
+    supportRemoteManifestLabel: string;
+    platformStatusTitle: string;
+    platformStatusBody: string;
     secondaryCta: string;
   };
   shared: {
@@ -126,7 +132,7 @@ const englishCopy: ProductPageCopy = {
       "ICC is designed to get you from intent to execution fast, without scattering the workflow across multiple apps. Use this guide as the baseline operating manual for local projects, remote hosts, file editing, source visibility, and supervisor-driven work.",
     quickStartTitle: "Quick start",
     quickStartSteps: [
-      "Download the current macOS build from the ICC releases page and install the app.",
+      "Download the current macOS build from the ICC website and install the app.",
       "Open ICC and create a workspace from a local folder, or start from a configured SSH target.",
       "Set your LLM provider and model in Settings before you hand a task to the supervisor.",
       "Use the right-side explorer and editor to keep files, paths, and task context visible while the terminal remains primary.",
@@ -296,7 +302,7 @@ const englishCopy: ProductPageCopy = {
     ],
     updateTitle: "Safe update checklist",
     updateSteps: [
-      "Download the latest DMG from the ICC releases page.",
+      "Download the latest DMG from the ICC website download endpoint.",
       "Quit the current app cleanly so open writes or active sessions are not interrupted mid-task.",
       "Install the new build, reopen ICC, and verify LLM settings plus SSH connections before resuming important work.",
       "Check the changelog for behavior changes in explorers, supervisor flow, file editing, or routing.",
@@ -314,7 +320,7 @@ const englishCopy: ProductPageCopy = {
       "This log is the public release record for ICC. It tracks the current product line, the official website rollout, documentation changes, and the operating notes you should check before replacing your current build.",
     currentReleaseLabel: "Current release line",
     currentReleaseBody:
-      "ICC is currently published as v0.0.1. The desktop product, official website, multilingual marketing layer, and product guide are all aligned to that first public line.",
+      "ICC is currently published as v0.1.0. The desktop product, official website, multilingual marketing layer, and release assets now align to the first post-launch refinement line.",
     releaseModelTitle: "How to read ICC releases",
     releaseModelIntro:
       "Use the changelog as an operating document, not just a marketing page. A good release note helps you decide whether to adopt immediately, validate first, or hold until an active workflow is done.",
@@ -352,6 +358,18 @@ const englishCopy: ProductPageCopy = {
     ],
     entriesTitle: "Release history",
     entries: [
+      {
+        date: "March 30, 2026",
+        version: "v0.1.0",
+        title: "Brand refinement, migration shortcuts, and collaboration upgrades",
+        body:
+          "The first post-launch ICC release sharpens the product identity, smooths migration from other AI coding clients, and adds better in-workspace control for source management and multi-agent layouts.",
+        bullets: [
+          "Replaced release-facing iconography, welcome copy, and visible product labels so ICC is distinct across app and website surfaces.",
+          "Added quick import actions for VS Code, Cursor, Claude Code, and Codex preferences.",
+          "Upgraded the source-control area and collaboration tools so fast pull, fast push, and multi-model pane creation happen inside live ICC terminals.",
+        ],
+      },
       {
         date: "March 26, 2026",
         version: "v0.0.1",
@@ -408,6 +426,13 @@ const englishCopy: ProductPageCopy = {
       "A short sequence of clicks, commands, or prompts that reproduces it.",
       "A screenshot or terminal output when the problem is visual, remote, or stateful.",
     ],
+    supportDownloadLabel: "Stable macOS download",
+    supportAppcastLabel: "Sparkle appcast",
+    supportManifestLabel: "Release manifest",
+    supportRemoteManifestLabel: "Remote helper manifest",
+    platformStatusTitle: "Platform status",
+    platformStatusBody:
+      "macOS is the only production desktop build today. ICC currently ships as a native AppKit/SwiftUI client, so a Windows installer is not published yet.",
     secondaryCta: "Open guide",
   },
   shared: {
@@ -453,7 +478,7 @@ const zhCnCopy: ProductPageCopy = {
       "ICC 的目标不是多一个聊天窗口，而是把意图快速压到可执行工作面上。下面这份说明可以作为 ICC 的基准操作手册，帮助你在本地项目、远程主机、文件编辑、源码状态和监督器工作流之间保持一致。",
     quickStartTitle: "快速开始",
     quickStartSteps: [
-      "从 ICC Releases 页面下载当前 macOS 安装包并完成安装。",
+      "从 ICC 官方网站下载当前 macOS 安装包并完成安装。",
       "打开 ICC，从本地目录创建工作区，或者从已配置的 SSH 目标开始。",
       "在交给监督器执行前，先在 Settings 中设置好你的 LLM 提供商与模型。",
       "让右侧资源管理器和编辑器承担文件、路径、任务上下文的展示，保持终端始终是主工作面。",
@@ -623,7 +648,7 @@ const zhCnCopy: ProductPageCopy = {
     ],
     updateTitle: "安全升级检查表",
     updateSteps: [
-      "从 ICC Releases 页面下载最新 DMG。",
+      "从 ICC 官方网站下载最新 DMG。",
       "先正常退出当前应用，避免中途打断写入或活动会话。",
       "安装新构建后重新打开 ICC，并在继续重要工作前核对 LLM 设置与 SSH 连接。",
       "如果资源管理器、监督器、文件编辑或路由行为有变化，先读升级日志再继续。",
@@ -641,7 +666,7 @@ const zhCnCopy: ProductPageCopy = {
       "这份页面是 ICC 的公开发布记录。它追踪当前产品线、官网上线、多语言站点扩展，以及替换当前构建前应该检查的操作说明。",
     currentReleaseLabel: "当前发布线",
     currentReleaseBody:
-      "ICC 当前对外发布版本为 v0.0.1。桌面产品、官方网站、多语言营销层和产品使用说明目前都对齐在这一条首个公开版本线上。",
+      "ICC 当前对外发布版本为 v0.1.0。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到首个公开版本之后的第一条优化版本线上。",
     releaseModelTitle: "应该怎么读 ICC 的版本发布",
     releaseModelIntro:
       "把升级日志当成操作文档，而不仅仅是宣传页。好的发布记录应该帮助你判断是马上采用、先验证，还是等当前任务结束后再更新。",
@@ -679,6 +704,18 @@ const zhCnCopy: ProductPageCopy = {
     ],
     entriesTitle: "发布历史",
     entries: [
+      {
+        date: "2026年3月30日",
+        version: "v0.1.0",
+        title: "品牌细化、迁移快捷入口与协作能力升级",
+        body:
+          "这是 ICC 首个公开版本之后的优化更新，重点在于拉开品牌辨识度、降低从其他 AI 编码客户端迁移的成本，并增强工作区内的源码管理和多模型协作能力。",
+        bullets: [
+          "替换了面向发布的图标、欢迎语和可见产品文案，让 ICC 在应用与网站两侧都更统一、更有辨识度。",
+          "新增 VS Code、Cursor、Claude Code、Codex 的快速导入入口。",
+          "升级源码管理区和协作工具，让快速 pull、快速 push 以及多模型 pane 创建都能直接在 ICC 的真实终端里完成。",
+        ],
+      },
       {
         date: "2026年3月26日",
         version: "v0.0.1",
@@ -735,6 +772,13 @@ const zhCnCopy: ProductPageCopy = {
       "一段可以稳定复现的点击、命令或提示词序列。",
       "如果问题和界面、远程连接或状态有关，附上截图或终端输出。",
     ],
+    supportDownloadLabel: "稳定版 macOS 下载",
+    supportAppcastLabel: "Sparkle 更新源",
+    supportManifestLabel: "发布清单",
+    supportRemoteManifestLabel: "远程助手清单",
+    platformStatusTitle: "平台状态",
+    platformStatusBody:
+      "目前只有 macOS 提供正式桌面安装包。ICC 当前是原生 AppKit/SwiftUI 客户端，因此 Windows 桌面安装包暂未发布。",
     secondaryCta: "查看使用说明",
   },
   shared: {

@@ -1655,7 +1655,7 @@ private struct SettingsAboutTitlebarDebugView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Toggle("Enable Debug Overrides", isOn: overridesEnabled)
 
-                Text("When disabled, cmux uses normal default titlebar behavior for this window.")
+                Text("When disabled, icc uses the normal default titlebar behavior for this window.")
                     .font(.caption)
                     .foregroundColor(.secondary)
 
@@ -2732,6 +2732,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 }
 
 enum SettingsNavigationTarget: String {
+    case automation
     case notifications
     case wechat
     case browser
@@ -3697,6 +3698,60 @@ private func localizedSettingsText(
     }
 }
 
+private enum TerminalProfileImportSource: String, CaseIterable, Identifiable {
+    case vscode
+    case cursor
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .vscode:
+            return "VS Code"
+        case .cursor:
+            return "Cursor"
+        }
+    }
+
+    var settingsURL: URL {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        switch self {
+        case .vscode:
+            return home.appendingPathComponent("Library/Application Support/Code/User/settings.json")
+        case .cursor:
+            return home.appendingPathComponent("Library/Application Support/Cursor/User/settings.json")
+        }
+    }
+}
+
+private enum AgentIntegrationInstallSource: String, CaseIterable, Identifiable {
+    case claudeCode
+    case codex
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .claudeCode:
+            return "Claude Code"
+        case .codex:
+            return "Codex"
+        }
+    }
+}
+
+private struct ImportedTerminalProfile {
+    let fontFamily: String
+    let fontSize: Double
+    let backgroundHex: String
+    let foregroundHex: String
+    let cursorHex: String
+    let cursorTextHex: String
+    let selectionBackgroundHex: String
+    let selectionForegroundHex: String
+    let summary: String
+}
+
 enum AppIconMode: String, CaseIterable, Identifiable {
     case automatic
     case light
@@ -4203,6 +4258,7 @@ struct SettingsView: View {
     private let contentTopInset: CGFloat = 8
     private let pickerColumnWidth: CGFloat = 196
     private let notificationSoundControlWidth: CGFloat = 280
+    @Environment(\.colorScheme) private var colorScheme
 
     @AppStorage(LanguageSettings.languageKey) private var appLanguage = LanguageSettings.defaultLanguage.rawValue
     @AppStorage(AppearanceSettings.appearanceModeKey) private var appearanceMode = AppearanceSettings.defaultMode.rawValue
@@ -4290,6 +4346,8 @@ struct SettingsView: View {
     @State private var socketPasswordDraft = ""
     @State private var socketPasswordStatusMessage: String?
     @State private var socketPasswordStatusIsError = false
+    @State private var quickImportStatusMessage: String?
+    @State private var quickImportStatusIsError = false
     @State private var notificationCustomSoundStatusMessage: String?
     @State private var notificationCustomSoundStatusIsError = false
     @State private var showNotificationCustomSoundErrorAlert = false
@@ -4363,16 +4421,16 @@ struct SettingsView: View {
         if paneFirstClickFocusEnabled {
             return localizedSettingsText(
                 "settings.app.paneFirstClickFocus.subtitleOn",
-                english: "When cmux is inactive, clicking a pane activates the window and focuses that pane in one click.",
-                simplifiedChinese: "当 iatlas 未激活时，点击面板会同时激活窗口并聚焦该面板。",
-                traditionalChinese: "當 iatlas 未啟用時，點擊面板會同時啟用視窗並聚焦該面板。"
+                english: "When icc is inactive, clicking a pane activates the window and focuses that pane in one click.",
+                simplifiedChinese: "当 icc 未激活时，点击面板会同时激活窗口并聚焦该面板。",
+                traditionalChinese: "當 icc 未啟用時，點擊面板會同時啟用視窗並聚焦該面板。"
             )
         }
         return localizedSettingsText(
             "settings.app.paneFirstClickFocus.subtitleOff",
-            english: "When cmux is inactive, the first click only activates the window. Click again to focus the pane.",
-            simplifiedChinese: "当 iatlas 未激活时，第一次点击只会激活窗口；再次点击才会聚焦面板。",
-            traditionalChinese: "當 iatlas 未啟用時，第一次點擊只會啟用視窗；再次點擊才會聚焦面板。"
+            english: "When icc is inactive, the first click only activates the window. Click again to focus the pane.",
+            simplifiedChinese: "当 icc 未激活时，第一次点击只会激活窗口；再次点击才会聚焦面板。",
+            traditionalChinese: "當 icc 未啟用時，第一次點擊只會啟用視窗；再次點擊才會聚焦面板。"
         )
     }
 
@@ -5133,47 +5191,81 @@ struct SettingsView: View {
 
     private func settingsNavigationSidebar(proxy: ScrollViewProxy) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("icc")
-                    .font(.system(size: 19, weight: .semibold))
-                Text(
-                    localizedSettingsText(
-                        "settings.nav.summary",
-                        english: "Configure the workspace, automation, browser, and notification flow from one place.",
-                        simplifiedChinese: "在这里统一配置工作区、自动化、浏览器和通知流程。",
-                        traditionalChinese: "在這裡統一設定工作區、自動化、瀏覽器與通知流程。"
-                    )
-                )
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 18)
+            ICCSidebarCard(emphasized: true) {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .top, spacing: 12) {
+                        ICCIconBadge(
+                            systemImage: "slider.horizontal.3",
+                            primary: ICCChrome.accent(for: colorScheme),
+                            secondary: ICCChrome.secondaryAccent(for: colorScheme)
+                        )
 
-            VStack(spacing: 8) {
-                ForEach(SettingsSidebarSection.allCases) { section in
-                    SettingsSidebarNavButton(
-                        section: section,
-                        isSelected: selectedSettingsSection == section,
-                        action: {
-                            scrollToSettingsSection(section, proxy: proxy)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("icc")
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                            Text(
+                                localizedSettingsText(
+                                    "settings.nav.summary",
+                                    english: "Configure the workspace, automation, browser, and notification flow from one place.",
+                                    simplifiedChinese: "在这里统一配置工作区、自动化、浏览器和通知流程。",
+                                    traditionalChinese: "在這裡統一設定工作區、自動化、瀏覽器與通知流程。"
+                                )
+                            )
+                                .font(.system(size: 11.5, weight: .medium))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                    )
+                    }
+
+                    HStack(spacing: 8) {
+                        ICCStatusPill(
+                            text: localizedSettingsText(
+                                "settings.nav.workspace",
+                                english: "Workspace",
+                                simplifiedChinese: "工作区",
+                                traditionalChinese: "工作區"
+                            ),
+                            tint: ICCChrome.accent(for: colorScheme)
+                        )
+                        ICCStatusPill(
+                            text: localizedSettingsText(
+                                "settings.nav.automation",
+                                english: "Automation",
+                                simplifiedChinese: "自动化",
+                                traditionalChinese: "自動化"
+                            ),
+                            tint: ICCChrome.secondaryAccent(for: colorScheme)
+                        )
+                    }
                 }
             }
-            .padding(.horizontal, 10)
+
+            ICCSidebarCard {
+                VStack(spacing: 8) {
+                    ForEach(SettingsSidebarSection.allCases) { section in
+                        SettingsSidebarNavButton(
+                            section: section,
+                            isSelected: selectedSettingsSection == section,
+                            action: {
+                                scrollToSettingsSection(section, proxy: proxy)
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(minLength: 0)
         }
-        .frame(width: 248)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
+        .frame(width: 280)
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .background(
             ZStack {
-                Color(nsColor: NSColor.controlBackgroundColor).opacity(0.72)
+                ICCChrome.panelGradient(for: colorScheme)
                 LinearGradient(
                     colors: [
-                        Color.accentColor.opacity(0.05),
+                        ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.08 : 0.05),
                         Color.clear
                     ],
                     startPoint: .topLeading,
@@ -5323,7 +5415,7 @@ struct SettingsView: View {
 
                         SettingsCardRow(
                             localizedSettingsText("settings.app.showInMenuBar", english: "Show in Menu Bar", simplifiedChinese: "在菜单栏显示", traditionalChinese: "在選單列顯示"),
-                            subtitle: localizedSettingsText("settings.app.showInMenuBar.subtitle", english: "Keep cmux in the menu bar for unread notifications and quick actions.", simplifiedChinese: "在菜单栏中保留 iatlas，用于未读提醒和快捷操作。", traditionalChinese: "在選單列中保留 iatlas，用於未讀提醒與快捷操作。")
+                            subtitle: localizedSettingsText("settings.app.showInMenuBar.subtitle", english: "Keep icc in the menu bar for unread notifications and quick actions.", simplifiedChinese: "在菜单栏中保留 icc，用于未读提醒和快捷操作。", traditionalChinese: "在選單列中保留 icc，用於未讀提醒與快捷操作。")
                         ) {
                             Toggle("", isOn: $showMenuBarExtra)
                                 .labelsHidden()
@@ -5352,7 +5444,7 @@ struct SettingsView: View {
 
                         SettingsCardRow(
                             localizedSettingsText("settings.notifications.paneFlash.title", english: "Pane Flash", simplifiedChinese: "面板闪烁提示", traditionalChinese: "面板閃爍提示"),
-                            subtitle: localizedSettingsText("settings.notifications.paneFlash.subtitle", english: "Briefly flash a blue outline when cmux highlights a pane.", simplifiedChinese: "iatlas 高亮面板时，会短暂闪烁蓝色边框。", traditionalChinese: "iatlas 高亮面板時，會短暫閃爍藍色邊框。")
+                            subtitle: localizedSettingsText("settings.notifications.paneFlash.subtitle", english: "Briefly flash a blue outline when icc highlights a pane.", simplifiedChinese: "icc 高亮面板时，会短暂闪烁蓝色边框。", traditionalChinese: "icc 高亮面板時，會短暫閃爍藍色邊框。")
                         ) {
                             Toggle("", isOn: $notificationPaneFlashEnabled)
                                 .labelsHidden()
@@ -5465,7 +5557,7 @@ struct SettingsView: View {
                             localizedSettingsText("settings.app.telemetry", english: "Send anonymous telemetry", simplifiedChinese: "发送匿名遥测", traditionalChinese: "傳送匿名遙測"),
                             subtitle: sendAnonymousTelemetry != telemetryValueAtLaunch
                                 ? localizedSettingsText("settings.app.telemetry.subtitleChanged", english: "Change takes effect on next launch.", simplifiedChinese: "更改将在下次启动后生效。", traditionalChinese: "變更將在下次啟動後生效。")
-                                : localizedSettingsText("settings.app.telemetry.subtitle", english: "Share anonymized crash and usage data to help improve cmux.", simplifiedChinese: "共享匿名化的崩溃与使用数据，以帮助改进 iatlas。", traditionalChinese: "共享匿名化的崩潰與使用資料，以協助改進 iatlas。")
+                                : localizedSettingsText("settings.app.telemetry.subtitle", english: "Share anonymized crash and usage data to help improve icc.", simplifiedChinese: "共享匿名化的崩溃与使用数据，以帮助改进 icc。", traditionalChinese: "共享匿名化的崩潰與使用資料，以協助改進 icc。")
                         ) {
                             Toggle("", isOn: $sendAnonymousTelemetry)
                                 .labelsHidden()
@@ -5582,9 +5674,9 @@ struct SettingsView: View {
                         SettingsCardDivider()
 
                         SettingsCardRow(
-                            localizedSettingsText("settings.app.openSidebarPRLinks", english: "Open Sidebar PR Links in cmux Browser", simplifiedChinese: "在 iatlas 浏览器中打开侧边栏 PR 链接", traditionalChinese: "在 iatlas 瀏覽器中開啟側邊欄 PR 連結"),
+                            localizedSettingsText("settings.app.openSidebarPRLinks", english: "Open Sidebar PR Links in icc Browser", simplifiedChinese: "在 icc 浏览器中打开侧边栏 PR 链接", traditionalChinese: "在 icc 瀏覽器中開啟側邊欄 PR 連結"),
                             subtitle: openSidebarPullRequestLinksInCmuxBrowser
-                                ? localizedSettingsText("settings.app.openSidebarPRLinks.subtitleOn", english: "Clicks open inside cmux browser.", simplifiedChinese: "点击后会在 iatlas 内置浏览器中打开。", traditionalChinese: "點擊後會在 iatlas 內建瀏覽器中開啟。")
+                                ? localizedSettingsText("settings.app.openSidebarPRLinks.subtitleOn", english: "Clicks open inside the icc browser.", simplifiedChinese: "点击后会在 icc 内置浏览器中打开。", traditionalChinese: "點擊後會在 icc 內建瀏覽器中開啟。")
                                 : localizedSettingsText("settings.app.openSidebarPRLinks.subtitleOff", english: "Clicks open in your default browser.", simplifiedChinese: "点击后会在系统默认浏览器中打开。", traditionalChinese: "點擊後會在系統預設瀏覽器中開啟。")
                         ) {
                             Toggle("", isOn: $openSidebarPullRequestLinksInCmuxBrowser)
@@ -6504,6 +6596,59 @@ struct SettingsView: View {
                     }
 
                     SettingsCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(localizedSettingsText("settings.automation.quickImport.title", english: "Quick Import", simplifiedChinese: "快速导入", traditionalChinese: "快速匯入"))
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text(localizedSettingsText("settings.automation.quickImport.subtitle", english: "Pull editor defaults into icc and install agent notification hooks with one click.", simplifiedChinese: "一键把编辑器默认项导入 icc，并安装代理通知集成。", traditionalChinese: "一鍵把編輯器預設匯入 icc，並安裝代理通知整合。"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            HStack(spacing: 8) {
+                                Button(TerminalProfileImportSource.vscode.displayName) {
+                                    applyTerminalProfileImport(.vscode)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+
+                                Button(TerminalProfileImportSource.cursor.displayName) {
+                                    applyTerminalProfileImport(.cursor)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+
+                                Button(AgentIntegrationInstallSource.claudeCode.displayName) {
+                                    installAgentIntegration(.claudeCode)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+
+                                Button(AgentIntegrationInstallSource.codex.displayName) {
+                                    installAgentIntegration(.codex)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
+
+                            Text(localizedSettingsText("settings.automation.quickImport.footnote", english: "VS Code and Cursor sync terminal font and color defaults. Claude Code and Codex add icc notification hooks without touching your other settings.", simplifiedChinese: "VS Code 和 Cursor 会同步终端字体与颜色默认值。Claude Code 和 Codex 会添加 icc 通知钩子，不影响你的其他设置。", traditionalChinese: "VS Code 和 Cursor 會同步終端字體與顏色預設。Claude Code 和 Codex 會加入 icc 通知鉤子，不影響你的其他設定。"))
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(.tertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            if let quickImportStatusMessage {
+                                Text(quickImportStatusMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(quickImportStatusIsError ? Color.red : Color.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                    }
+
+                    SettingsCard {
                         SettingsPickerRow(
                             String(localized: "settings.automation.socketMode", defaultValue: "Socket Control Mode"),
                             subtitle: selectedSocketControlMode.description,
@@ -6986,7 +7131,7 @@ struct SettingsView: View {
                 )
                 .allowsHitTesting(false)
         }
-        .background(Color(nsColor: .windowBackgroundColor).ignoresSafeArea())
+        .background(ICCCanvasBackground().ignoresSafeArea())
         .toggleStyle(.switch)
         .onAppear {
             BrowserHistoryStore.shared.loadIfNeeded()
@@ -7204,6 +7349,390 @@ struct SettingsView: View {
         workspaceTabCustomColors = WorkspaceTabColorSettings.customColors()
     }
 
+    private func applyTerminalProfileImport(_ source: TerminalProfileImportSource) {
+        do {
+            let profile = try importedTerminalProfile(from: source)
+            try writeManagedGhosttyOverride(
+                named: "profile-import",
+                lines: [
+                    "font-family = \"\(profile.fontFamily.replacingOccurrences(of: "\"", with: "\\\""))\"",
+                    "font-size = \(String(format: "%.0f", profile.fontSize))",
+                    "background = \(profile.backgroundHex)",
+                    "foreground = \(profile.foregroundHex)",
+                    "cursor-color = \(profile.cursorHex)",
+                    "cursor-text = \(profile.cursorTextHex)",
+                    "selection-background = \(profile.selectionBackgroundHex)",
+                    "selection-foreground = \(profile.selectionForegroundHex)",
+                ]
+            )
+            GhosttyConfig.invalidateLoadCache()
+            GhosttyApp.shared.reloadConfiguration(source: "settings.quickImport.\(source.rawValue)")
+            quickImportStatusIsError = false
+            quickImportStatusMessage = localizedSettingsText(
+                "settings.automation.quickImport.success",
+                english: "\(source.displayName) imported. \(profile.summary)",
+                simplifiedChinese: "已导入 \(source.displayName)。\(profile.summary)",
+                traditionalChinese: "已匯入 \(source.displayName)。\(profile.summary)"
+            )
+        } catch {
+            quickImportStatusIsError = true
+            quickImportStatusMessage = error.localizedDescription
+        }
+    }
+
+    private func installAgentIntegration(_ source: AgentIntegrationInstallSource) {
+        do {
+            let message: String
+            switch source {
+            case .claudeCode:
+                message = try installClaudeCodeNotificationHook()
+            case .codex:
+                message = try installCodexNotificationHook()
+            }
+            quickImportStatusIsError = false
+            quickImportStatusMessage = message
+        } catch {
+            quickImportStatusIsError = true
+            quickImportStatusMessage = error.localizedDescription
+        }
+    }
+
+    private func importedTerminalProfile(from source: TerminalProfileImportSource) throws -> ImportedTerminalProfile {
+        let settings = try loadJSONObject(at: source.settingsURL)
+
+        let fontSize = settingDouble(
+            settings["terminal.integrated.fontSize"]
+                ?? settings["editor.fontSize"]
+        ) ?? 14
+        let fontFamily = settingString(
+            settings["terminal.integrated.fontFamily"]
+                ?? settings["editor.fontFamily"]
+        ) ?? "Menlo"
+        let themeName = settingString(settings["workbench.colorTheme"])?.lowercased() ?? ""
+        let isLightTheme = themeName.contains("light") || themeName.contains("day")
+
+        if isLightTheme {
+            return ImportedTerminalProfile(
+                fontFamily: fontFamily,
+                fontSize: fontSize,
+                backgroundHex: "#FFFFFF",
+                foregroundHex: "#1F2328",
+                cursorHex: "#24292F",
+                cursorTextHex: "#FFFFFF",
+                selectionBackgroundHex: "#ADD6FF",
+                selectionForegroundHex: "#1F2328",
+                summary: localizedSettingsText(
+                    "settings.automation.quickImport.summary.light",
+                    english: "Applied a light terminal profile with \(fontFamily) \(Int(fontSize))pt.",
+                    simplifiedChinese: "已应用浅色终端配置，字体为 \(fontFamily) \(Int(fontSize))pt。",
+                    traditionalChinese: "已套用淺色終端設定，字體為 \(fontFamily) \(Int(fontSize))pt。"
+                )
+            )
+        }
+
+        let darkBackground = source == .cursor ? "#141414" : "#1F1F1F"
+        let darkForeground = source == .cursor ? "#F5F5F5" : "#CCCCCC"
+        let darkCursor = source == .cursor ? "#FFFFFF" : "#AEAFAD"
+        return ImportedTerminalProfile(
+            fontFamily: fontFamily,
+            fontSize: fontSize,
+            backgroundHex: darkBackground,
+            foregroundHex: darkForeground,
+            cursorHex: darkCursor,
+            cursorTextHex: darkBackground,
+            selectionBackgroundHex: "#264F78",
+            selectionForegroundHex: "#FFFFFF",
+            summary: localizedSettingsText(
+                "settings.automation.quickImport.summary.dark",
+                english: "Applied a dark terminal profile with \(fontFamily) \(Int(fontSize))pt.",
+                simplifiedChinese: "已应用深色终端配置，字体为 \(fontFamily) \(Int(fontSize))pt。",
+                traditionalChinese: "已套用深色終端設定，字體為 \(fontFamily) \(Int(fontSize))pt。"
+            )
+        )
+    }
+
+    private func loadJSONObject(at url: URL) throws -> [String: Any] {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: url.path) else {
+            throw NSError(
+                domain: "icc.settings",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: localizedSettingsText(
+                    "settings.automation.quickImport.fileMissing",
+                    english: "Couldn’t find \(url.lastPathComponent) at \(url.path).",
+                    simplifiedChinese: "未在 \(url.path) 找到 \(url.lastPathComponent)。",
+                    traditionalChinese: "未在 \(url.path) 找到 \(url.lastPathComponent)。"
+                )]
+            )
+        }
+
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        return try parseJSONObject(contents, path: url.path)
+    }
+
+    private func installClaudeCodeNotificationHook() throws -> String {
+        let settingsURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude/settings.json")
+        let notificationCommand = "command -v icc >/dev/null 2>&1 && icc notify --title 'Claude Code' --body 'Waiting for input' || osascript -e 'display notification \"Waiting for input\" with title \"Claude Code\"'"
+
+        var root = try loadOrCreateJSONObject(at: settingsURL)
+        var hooks = root["hooks"] as? [String: Any] ?? [:]
+        var notifications = hooks["Notification"] as? [[String: Any]] ?? []
+
+        let alreadyInstalled = notifications.contains { entry in
+            guard let hookEntries = entry["hooks"] as? [[String: Any]] else { return false }
+            return hookEntries.contains { hook in
+                (hook["command"] as? String) == notificationCommand
+            }
+        }
+
+        if !alreadyInstalled {
+            notifications.append([
+                "matcher": "idle_prompt",
+                "hooks": [[
+                    "type": "command",
+                    "command": notificationCommand,
+                ]],
+            ])
+        }
+
+        hooks["Notification"] = notifications
+        root["hooks"] = hooks
+        try writeJSONObject(root, to: settingsURL)
+        claudeCodeHooksEnabled = true
+
+        return alreadyInstalled
+            ? localizedSettingsText("settings.automation.quickImport.claude.exists", english: "Claude Code already has the icc notification hook.", simplifiedChinese: "Claude Code 已存在 icc 通知钩子。", traditionalChinese: "Claude Code 已存在 icc 通知鉤子。")
+            : localizedSettingsText("settings.automation.quickImport.claude.installed", english: "Installed the icc notification hook for Claude Code.", simplifiedChinese: "已为 Claude Code 安装 icc 通知钩子。", traditionalChinese: "已為 Claude Code 安裝 icc 通知鉤子。")
+    }
+
+    private func installCodexNotificationHook() throws -> String {
+        let configURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".codex/config.toml")
+        let startMarker = "# >>> icc codex notify >>>"
+        let endMarker = "# <<< icc codex notify <<<"
+        let managedBlock = [
+            startMarker,
+            "notify = [\"bash\", \"-lc\", \"MSG=$(echo \\\"$1\\\" | jq -r '.\\\"last-assistant-message\\\" // \\\"Turn complete\\\"' 2>/dev/null | head -c 100); command -v icc >/dev/null 2>&1 && icc notify --title 'Codex' --body \\\"$MSG\\\" || osascript -e \\\"display notification \\\\\\\"$MSG\\\\\\\" with title \\\\\\\"Codex\\\\\\\"\\\"\", \"--\"]",
+            endMarker,
+        ].joined(separator: "\n")
+
+        let fileManager = FileManager.default
+        let existing = (try? String(contentsOf: configURL, encoding: .utf8)) ?? ""
+        if existing.contains(startMarker) {
+            try writeManagedTextBlock(
+                managedBlock,
+                to: configURL,
+                startMarker: startMarker,
+                endMarker: endMarker
+            )
+            return localizedSettingsText("settings.automation.quickImport.codex.updated", english: "Updated the icc notification block in Codex config.", simplifiedChinese: "已更新 Codex 配置中的 icc 通知区块。", traditionalChinese: "已更新 Codex 設定中的 icc 通知區塊。")
+        }
+
+        if existing
+            .split(whereSeparator: \.isNewline)
+            .contains(where: { $0.trimmingCharacters(in: .whitespaces).hasPrefix("notify =") }) {
+            throw NSError(
+                domain: "icc.settings",
+                code: 3,
+                userInfo: [NSLocalizedDescriptionKey: localizedSettingsText(
+                    "settings.automation.quickImport.codex.exists",
+                    english: "Codex already defines `notify =`. Left it unchanged so you can merge manually.",
+                    simplifiedChinese: "Codex 已定义 `notify =`。为避免覆盖，已保留原样，请手动合并。",
+                    traditionalChinese: "Codex 已定義 `notify =`。為避免覆蓋，已保留原樣，請手動合併。"
+                )]
+            )
+        }
+
+        try fileManager.createDirectory(
+            at: configURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try writeManagedTextBlock(
+            managedBlock,
+            to: configURL,
+            startMarker: startMarker,
+            endMarker: endMarker
+        )
+        return localizedSettingsText("settings.automation.quickImport.codex.installed", english: "Installed the icc notification hook for Codex.", simplifiedChinese: "已为 Codex 安装 icc 通知钩子。", traditionalChinese: "已為 Codex 安裝 icc 通知鉤子。")
+    }
+
+    private func loadOrCreateJSONObject(at url: URL) throws -> [String: Any] {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: url.path) else { return [:] }
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        guard !contents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [:] }
+        return try parseJSONObject(contents, path: url.path)
+    }
+
+    private func writeJSONObject(_ object: [String: Any], to url: URL) throws {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys])
+        try data.write(to: url, options: .atomic)
+    }
+
+    private func writeManagedGhosttyOverride(named name: String, lines: [String]) throws {
+        let startMarker = "# >>> icc managed \(name) >>>"
+        let endMarker = "# <<< icc managed \(name) <<<"
+        let managedBlock = ([startMarker] + lines + [endMarker]).joined(separator: "\n")
+        try writeManagedTextBlock(
+            managedBlock,
+            to: iccGhosttyConfigURL(),
+            startMarker: startMarker,
+            endMarker: endMarker
+        )
+    }
+
+    private func writeManagedTextBlock(
+        _ block: String,
+        to url: URL,
+        startMarker: String,
+        endMarker: String
+    ) throws {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let existing = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+        let trimmedBlock = block.trimmingCharacters(in: .whitespacesAndNewlines)
+        let updated: String
+
+        if let startRange = existing.range(of: startMarker),
+           let endRange = existing.range(of: endMarker, range: startRange.lowerBound..<existing.endIndex) {
+            let replaceRange = startRange.lowerBound..<endRange.upperBound
+            updated = existing.replacingCharacters(in: replaceRange, with: trimmedBlock)
+        } else if existing.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            updated = trimmedBlock
+        } else {
+            updated = existing.trimmingCharacters(in: .whitespacesAndNewlines) + "\n\n" + trimmedBlock
+        }
+
+        try (updated + "\n").write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    private func iccGhosttyConfigURL() -> URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support")
+        return appSupport
+            .appendingPathComponent("com.icc.app", isDirectory: true)
+            .appendingPathComponent("config.ghostty", isDirectory: false)
+    }
+
+    private func settingString(_ value: Any?) -> String? {
+        guard let string = value as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private func settingDouble(_ value: Any?) -> Double? {
+        switch value {
+        case let number as NSNumber:
+            return number.doubleValue
+        case let string as String:
+            return Double(string)
+        default:
+            return nil
+        }
+    }
+
+    private func parseJSONObject(_ contents: String, path: String) throws -> [String: Any] {
+        let sanitized = sanitizeJSONLikeText(contents)
+        guard let data = sanitized.data(using: .utf8),
+              let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw NSError(
+                domain: "icc.settings",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: localizedSettingsText(
+                    "settings.automation.quickImport.invalidJSON",
+                    english: "The file at \(path) is not a valid JSON object.",
+                    simplifiedChinese: "\(path) 不是有效的 JSON 对象。",
+                    traditionalChinese: "\(path) 不是有效的 JSON 物件。"
+                )]
+            )
+        }
+        return object
+    }
+
+    private func sanitizeJSONLikeText(_ raw: String) -> String {
+        let uncommented = stripJSONComments(from: raw)
+        let pattern = ",(?=\\s*[}\\]])"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return uncommented
+        }
+        let range = NSRange(uncommented.startIndex..<uncommented.endIndex, in: uncommented)
+        return regex.stringByReplacingMatches(in: uncommented, options: [], range: range, withTemplate: "")
+    }
+
+    private func stripJSONComments(from raw: String) -> String {
+        var result = ""
+        var iterator = raw.makeIterator()
+        var inString = false
+        var isEscaped = false
+
+        while let character = iterator.next() {
+            if inString {
+                result.append(character)
+                if isEscaped {
+                    isEscaped = false
+                } else if character == "\\" {
+                    isEscaped = true
+                } else if character == "\"" {
+                    inString = false
+                }
+                continue
+            }
+
+            if character == "\"" {
+                inString = true
+                result.append(character)
+                continue
+            }
+
+            if character == "/" {
+                guard let next = iterator.next() else {
+                    result.append(character)
+                    break
+                }
+                if next == "/" {
+                    while let lineChar = iterator.next() {
+                        if lineChar == "\n" {
+                            result.append("\n")
+                            break
+                        }
+                    }
+                    continue
+                }
+                if next == "*" {
+                    var previous: Character?
+                    while let blockChar = iterator.next() {
+                        if previous == "*" && blockChar == "/" {
+                            break
+                        }
+                        previous = blockChar
+                    }
+                    continue
+                }
+
+                result.append(character)
+                result.append(next)
+                continue
+            }
+
+            result.append(character)
+        }
+
+        return result
+    }
+
     private func saveBrowserInsecureHTTPAllowlist() {
         browserInsecureHTTPAllowlist = browserInsecureHTTPAllowlistDraft
     }
@@ -7245,18 +7774,21 @@ private struct SettingsTitleLeadingInsetReader: NSViewRepresentable {
 }
 
 private struct SettingsSectionHeader: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
 
     var body: some View {
         Text(title)
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundColor(.secondary)
+            .font(.system(size: 11.5, weight: .bold))
+            .tracking(0.8)
+            .foregroundColor(.secondary.opacity(ICCChrome.secondaryTextOpacity(for: colorScheme)))
             .padding(.leading, 2)
             .padding(.bottom, -2)
     }
 }
 
 private struct SettingsCard<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
     @ViewBuilder let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -7268,13 +7800,14 @@ private struct SettingsCard<Content: View>: View {
             content
         }
         .background(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .fill(Color(nsColor: NSColor.controlBackgroundColor).opacity(0.76))
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(ICCChrome.cardGradient(for: colorScheme))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .stroke(Color(nsColor: NSColor.separatorColor).opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(ICCChrome.borderColor(for: colorScheme, emphasis: 1.1), lineWidth: 1)
                 )
         )
+        .shadow(color: ICCChrome.elevatedShadow(for: colorScheme), radius: 12, x: 0, y: 6)
     }
 }
 
@@ -7395,9 +7928,11 @@ private extension View {
 }
 
 private struct SettingsCardDivider: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Rectangle()
-            .fill(Color(nsColor: NSColor.separatorColor).opacity(0.5))
+            .fill(ICCChrome.borderColor(for: colorScheme, emphasis: 0.9))
             .frame(height: 1)
     }
 }
@@ -7535,10 +8070,10 @@ private enum SettingsSidebarSection: String, CaseIterable, Identifiable {
 
     static func from(navigationTarget: SettingsNavigationTarget) -> SettingsSidebarSection {
         switch navigationTarget {
+        case .automation, .wechat:
+            return .automation
         case .notifications:
             return .notifications
-        case .wechat:
-            return .automation
         case .browser, .browserImport:
             return .browser
         case .keyboardShortcuts:
@@ -7548,6 +8083,7 @@ private enum SettingsSidebarSection: String, CaseIterable, Identifiable {
 }
 
 private struct SettingsSidebarNavButton: View {
+    @Environment(\.colorScheme) private var colorScheme
     let section: SettingsSidebarSection
     let isSelected: Bool
     let action: () -> Void
@@ -7555,10 +8091,32 @@ private struct SettingsSidebarNavButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                Image(systemName: section.iconName)
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: 18)
-                    .foregroundStyle(isSelected ? Color.accentColor : Color.primary.opacity(0.84))
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        isSelected
+                            ? LinearGradient(
+                                colors: [
+                                    ICCChrome.accent(for: colorScheme),
+                                    ICCChrome.secondaryAccent(for: colorScheme)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(
+                                colors: [
+                                    ICCChrome.mutedFill(for: colorScheme),
+                                    ICCChrome.mutedFill(for: colorScheme)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                    )
+                    .frame(width: 30, height: 30)
+                    .overlay {
+                        Image(systemName: section.iconName)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.82))
+                    }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(section.title)
@@ -7575,19 +8133,19 @@ private struct SettingsSidebarNavButton: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
                         isSelected
-                            ? Color.accentColor.opacity(0.14)
-                            : Color.primary.opacity(0.035)
+                            ? ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.14 : 0.10)
+                            : Color.clear
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
                         isSelected
-                            ? Color.accentColor.opacity(0.28)
-                            : Color.clear,
+                            ? ICCChrome.accent(for: colorScheme).opacity(colorScheme == .dark ? 0.34 : 0.22)
+                            : ICCChrome.borderColor(for: colorScheme, emphasis: 0.45),
                         lineWidth: 1
                     )
             )
