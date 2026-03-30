@@ -1,4 +1,4 @@
-const version = "v1.0.3";
+const version = "v1.0.5";
 const releaseDmgName = `icc-${version}-macos.dmg`;
 
 export const siteConfig = {

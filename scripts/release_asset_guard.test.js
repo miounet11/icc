@@ -12,7 +12,7 @@ const {
 } = require("./release_asset_guard");
 
 test("marks guard as complete and skips build/upload when all immutable assets already exist", () => {
-  const immutableAssets = immutableReleaseAssetsForTag("v1.0.3");
+  const immutableAssets = immutableReleaseAssetsForTag("v1.0.5");
   const result = evaluateReleaseAssetGuard({
     existingAssetNames: [...immutableAssets, "notes.txt"],
     immutableAssetNames: immutableAssets,
@@ -27,7 +27,7 @@ test("marks guard as complete and skips build/upload when all immutable assets a
 });
 
 test("marks guard as clear when immutable assets are not present", () => {
-  const immutableAssets = immutableReleaseAssetsForTag("v1.0.3");
+  const immutableAssets = immutableReleaseAssetsForTag("v1.0.5");
   const result = evaluateReleaseAssetGuard({
     existingAssetNames: ["notes.txt", "checksums.txt"],
     immutableAssetNames: immutableAssets,
@@ -42,7 +42,7 @@ test("marks guard as clear when immutable assets are not present", () => {
 });
 
 test("marks guard as partial when only some immutable assets exist", () => {
-  const immutableAssets = immutableReleaseAssetsForTag("v1.0.3");
+  const immutableAssets = immutableReleaseAssetsForTag("v1.0.5");
   const partialAssets = ["appcast.xml", "cmuxd-remote-manifest.json"];
   const result = evaluateReleaseAssetGuard({
     existingAssetNames: partialAssets,

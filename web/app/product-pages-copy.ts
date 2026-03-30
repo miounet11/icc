@@ -320,7 +320,7 @@ const englishCopy: ProductPageCopy = {
       "This log is the public release record for ICC. It tracks the current product line, the official website rollout, documentation changes, and the operating notes you should check before replacing your current build.",
     currentReleaseLabel: "Current release line",
     currentReleaseBody:
-      "ICC is currently published as v1.0.3. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
+      "ICC is currently published as v1.0.5. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
     releaseModelTitle: "How to read ICC releases",
     releaseModelIntro:
       "Use the changelog as an operating document, not just a marketing page. A good release note helps you decide whether to adopt immediately, validate first, or hold until an active workflow is done.",
@@ -360,7 +360,7 @@ const englishCopy: ProductPageCopy = {
     entries: [
       {
         date: "March 30, 2026",
-        version: "v1.0.3",
+        version: "v1.0.5",
         title: "Brand refinement, migration shortcuts, and updater compatibility improvements",
         body:
           "The current ICC stable line sharpens the product identity, smooths migration from other AI coding clients, improves in-workspace control surfaces, and hardens update behavior for older local installs.",
@@ -667,7 +667,7 @@ const zhCnCopy: ProductPageCopy = {
       "这份页面是 ICC 的公开发布记录。它追踪当前产品线、官网上线、多语言站点扩展，以及替换当前构建前应该检查的操作说明。",
     currentReleaseLabel: "当前发布线",
     currentReleaseBody:
-      "ICC 当前对外发布版本为 v1.0.3。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
+      "ICC 当前对外发布版本为 v1.0.5。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
     releaseModelTitle: "应该怎么读 ICC 的版本发布",
     releaseModelIntro:
       "把升级日志当成操作文档，而不仅仅是宣传页。好的发布记录应该帮助你判断是马上采用、先验证，还是等当前任务结束后再更新。",
@@ -707,7 +707,7 @@ const zhCnCopy: ProductPageCopy = {
     entries: [
       {
         date: "2026年3月30日",
-        version: "v1.0.3",
+        version: "v1.0.5",
         title: "品牌细化、迁移快捷入口、协作能力与更新兼容性升级",
         body:
           "这是 ICC 当前稳定线的持续优化更新，重点在于继续拉开品牌辨识度、降低从其他 AI 编码客户端迁移的成本、增强工作区内协作效率，并修复旧安装副本的更新兼容性问题。",
