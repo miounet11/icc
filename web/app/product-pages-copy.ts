@@ -320,7 +320,7 @@ const englishCopy: ProductPageCopy = {
       "This log is the public release record for ICC. It tracks the current product line, the official website rollout, documentation changes, and the operating notes you should check before replacing your current build.",
     currentReleaseLabel: "Current release line",
     currentReleaseBody:
-      "ICC is currently published as v1.0.6. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
+      "ICC is currently published as v1.0.7. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
     releaseModelTitle: "How to read ICC releases",
     releaseModelIntro:
       "Use the changelog as an operating document, not just a marketing page. A good release note helps you decide whether to adopt immediately, validate first, or hold until an active workflow is done.",
@@ -360,7 +360,7 @@ const englishCopy: ProductPageCopy = {
     entries: [
       {
         date: "March 31, 2026",
-        version: "v1.0.6",
+        version: "v1.0.7",
         title: "Release packaging refresh, branded assets, and supervisor layout hardening",
         body:
           "This stable release republishes ICC with the refreshed branded app assets, a clean versioned installer path, and a safer supervisor panel layout for long generated prompts.",
@@ -679,7 +679,7 @@ const zhCnCopy: ProductPageCopy = {
       "这份页面是 ICC 的公开发布记录。它追踪当前产品线、官网上线、多语言站点扩展，以及替换当前构建前应该检查的操作说明。",
     currentReleaseLabel: "当前发布线",
     currentReleaseBody:
-      "ICC 当前对外发布版本为 v1.0.6。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
+      "ICC 当前对外发布版本为 v1.0.7。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
     releaseModelTitle: "应该怎么读 ICC 的版本发布",
     releaseModelIntro:
       "把升级日志当成操作文档，而不仅仅是宣传页。好的发布记录应该帮助你判断是马上采用、先验证，还是等当前任务结束后再更新。",
@@ -719,7 +719,7 @@ const zhCnCopy: ProductPageCopy = {
     entries: [
       {
         date: "2026年3月31日",
-        version: "v1.0.6",
+        version: "v1.0.7",
         title: "发布打包刷新、品牌资产统一，以及监督器布局加固",
         body:
           "这个稳定版本重新发布了 ICC 的安装包，并把品牌化应用资源、官网下载路径，以及监督器侧栏中的长提示词展示统一到同一条发布线上。",
