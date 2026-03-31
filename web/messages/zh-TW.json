@@ -116,7 +116,7 @@
         "p1": "我最喜歡的 icc 功能是 Cmd+Shift+U。我現在開了 17 個工作區，每個都在執行代理。以前我需要點擊分頁和通知面板來找出哪個完成了。打字更快。",
         "p2": "Cmd+Shift+U 會跳到最新的未讀<link>通知</link>。實際上就是最後一個完成的代理。它會切換到正確的工作區、聚焦到確切的窗格、閃爍以提示你看哪裡，然後標記為已讀。如果通知來自另一個視窗，該視窗會移到前面。"
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "icc 之道",
         "summary": "icc 是一個基本元件，不是一個方案。它提供可組合的零件，你的工作流程由你決定。",
         "date": "2026 年 2 月 27 日",
@@ -144,7 +144,7 @@
         "scriptable": "icc 中的一切都可以透過 CLI 編寫腳本：建立工作區、傳送按鍵、控制瀏覽器、讀取通知。icc 的理念之一是可程式化和可組合，讓使用者可以自訂與程式碼代理合作的方式。程式碼代理的技術前沿變化很快，你不會想被鎖在一個跟不上的僵化 GUI 編排工具裡。",
         "cta": "如果你正在同時執行多個程式碼代理，<link>試試 icc</link>。"
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "介紹 icc",
         "summary": "一個基於 Ghostty 的原生 macOS 終端機，專為並行執行多個 AI 程式碼代理而設計。",
         "date": "2026 年 2 月 12 日",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "由 libghostty 驅動，提供流暢的渲染效果"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "icc 之禪",
       "metaDescription": "icc 是原語而非解決方案。它提供可組合的部件，工作流由你決定。"
     },
@@ -178,7 +178,7 @@
       "metaTitle": "在 Show HN 上發布 icc",
       "metaDescription": "在 Hacker News 上發布 icc 的故事。"
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "icc 介紹",
       "metaDescription": "我們為什麼要做 icc，一個全新的 macOS 終端。"
     }
@@ -241,7 +241,7 @@
       "paneNote": "每個窗格可以包含多個 surface（窗格內的分頁）。",
       "surfaceTitle": "Surface",
       "surfaceDesc": "窗格內的分頁。每個窗格都有自己的分頁列，可以包含多個 surface。使用 {new} 建立，使用 {prev} / {next} 或 {jump} 導覽。",
-      "surfaceNote": "Surface 是你互動的個別終端機或瀏覽器工作階段。每個 surface 都有自己的 CMUX_SURFACE_ID 環境變數。",
+      "surfaceNote": "Surface 是你互動的個別終端機或瀏覽器工作階段。每個 surface 都有自己的 ICC_SURFACE_ID 環境變數。",
       "panelTitle": "面板",
       "panelDesc": "Surface 內的內容。目前有兩種類型：",
       "panelTerminal": "終端機：Ghostty 終端機工作階段",
@@ -292,8 +292,8 @@
       "automationMode": "自動化模式",
       "automationModeDesc": "控制 socket 存取層級：",
       "automationOff": "關閉：停用 socket 控制（最安全）",
-      "automationCmux": "僅限 icc 程序：只允許在 icc 終端機內啟動的程序連線",
-      "automationAll": "allowAll：允許任何本機程序連線（CMUX_SOCKET_MODE=allowAll，僅限環境變數覆寫）",
+      "automationIcc": "僅限 icc 程序：只允許在 icc 終端機內啟動的程序連線",
+      "automationAll": "allowAll：允許任何本機程序連線（ICC_SOCKET_MODE=allowAll，僅限環境變數覆寫）",
       "automationCallout": "在共用機器上，建議使用「關閉」或「僅限 icc 程序」模式。",
       "browserLinkBehavior": "瀏覽器連結行為",
       "browserLinkDesc": "在「設定 > 瀏覽器」中，icc 提供兩個不同用途的主機列表：",
@@ -373,18 +373,18 @@
       "release": "正式版",
       "debug": "除錯版",
       "taggedDebug": "標記的除錯版建構",
-      "socketOverride": "使用 CMUX_SOCKET_PATH 環境變數覆寫。每次呼叫傳送一個以換行符結尾的 JSON 請求：",
+      "socketOverride": "使用 ICC_SOCKET_PATH 環境變數覆寫。每次呼叫傳送一個以換行符結尾的 JSON 請求：",
       "socketCallout": "JSON socket 請求必須使用 method 和 params。不支援舊版 v1 JSON 格式，例如 <legacy>'{'\"command\":\"...\"'}'</legacy>。",
       "accessModes": "存取模式",
       "modeHeader": "模式",
       "descriptionHeader": "說明",
       "howToEnableHeader": "如何啟用",
       "offMode": "停用 socket",
-      "offEnable": "設定 UI 或 CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "只有在 icc 終端機內啟動的程序才能連線。",
-      "cmuxOnlyEnable": "設定 UI 中的預設模式",
+      "offEnable": "設定 UI 或 ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "只有在 icc 終端機內啟動的程序才能連線。",
+      "iccOnlyEnable": "設定 UI 中的預設模式",
       "allowAllMode": "允許任何本機程序連線（不檢查血統關係）。",
-      "allowAllEnable": "僅限環境變數覆寫：CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "僅限環境變數覆寫：ICC_SOCKET_MODE=allowAll",
       "accessCallout": "在共用機器上，請使用「關閉」或「僅限 icc 程序」模式。",
       "cliOptions": "CLI 選項",
       "flagHeader": "旗標",
@@ -432,13 +432,13 @@
       "variableHeader": "變數",
       "socketPathDesc": "覆寫 CLI 和整合所使用的 socket 路徑",
       "socketEnableDesc": "強制啟用/停用 socket（1/0、true/false、on/off）",
-      "socketModeDesc": "覆寫存取模式（cmuxOnly、allowAll、off）。也接受 icc-only/cmux_only 和 allow-all/allow_all",
+      "socketModeDesc": "覆寫存取模式（iccOnly、allowAll、off）。也接受 icc-only/icc_only 和 allow-all/allow_all",
       "workspaceIdDesc": "自動設定：目前工作區 ID",
       "surfaceIdDesc": "自動設定：目前 surface ID",
       "termProgramDesc": "設定為 ghostty",
       "termDesc": "設定為 xterm-ghostty",
-      "envCallout": "舊版的 CMUX_SOCKET_MODE 值 full 和 notifications 仍然接受以保持相容性。",
-      "detectingCmux": "偵測 icc",
+      "envCallout": "舊版的 ICC_SOCKET_MODE 值 full 和 notifications 仍然接受以保持相容性。",
+      "detectingIcc": "偵測 icc",
       "examples": "範例",
       "pythonClient": "Python 用戶端",
       "shellScript": "Shell 腳本",

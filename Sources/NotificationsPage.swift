@@ -471,11 +471,11 @@ private struct NotificationRow: View {
 
     private var unreadIndicator: some View {
         Circle()
-            .fill(notification.isRead ? Color.clear : cmuxAccentColor())
+            .fill(notification.isRead ? Color.clear : iccAccentColor())
             .frame(width: 10, height: 10)
             .overlay(
                 Circle()
-                    .stroke(cmuxAccentColor().opacity(notification.isRead ? 0.28 : 1), lineWidth: 1.2)
+                    .stroke(iccAccentColor().opacity(notification.isRead ? 0.28 : 1), lineWidth: 1.2)
             )
             .padding(.top, 6)
     }

@@ -55,27 +55,27 @@ export default function NotificationsPage() {
         </thead>
         <tbody>
           <tr>
-            <td><code>CMUX_NOTIFICATION_TITLE</code></td>
+            <td><code>ICC_NOTIFICATION_TITLE</code></td>
             <td>{t("envTitle")}</td>
           </tr>
           <tr>
-            <td><code>CMUX_NOTIFICATION_SUBTITLE</code></td>
+            <td><code>ICC_NOTIFICATION_SUBTITLE</code></td>
             <td>{t("envSubtitle")}</td>
           </tr>
           <tr>
-            <td><code>CMUX_NOTIFICATION_BODY</code></td>
+            <td><code>ICC_NOTIFICATION_BODY</code></td>
             <td>{t("envBody")}</td>
           </tr>
         </tbody>
       </table>
       <CodeBlock title="Examples" lang="bash">{`# Text-to-speech
-say "$CMUX_NOTIFICATION_TITLE"
+say "$ICC_NOTIFICATION_TITLE"
 
 # Custom sound file
 afplay /path/to/sound.aiff
 
 # Log to file
-echo "$CMUX_NOTIFICATION_TITLE: $CMUX_NOTIFICATION_BODY" >> ~/notifications.log`}</CodeBlock>
+echo "$ICC_NOTIFICATION_TITLE: $ICC_NOTIFICATION_BODY" >> ~/notifications.log`}</CodeBlock>
       <p>{t("customCommandNote")}</p>
 
       <h2>{t("sending")}</h2>

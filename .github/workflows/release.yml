@@ -170,7 +170,7 @@ jobs:
       - name: Build app (Release)
         if: steps.guard_release_assets.outputs.skip_all != 'true'
         run: |
-          xcodebuild -scheme cmux -configuration Release -derivedDataPath build \
+          xcodebuild -scheme icc -configuration Release -derivedDataPath build \
             -clonedSourcePackagesDirPath .spm-cache \
             CODE_SIGNING_ALLOWED=NO build
 
@@ -185,9 +185,9 @@ jobs:
             --release-tag "$GITHUB_REF_NAME" \
             --repo "$ICC_REMOTE_DAEMON_REPO" \
             --output-dir "remote-daemon-assets"
-          MANIFEST_JSON="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), separators=(",",":")))' remote-daemon-assets/cmuxd-remote-manifest.json)"
-          plutil -remove CMUXRemoteDaemonManifestJSON "$APP_PLIST" >/dev/null 2>&1 || true
-          plutil -insert CMUXRemoteDaemonManifestJSON -string "$MANIFEST_JSON" "$APP_PLIST"
+          MANIFEST_JSON="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), separators=(",",":")))' remote-daemon-assets/iccd-remote-manifest.json)"
+          plutil -remove ICCRemoteDaemonManifestJSON "$APP_PLIST" >/dev/null 2>&1 || true
+          plutil -insert ICCRemoteDaemonManifestJSON -string "$MANIFEST_JSON" "$APP_PLIST"
 
       - name: Run CLI version memory guard regression
         if: steps.guard_release_assets.outputs.skip_all != 'true'
@@ -195,7 +195,7 @@ jobs:
           set -euo pipefail
           CLI_BINARY="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}/Contents/Resources/bin/${ICC_CLI_NAME}"
           [ -x "$CLI_BINARY" ] || { echo "icc CLI binary not found at $CLI_BINARY" >&2; exit 1; }
-          CMUX_CLI_BIN="$CLI_BINARY" python3 tests/test_cli_version_memory_guard.py
+          ICC_CLI_BIN="$CLI_BINARY" python3 tests/test_cli_version_memory_guard.py
 
       - name: Verify bundled Ghostty theme picker helper
         if: steps.guard_release_assets.outputs.skip_all != 'true'
@@ -252,7 +252,7 @@ jobs:
             exit 1
           fi
           APP_PATH="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}"
-          ENTITLEMENTS="cmux.entitlements"
+          ENTITLEMENTS="icc.entitlements"
           CLI_PATH="$APP_PATH/Contents/Resources/bin/${ICC_CLI_NAME}"
           HELPER_PATH="$APP_PATH/Contents/Resources/bin/ghostty"
           if [ -f "$CLI_PATH" ]; then
@@ -332,7 +332,7 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: manaflow
-          SENTRY_PROJECT: cmuxterm-macos
+          SENTRY_PROJECT: icc-macos
         run: |
           if [ -z "$SENTRY_AUTH_TOKEN" ]; then
             echo "SENTRY_AUTH_TOKEN not set, skipping dSYM upload"
@@ -396,12 +396,12 @@ jobs:
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: |
-            remote-daemon-assets/cmuxd-remote-darwin-arm64
-            remote-daemon-assets/cmuxd-remote-darwin-amd64
-            remote-daemon-assets/cmuxd-remote-linux-arm64
-            remote-daemon-assets/cmuxd-remote-linux-amd64
-            remote-daemon-assets/cmuxd-remote-checksums.txt
-            remote-daemon-assets/cmuxd-remote-manifest.json
+            remote-daemon-assets/iccd-remote-darwin-arm64
+            remote-daemon-assets/iccd-remote-darwin-amd64
+            remote-daemon-assets/iccd-remote-linux-arm64
+            remote-daemon-assets/iccd-remote-linux-amd64
+            remote-daemon-assets/iccd-remote-checksums.txt
+            remote-daemon-assets/iccd-remote-manifest.json
 
       - name: Upload release asset
         if: steps.guard_release_assets.outputs.skip_upload != 'true'
@@ -410,12 +410,12 @@ jobs:
           files: |
             ${{ env.ICC_RELEASE_DMG_NAME }}
             appcast.xml
-            remote-daemon-assets/cmuxd-remote-darwin-arm64
-            remote-daemon-assets/cmuxd-remote-darwin-amd64
-            remote-daemon-assets/cmuxd-remote-linux-arm64
-            remote-daemon-assets/cmuxd-remote-linux-amd64
-            remote-daemon-assets/cmuxd-remote-checksums.txt
-            remote-daemon-assets/cmuxd-remote-manifest.json
+            remote-daemon-assets/iccd-remote-darwin-arm64
+            remote-daemon-assets/iccd-remote-darwin-amd64
+            remote-daemon-assets/iccd-remote-linux-arm64
+            remote-daemon-assets/iccd-remote-linux-amd64
+            remote-daemon-assets/iccd-remote-checksums.txt
+            remote-daemon-assets/iccd-remote-manifest.json
           generate_release_notes: true
           overwrite_files: false
 

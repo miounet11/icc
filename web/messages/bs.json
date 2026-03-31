@@ -116,7 +116,7 @@
         "p1": "Moja omiljena icc funkcionalnost je Cmd+Shift+U. Trenutno imam 17 otvorenih radnih prostora, svaki pokreće agenta. Nekada sam klikao kroz tabove i panel notifikacija da saznam šta je završeno. Kucanje je brže.",
         "p2": "Cmd+Shift+U skače na najnoviju nepročitanu <link>notifikaciju</link>. U praksi to znači posljednjeg agenta koji je završio. Prebacuje na pravi radni prostor, fokusira tačan panel, bljeska ga da vidite gdje gledati i označava kao pročitano. Ako je notifikacija došla iz drugog prozora, taj prozor dolazi u prvi plan."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "Zen icc-a",
         "summary": "icc je primitiv, ne rješenje. Daje vam sastavive dijelove, a vaš tok rada je na vama.",
         "date": "27. februar 2026.",
@@ -144,7 +144,7 @@
         "scriptable": "Sve u icc-u je skriptabilno kroz CLI: kreiranje radnih prostora, slanje pritisaka tipki, kontrola preglednika, čitanje notifikacija. Dio icc filozofije je biti programabilan i sastaviv, tako da ljudi mogu prilagoditi način na koji rade sa coding agentima. Stanje tehnike za coding agente se brzo mijenja, i ne želite biti zaključani u nefleksibilni GUI orkestrator koji ne može pratiti.",
         "cta": "Ako pokrećete više coding agenata, <link>probajte icc</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "Predstavljamo icc",
         "summary": "Nativni macOS terminal izgrađen na Ghostty-ju, dizajniran za pokretanje više AI coding agenata jedan pored drugog.",
         "date": "12. februar 2026.",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "pokreće libghostty za glatko renderiranje"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "Zen icc-a",
       "metaDescription": "icc je primitiv, ne rješenje. Daje vam komposabilne dijelove i vaš radni tok je na vama."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "Lansiranje icc-a na Show HN",
       "metaDescription": "Priča o lansiranju icc-a na Hacker News."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "Predstavljamo icc",
       "metaDescription": "Zašto smo napravili icc, novi terminal za macOS."
     }
@@ -241,7 +241,7 @@
       "paneNote": "Svaki panel može sadržavati više površina (tabova unutar panela).",
       "surfaceTitle": "Površina",
       "surfaceDesc": "Tab unutar panela. Svaki panel ima svoju traku tabova i može sadržavati više površina. Kreira se sa {new}, navigira sa {prev} / {next} ili {jump}.",
-      "surfaceNote": "Površine su individualne terminalne ili pregledničke sesije sa kojima interagujete. Svaka površina ima svoju CMUX_SURFACE_ID varijablu okruženja.",
+      "surfaceNote": "Površine su individualne terminalne ili pregledničke sesije sa kojima interagujete. Svaka površina ima svoju ICC_SURFACE_ID varijablu okruženja.",
       "panelTitle": "Panel",
       "panelDesc": "Sadržaj unutar površine. Trenutno dva tipa:",
       "panelTerminal": "Terminal: Ghostty terminalna sesija",
@@ -292,8 +292,8 @@
       "automationMode": "Način automatizacije",
       "automationModeDesc": "Nivo pristupa kontrolnom socketu:",
       "automationOff": "Isključeno: bez socket kontrole (najsigurnije)",
-      "automationCmux": "Samo icc procesi: samo procesi pokrenuti unutar icc terminala se mogu povezati",
-      "automationAll": "allowAll: dozvoli bilo kojem lokalnom procesu da se poveže (CMUX_SOCKET_MODE=allowAll, samo putem varijable okruženja)",
+      "automationIcc": "Samo icc procesi: samo procesi pokrenuti unutar icc terminala se mogu povezati",
+      "automationAll": "allowAll: dozvoli bilo kojem lokalnom procesu da se poveže (ICC_SOCKET_MODE=allowAll, samo putem varijable okruženja)",
       "automationCallout": "Na dijeljenim mašinama, razmislite o korištenju načina \"Isključeno\" ili \"Samo icc procesi\".",
       "browserLinkBehavior": "Ponašanje linkova preglednika",
       "browserLinkDesc": "U Postavke > Preglednik, icc izlaže dvije liste hostova sa različitim namjenama:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagirani debug build",
-      "socketOverride": "Zaobiđite sa CMUX_SOCKET_PATH varijablom okruženja. Pošaljite jedan JSON zahtjev terminiran novim redom po pozivu:",
+      "socketOverride": "Zaobiđite sa ICC_SOCKET_PATH varijablom okruženja. Pošaljite jedan JSON zahtjev terminiran novim redom po pozivu:",
       "socketCallout": "JSON socket zahtjevi moraju koristiti method i params. Stari v1 JSON formati poput <legacy>'{'\"command\":\"...\"'}'</legacy> nisu podržani.",
       "accessModes": "Načini pristupa",
       "modeHeader": "Način",
       "descriptionHeader": "Opis",
       "howToEnableHeader": "Kako omogućiti",
       "offMode": "Socket onemogućen",
-      "offEnable": "UI postavki ili CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Samo procesi pokrenuti unutar icc terminala se mogu povezati.",
-      "cmuxOnlyEnable": "Podrazumijevani način u UI-ju postavki",
+      "offEnable": "UI postavki ili ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Samo procesi pokrenuti unutar icc terminala se mogu povezati.",
+      "iccOnlyEnable": "Podrazumijevani način u UI-ju postavki",
       "allowAllMode": "Dozvoli bilo kojem lokalnom procesu da se poveže (bez provjere porijekla).",
-      "allowAllEnable": "Samo putem varijable okruženja: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Samo putem varijable okruženja: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "Na dijeljenim mašinama, koristite Isključeno ili Samo icc procesi.",
       "cliOptions": "CLI opcije",
       "flagHeader": "Zastavica",
@@ -432,13 +432,13 @@
       "variableHeader": "Varijabla",
       "socketPathDesc": "Zaobiđite putanju socketa koju koriste CLI i integracije",
       "socketEnableDesc": "Prisilno omogućite/onemogućite socket (1/0, true/false, on/off)",
-      "socketModeDesc": "Zaobiđite način pristupa (cmuxOnly, allowAll, off). Takođe prihvata icc-only/cmux_only i allow-all/allow_all",
+      "socketModeDesc": "Zaobiđite način pristupa (iccOnly, allowAll, off). Takođe prihvata icc-only/icc_only i allow-all/allow_all",
       "workspaceIdDesc": "Automatski postavljeno: ID trenutnog radnog prostora",
       "surfaceIdDesc": "Automatski postavljeno: ID trenutne površine",
       "termProgramDesc": "Postavljeno na ghostty",
       "termDesc": "Postavljeno na xterm-ghostty",
-      "envCallout": "Starije CMUX_SOCKET_MODE vrijednosti full i notifications se još prihvataju radi kompatibilnosti.",
-      "detectingCmux": "Detekcija icc-a",
+      "envCallout": "Starije ICC_SOCKET_MODE vrijednosti full i notifications se još prihvataju radi kompatibilnosti.",
+      "detectingIcc": "Detekcija icc-a",
       "examples": "Primjeri",
       "pythonClient": "Python klijent",
       "shellScript": "Shell skripta",

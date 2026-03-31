@@ -1,4 +1,4 @@
-const version = "v1.0.9";
+const version = "v1.0.10";
 const releaseDmgName = `icc-${version}-macos.dmg`;
 
 export const siteConfig = {
@@ -17,7 +17,7 @@ export const siteConfig = {
   downloadUrl: `https://www.iccjk.com/downloads/archive/${version}/${releaseDmgName}`,
   appcastUrl: "https://www.iccjk.com/downloads/appcast.xml",
   latestManifestUrl: "https://www.iccjk.com/downloads/latest.json",
-  remoteManifestUrl: "https://www.iccjk.com/downloads/remote/cmuxd-remote-manifest.json",
+  remoteManifestUrl: "https://www.iccjk.com/downloads/remote/iccd-remote-manifest.json",
   issuesUrl: "https://github.com/miounet11/icc/issues",
   githubApiRepo: "https://api.github.com/repos/miounet11/icc",
 } as const;

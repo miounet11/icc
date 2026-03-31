@@ -95,7 +95,7 @@ working-directory = ~/Projects`}</CodeBlock>
           <strong>{t("automationOff")}</strong>
         </li>
         <li>
-          <strong>{t("automationCmux")}</strong>
+          <strong>{t("automationIcc")}</strong>
         </li>
         <li>
           <strong>{t("automationAll")}</strong>

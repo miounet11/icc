@@ -116,7 +116,7 @@
         "p1": "제가 가장 좋아하는 icc 기능은 Cmd+Shift+U입니다. 지금 17개의 워크스페이스가 열려 있고, 각각 에이전트를 실행 중입니다. 예전에는 탭과 알림 패널을 클릭하며 어떤 것이 완료되었는지 확인했습니다. 키보드가 더 빠릅니다.",
         "p2": "Cmd+Shift+U는 가장 최근의 읽지 않은 <link>알림</link>으로 이동합니다. 실제로는 마지막으로 완료된 에이전트를 의미합니다. 올바른 워크스페이스로 전환하고, 정확한 패널에 포커스하고, 어디를 봐야 하는지 깜빡여서 알려주고, 읽음으로 표시합니다. 알림이 다른 창에서 온 경우 해당 창이 앞으로 나옵니다."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "icc의 철학",
         "summary": "icc는 솔루션이 아닌 프리미티브입니다. 조합 가능한 구성 요소를 제공하며, 워크플로는 여러분에게 달려 있습니다.",
         "date": "2026년 2월 27일",
@@ -144,7 +144,7 @@
         "scriptable": "icc의 모든 것은 CLI를 통해 스크립팅 가능합니다. 워크스페이스 생성, 키 입력 전송, 브라우저 제어, 알림 읽기 등. icc의 철학 중 하나는 프로그래밍 가능하고 조합 가능하여 코딩 에이전트와 작업하는 방식을 커스터마이징할 수 있다는 것입니다. 코딩 에이전트의 최신 기술은 빠르게 변하고 있으며, 따라가지 못하는 유연하지 않은 GUI 오케스트레이터에 묶이고 싶지 않을 것입니다.",
         "cta": "여러 코딩 에이전트를 실행하고 있다면, <link>icc를 사용해 보세요</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "icc 소개",
         "summary": "Ghostty 기반 네이티브 macOS 터미널로, 여러 AI 코딩 에이전트를 나란히 실행하도록 설계되었습니다.",
         "date": "2026년 2월 12일",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "libghostty로 부드러운 렌더링"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "icc의 선",
       "metaDescription": "icc는 솔루션이 아닌 프리미티브입니다. 조합 가능한 조각을 제공하며 워크플로는 여러분에게 달려 있습니다."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "Show HN에서 icc 출시",
       "metaDescription": "Hacker News에서 icc를 출시한 이야기."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "icc를 소개합니다",
       "metaDescription": "macOS용 새 터미널 icc를 만든 이유."
     }
@@ -241,7 +241,7 @@
       "paneNote": "각 패널은 여러 서피스(패널 내의 탭)를 포함할 수 있습니다.",
       "surfaceTitle": "서피스",
       "surfaceDesc": "패널 내의 탭. 각 패널에는 자체 탭 바가 있으며 여러 서피스를 포함할 수 있습니다. {new}로 생성하고, {prev} / {next} 또는 {jump}로 탐색합니다.",
-      "surfaceNote": "서피스는 상호작용하는 개별 터미널 또는 브라우저 세션입니다. 각 서피스에는 고유한 CMUX_SURFACE_ID 환경 변수가 있습니다.",
+      "surfaceNote": "서피스는 상호작용하는 개별 터미널 또는 브라우저 세션입니다. 각 서피스에는 고유한 ICC_SURFACE_ID 환경 변수가 있습니다.",
       "panelTitle": "패널",
       "panelDesc": "서피스 내부의 콘텐츠. 현재 두 가지 유형이 있습니다:",
       "panelTerminal": "터미널: Ghostty 터미널 세션",
@@ -292,8 +292,8 @@
       "automationMode": "자동화 모드",
       "automationModeDesc": "소켓 접근 수준 제어:",
       "automationOff": "끄기: 소켓 제어 없음 (가장 안전)",
-      "automationCmux": "icc 프로세스만: icc 터미널 내에서 시작된 프로세스만 연결 허용",
-      "automationAll": "allowAll: 모든 로컬 프로세스의 연결 허용 (CMUX_SOCKET_MODE=allowAll, 환경 변수 오버라이드만)",
+      "automationIcc": "icc 프로세스만: icc 터미널 내에서 시작된 프로세스만 연결 허용",
+      "automationAll": "allowAll: 모든 로컬 프로세스의 연결 허용 (ICC_SOCKET_MODE=allowAll, 환경 변수 오버라이드만)",
       "automationCallout": "공유 머신에서는 \"끄기\" 또는 \"icc 프로세스만\" 모드를 사용하는 것이 좋습니다.",
       "browserLinkBehavior": "브라우저 링크 동작",
       "browserLinkDesc": "설정 > 브라우저에서 icc는 서로 다른 목적의 두 가지 호스트 목록을 제공합니다:",
@@ -373,18 +373,18 @@
       "release": "릴리스",
       "debug": "디버그",
       "taggedDebug": "태그된 디버그 빌드",
-      "socketOverride": "CMUX_SOCKET_PATH 환경 변수로 오버라이드합니다. 호출당 하나의 줄바꿈으로 끝나는 JSON 요청을 전송합니다:",
+      "socketOverride": "ICC_SOCKET_PATH 환경 변수로 오버라이드합니다. 호출당 하나의 줄바꿈으로 끝나는 JSON 요청을 전송합니다:",
       "socketCallout": "JSON 소켓 요청은 method와 params를 사용해야 합니다. <legacy>'{'\"command\":\"...\"'}'</legacy>와 같은 레거시 v1 JSON 페이로드는 지원되지 않습니다.",
       "accessModes": "접근 모드",
       "modeHeader": "모드",
       "descriptionHeader": "설명",
       "howToEnableHeader": "활성화 방법",
       "offMode": "소켓 비활성화",
-      "offEnable": "설정 UI 또는 CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "icc 터미널 내에서 생성된 프로세스만 연결할 수 있습니다.",
-      "cmuxOnlyEnable": "설정 UI의 기본 모드",
+      "offEnable": "설정 UI 또는 ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "icc 터미널 내에서 생성된 프로세스만 연결할 수 있습니다.",
+      "iccOnlyEnable": "설정 UI의 기본 모드",
       "allowAllMode": "모든 로컬 프로세스의 연결을 허용합니다 (상위 프로세스 확인 없음).",
-      "allowAllEnable": "환경 변수 오버라이드만: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "환경 변수 오버라이드만: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "공유 머신에서는 끄기 또는 icc 프로세스만을 사용하세요.",
       "cliOptions": "CLI 옵션",
       "flagHeader": "플래그",
@@ -432,13 +432,13 @@
       "variableHeader": "변수",
       "socketPathDesc": "CLI 및 통합에서 사용하는 소켓 경로 오버라이드",
       "socketEnableDesc": "소켓 강제 활성화/비활성화 (1/0, true/false, on/off)",
-      "socketModeDesc": "접근 모드 오버라이드 (cmuxOnly, allowAll, off). icc-only/cmux_only, allow-all/allow_all도 허용",
+      "socketModeDesc": "접근 모드 오버라이드 (iccOnly, allowAll, off). icc-only/icc_only, allow-all/allow_all도 허용",
       "workspaceIdDesc": "자동 설정: 현재 워크스페이스 ID",
       "surfaceIdDesc": "자동 설정: 현재 서피스 ID",
       "termProgramDesc": "ghostty로 설정됨",
       "termDesc": "xterm-ghostty로 설정됨",
-      "envCallout": "레거시 CMUX_SOCKET_MODE 값 full 및 notifications는 호환성을 위해 여전히 허용됩니다.",
-      "detectingCmux": "icc 감지",
+      "envCallout": "레거시 ICC_SOCKET_MODE 값 full 및 notifications는 호환성을 위해 여전히 허용됩니다.",
+      "detectingIcc": "icc 감지",
       "examples": "예시",
       "pythonClient": "Python 클라이언트",
       "shellScript": "셸 스크립트",

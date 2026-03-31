@@ -53,7 +53,7 @@ downloads/appcast.xml
 downloads/latest.json
 downloads/archive/${siteConfig.version}/${siteConfig.releaseDmgName}
 downloads/archive/${siteConfig.version}/appcast.xml
-downloads/remote/cmuxd-remote-manifest.json`}</CodeBlock>
+downloads/remote/iccd-remote-manifest.json`}</CodeBlock>
 
       <h2>{t("controlTitle")}</h2>
       <p>{t("controlDesc")}</p>

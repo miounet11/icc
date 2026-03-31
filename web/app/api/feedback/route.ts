@@ -175,8 +175,8 @@ export async function POST(request: Request) {
 
 function resolveFeedbackConfig() {
   const resendApiKey = env.RESEND_API_KEY;
-  const fromEmail = env.CMUX_FEEDBACK_FROM_EMAIL;
-  const rateLimitId = env.CMUX_FEEDBACK_RATE_LIMIT_ID;
+  const fromEmail = env.ICC_FEEDBACK_FROM_EMAIL;
+  const rateLimitId = env.ICC_FEEDBACK_RATE_LIMIT_ID;
 
   if (!resendApiKey || !fromEmail || !rateLimitId) {
     return null;

@@ -116,7 +116,7 @@
         "p1": "En sevdiğim icc özelliği Cmd+Shift+U. Şu anda her biri bir ajan çalıştıran 17 açık çalışma alanım var. Eskiden neyin tamamlandığını anlamak için sekmelere ve bildirim paneline tıklardım. Yazmak daha hızlı.",
         "p2": "Cmd+Shift+U en yeni okunmamış <link>bildirime</link> atlar. Pratikte bu, biten son ajan demektir. Doğru çalışma alanına geçer, tam panele odaklanır, nereye bakacağınızı görmeniz için yanıp söner ve okundu olarak işaretler. Bildirim başka bir pencereden geldiyse, o pencere öne gelir."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "icc'un Zen'i",
         "summary": "icc bir ilkel yapıdır, çözüm değil. Size birleştirilebilir parçalar verir ve iş akışınız size kalmıştır.",
         "date": "27 Şubat 2026",
@@ -144,7 +144,7 @@
         "scriptable": "icc'taki her şey CLI aracılığıyla betiklenebilir: çalışma alanları oluşturma, tuş vuruşları gönderme, tarayıcıyı kontrol etme, bildirimleri okuma. icc felsefesinin bir parçası programlanabilir ve birleştirilebilir olmaktır, böylece insanlar kodlama ajanlarıyla çalışma şekillerini özelleştirebilir. Kodlama ajanları için son teknoloji hızla değişiyor ve ayak uyduramayan esnek olmayan bir GUI orkestratörüne kilitlenmek istemezsiniz.",
         "cta": "Birden fazla kodlama ajanı çalıştırıyorsanız, <link>icc'u deneyin</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "icc'u Tanıtıyoruz",
         "summary": "Ghostty üzerine kurulu, birden fazla AI kodlama ajanını yan yana çalıştırmak için tasarlanmış yerel bir macOS terminali.",
         "date": "12 Şubat 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "akıcı işleme için libghostty tarafından desteklenir"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "icc'un Zeni",
       "metaDescription": "icc bir çözüm değil, bir ilkeldir. Size birleştirilebilir parçalar verir ve iş akışınız size bağlıdır."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "icc Show HN'de",
       "metaDescription": "icc'un Hacker News'da lansmanının hikayesi."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "icc'u tanıtıyoruz",
       "metaDescription": "macOS için yeni bir terminal olan icc'u neden geliştirdik."
     }
@@ -241,7 +241,7 @@
       "paneNote": "Her panel birden fazla yüzey (panel içi sekmeler) barındırabilir.",
       "surfaceTitle": "Yüzey",
       "surfaceDesc": "Bir panel içindeki sekme. Her panelin kendi sekme çubuğu vardır ve birden fazla yüzey barındırabilir. {new} ile oluşturulur, {prev} / {next} veya {jump} ile gezinilir.",
-      "surfaceNote": "Yüzeyler, etkileşim kurduğunuz bireysel terminal veya tarayıcı oturumlarıdır. Her yüzeyin kendi CMUX_SURFACE_ID ortam değişkeni vardır.",
+      "surfaceNote": "Yüzeyler, etkileşim kurduğunuz bireysel terminal veya tarayıcı oturumlarıdır. Her yüzeyin kendi ICC_SURFACE_ID ortam değişkeni vardır.",
       "panelTitle": "Panel",
       "panelDesc": "Bir yüzeyin içindeki içerik. Şu anda iki tür:",
       "panelTerminal": "Terminal: bir Ghostty terminal oturumu",
@@ -292,8 +292,8 @@
       "automationMode": "Otomasyon modu",
       "automationModeDesc": "Socket erişim seviyesini kontrol edin:",
       "automationOff": "Kapalı: socket kontrolü yok (en güvenli)",
-      "automationCmux": "Yalnızca icc süreçleri: yalnızca icc terminalleri içinde başlatılan süreçlerin bağlanmasına izin ver",
-      "automationAll": "allowAll: herhangi bir yerel sürecin bağlanmasına izin ver (CMUX_SOCKET_MODE=allowAll, yalnızca ortam değişkeni geçersiz kılma)",
+      "automationIcc": "Yalnızca icc süreçleri: yalnızca icc terminalleri içinde başlatılan süreçlerin bağlanmasına izin ver",
+      "automationAll": "allowAll: herhangi bir yerel sürecin bağlanmasına izin ver (ICC_SOCKET_MODE=allowAll, yalnızca ortam değişkeni geçersiz kılma)",
       "automationCallout": "Paylaşılan makinelerde \"Kapalı\" veya \"Yalnızca icc süreçleri\" modunu kullanmayı düşünün.",
       "browserLinkBehavior": "Tarayıcı bağlantı davranışı",
       "browserLinkDesc": "Ayarlar > Tarayıcı'da icc, farklı amaçlara sahip iki ana bilgisayar listesi sunar:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Etiketli debug build",
-      "socketOverride": "CMUX_SOCKET_PATH ortam değişkeni ile geçersiz kılın. Çağrı başına yeni satırla sonlandırılmış bir JSON isteği gönderin:",
+      "socketOverride": "ICC_SOCKET_PATH ortam değişkeni ile geçersiz kılın. Çağrı başına yeni satırla sonlandırılmış bir JSON isteği gönderin:",
       "socketCallout": "JSON socket istekleri method ve params kullanmalıdır. <legacy>'{'\"command\":\"...\"'}'</legacy> gibi eski v1 JSON yükleri desteklenmez.",
       "accessModes": "Erişim modları",
       "modeHeader": "Mod",
       "descriptionHeader": "Açıklama",
       "howToEnableHeader": "Nasıl etkinleştirilir",
       "offMode": "Socket devre dışı",
-      "offEnable": "Ayarlar arayüzü veya CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Yalnızca icc terminalleri içinde başlatılan süreçler bağlanabilir.",
-      "cmuxOnlyEnable": "Ayarlar arayüzünde varsayılan mod",
+      "offEnable": "Ayarlar arayüzü veya ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Yalnızca icc terminalleri içinde başlatılan süreçler bağlanabilir.",
+      "iccOnlyEnable": "Ayarlar arayüzünde varsayılan mod",
       "allowAllMode": "Herhangi bir yerel sürecin bağlanmasına izin ver (köken kontrolü yok).",
-      "allowAllEnable": "Yalnızca ortam değişkeni geçersiz kılma: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Yalnızca ortam değişkeni geçersiz kılma: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "Paylaşılan makinelerde Kapalı veya Yalnızca icc süreçleri kullanın.",
       "cliOptions": "CLI seçenekleri",
       "flagHeader": "Bayrak",
@@ -432,13 +432,13 @@
       "variableHeader": "Değişken",
       "socketPathDesc": "CLI ve entegrasyonlar tarafından kullanılan socket yolunu geçersiz kılın",
       "socketEnableDesc": "Soketi zorla etkinleştir/devre dışı bırak (1/0, true/false, on/off)",
-      "socketModeDesc": "Erişim modunu geçersiz kılın (cmuxOnly, allowAll, off). Ayrıca icc-only/cmux_only ve allow-all/allow_all kabul eder",
+      "socketModeDesc": "Erişim modunu geçersiz kılın (iccOnly, allowAll, off). Ayrıca icc-only/icc_only ve allow-all/allow_all kabul eder",
       "workspaceIdDesc": "Otomatik ayarlı: geçerli çalışma alanı ID",
       "surfaceIdDesc": "Otomatik ayarlı: geçerli yüzey ID",
       "termProgramDesc": "ghostty olarak ayarlı",
       "termDesc": "xterm-ghostty olarak ayarlı",
-      "envCallout": "Eski CMUX_SOCKET_MODE değerleri full ve notifications uyumluluk için hâlâ kabul edilir.",
-      "detectingCmux": "icc'u algılama",
+      "envCallout": "Eski ICC_SOCKET_MODE değerleri full ve notifications uyumluluk için hâlâ kabul edilir.",
+      "detectingIcc": "icc'u algılama",
       "examples": "Örnekler",
       "pythonClient": "Python istemcisi",
       "shellScript": "Shell betiği",

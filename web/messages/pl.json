@@ -116,7 +116,7 @@
         "p1": "Moją ulubioną funkcją icc jest Cmd+Shift+U. Mam teraz otwartych 17 workspace'ów, każdy z uruchomionym agentem. Kiedyś przeklikiwałem się przez karty i panel powiadomień, żeby sprawdzić co się zakończyło. Klawiatura jest szybsza.",
         "p2": "Cmd+Shift+U przeskakuje do najnowszego nieprzeczytanego <link>powiadomienia</link>. W praktyce oznacza to ostatniego agenta który skończył. Przełącza na właściwy workspace, fokusuje dokładny panel, miga nim żebyś widział gdzie patrzeć i oznacza go jako przeczytany. Jeśli powiadomienie przyszło z innego okna, to okno wysuwa się na przód."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "The Zen of icc",
         "summary": "icc to prymityw, nie rozwiązanie. Daje ci komponowalne elementy, a Twój workflow zależy od Ciebie.",
         "date": "27 lutego 2026",
@@ -144,7 +144,7 @@
         "scriptable": "Wszystko w icc jest skryptowalne przez CLI: tworzenie workspace'ów, wysyłanie naciśnięć klawiszy, kontrola przeglądarki, odczytywanie powiadomień. Częścią filozofii icc jest bycie programowalnym i komponowalnym, żeby ludzie mogli dostosować sposób pracy z agentami kodowania. Stan wiedzy o agentach kodowania zmienia się szybko, i nie chcesz być zamknięty w nieelastycznym GUI-orkiestratorze który nie nadąża.",
         "cta": "Jeśli uruchamiasz wielu agentów kodowania, <link>wypróbuj icc</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "Przedstawiamy icc",
         "summary": "Natywny terminal macOS zbudowany na Ghostty, zaprojektowany do uruchamiania wielu agentów kodowania AI obok siebie.",
         "date": "12 lutego 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "napędzany przez libghostty dla płynnego renderowania"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "Zen icc",
       "metaDescription": "icc to prymityw, nie rozwiązanie. Daje ci komponowalne elementy, a przepływ pracy zależy od ciebie."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "Premiera icc na Show HN",
       "metaDescription": "Historia premiery icc na Hacker News."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "Przedstawiamy icc",
       "metaDescription": "Dlaczego zbudowaliśmy icc, nowy terminal dla macOS."
     }
@@ -241,7 +241,7 @@
       "paneNote": "Każdy panel może zawierać wiele surface'ów (karty wewnątrz panelu).",
       "surfaceTitle": "Surface",
       "surfaceDesc": "Karta wewnątrz panelu. Każdy panel ma własny pasek kart i może zawierać wiele surface'ów. Tworzony za pomocą {new}, nawigacja za pomocą {prev} / {next} lub {jump}.",
-      "surfaceNote": "Surface'y to indywidualne sesje terminala lub przeglądarki z którymi wchodzisz w interakcję. Każdy surface ma własną zmienną środowiskową CMUX_SURFACE_ID.",
+      "surfaceNote": "Surface'y to indywidualne sesje terminala lub przeglądarki z którymi wchodzisz w interakcję. Każdy surface ma własną zmienną środowiskową ICC_SURFACE_ID.",
       "panelTitle": "Panel",
       "panelDesc": "Zawartość wewnątrz surface'a. Obecnie dwa typy:",
       "panelTerminal": "Terminal: sesja terminala Ghostty",
@@ -292,8 +292,8 @@
       "automationMode": "Tryb automatyzacji",
       "automationModeDesc": "Poziom dostępu do gniazda kontrolnego:",
       "automationOff": "Wyłączony: brak kontroli przez socket (najbezpieczniejszy)",
-      "automationCmux": "Tylko procesy icc: zezwalaj tylko procesom uruchomionym w terminalach icc na połączenie",
-      "automationAll": "allowAll: zezwalaj dowolnemu lokalnemu procesowi na połączenie (CMUX_SOCKET_MODE=allowAll, tylko nadpisanie zmiennej środowiskowej)",
+      "automationIcc": "Tylko procesy icc: zezwalaj tylko procesom uruchomionym w terminalach icc na połączenie",
+      "automationAll": "allowAll: zezwalaj dowolnemu lokalnemu procesowi na połączenie (ICC_SOCKET_MODE=allowAll, tylko nadpisanie zmiennej środowiskowej)",
       "automationCallout": "Na współdzielonych maszynach rozważ użycie trybu \"Wyłączony\" lub \"Tylko procesy icc\".",
       "browserLinkBehavior": "Zachowanie linków w przeglądarce",
       "browserLinkDesc": "W Ustawieniach > Przeglądarka icc udostępnia dwie listy hostów o różnych zastosowaniach:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagowany build debugowy",
-      "socketOverride": "Nadpisz zmienną środowiskową CMUX_SOCKET_PATH. Wyślij jedno żądanie JSON zakończone nową linią na wywołanie:",
+      "socketOverride": "Nadpisz zmienną środowiskową ICC_SOCKET_PATH. Wyślij jedno żądanie JSON zakończone nową linią na wywołanie:",
       "socketCallout": "Żądania JSON na socket muszą używać method i params. Starsze payloady JSON v1 takie jak <legacy>'{'\"command\":\"...\"'}'</legacy> nie są obsługiwane.",
       "accessModes": "Tryby dostępu",
       "modeHeader": "Tryb",
       "descriptionHeader": "Opis",
       "howToEnableHeader": "Jak włączyć",
       "offMode": "Socket wyłączony",
-      "offEnable": "Interfejs ustawień lub CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Tylko procesy uruchomione w terminalach icc mogą się połączyć.",
-      "cmuxOnlyEnable": "Domyślny tryb w interfejsie ustawień",
+      "offEnable": "Interfejs ustawień lub ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Tylko procesy uruchomione w terminalach icc mogą się połączyć.",
+      "iccOnlyEnable": "Domyślny tryb w interfejsie ustawień",
       "allowAllMode": "Pozwól dowolnemu lokalnemu procesowi na połączenie (bez sprawdzania pochodzenia).",
-      "allowAllEnable": "Tylko nadpisanie zmiennej środowiskowej: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Tylko nadpisanie zmiennej środowiskowej: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "Na współdzielonych maszynach używaj trybu Wyłączony lub Tylko procesy icc.",
       "cliOptions": "Opcje CLI",
       "flagHeader": "Flaga",
@@ -432,13 +432,13 @@
       "variableHeader": "Zmienna",
       "socketPathDesc": "Nadpisz ścieżkę socketa używaną przez CLI i integracje",
       "socketEnableDesc": "Wymuś włączenie/wyłączenie socketa (1/0, true/false, on/off)",
-      "socketModeDesc": "Nadpisz tryb dostępu (cmuxOnly, allowAll, off). Akceptuje też icc-only/cmux_only i allow-all/allow_all",
+      "socketModeDesc": "Nadpisz tryb dostępu (iccOnly, allowAll, off). Akceptuje też icc-only/icc_only i allow-all/allow_all",
       "workspaceIdDesc": "Ustawiane automatycznie: ID bieżącego workspace'a",
       "surfaceIdDesc": "Ustawiane automatycznie: ID bieżącego surface'a",
       "termProgramDesc": "Ustawione na ghostty",
       "termDesc": "Ustawione na xterm-ghostty",
-      "envCallout": "Starsze wartości CMUX_SOCKET_MODE full i notifications są nadal akceptowane dla kompatybilności.",
-      "detectingCmux": "Wykrywanie icc",
+      "envCallout": "Starsze wartości ICC_SOCKET_MODE full i notifications są nadal akceptowane dla kompatybilności.",
+      "detectingIcc": "Wykrywanie icc",
       "examples": "Przykłady",
       "pythonClient": "Klient Python",
       "shellScript": "Skrypt powłoki",

@@ -521,49 +521,49 @@ final class BrowserProfileStore: ObservableObject {
 }
 
 enum BrowserLinkOpenSettings {
-    static let openTerminalLinksInCmuxBrowserKey = "browserOpenTerminalLinksInCmuxBrowser"
-    static let defaultOpenTerminalLinksInCmuxBrowser: Bool = true
+    static let openTerminalLinksInIccBrowserKey = "browserOpenTerminalLinksInIccBrowser"
+    static let defaultOpenTerminalLinksInIccBrowser: Bool = true
 
-    static let openSidebarPullRequestLinksInCmuxBrowserKey = "browserOpenSidebarPullRequestLinksInCmuxBrowser"
-    static let defaultOpenSidebarPullRequestLinksInCmuxBrowser: Bool = true
+    static let openSidebarPullRequestLinksInIccBrowserKey = "browserOpenSidebarPullRequestLinksInIccBrowser"
+    static let defaultOpenSidebarPullRequestLinksInIccBrowser: Bool = true
 
-    static let interceptTerminalOpenCommandInCmuxBrowserKey = "browserInterceptTerminalOpenCommandInCmuxBrowser"
-    static let defaultInterceptTerminalOpenCommandInCmuxBrowser: Bool = true
+    static let interceptTerminalOpenCommandInIccBrowserKey = "browserInterceptTerminalOpenCommandInIccBrowser"
+    static let defaultInterceptTerminalOpenCommandInIccBrowser: Bool = true
 
     static let browserHostWhitelistKey = "browserHostWhitelist"
     static let defaultBrowserHostWhitelist: String = ""
     static let browserExternalOpenPatternsKey = "browserExternalOpenPatterns"
     static let defaultBrowserExternalOpenPatterns: String = ""
 
-    static func openTerminalLinksInCmuxBrowser(defaults: UserDefaults = .standard) -> Bool {
-        if defaults.object(forKey: openTerminalLinksInCmuxBrowserKey) == nil {
-            return defaultOpenTerminalLinksInCmuxBrowser
+    static func openTerminalLinksInIccBrowser(defaults: UserDefaults = .standard) -> Bool {
+        if defaults.object(forKey: openTerminalLinksInIccBrowserKey) == nil {
+            return defaultOpenTerminalLinksInIccBrowser
         }
-        return defaults.bool(forKey: openTerminalLinksInCmuxBrowserKey)
+        return defaults.bool(forKey: openTerminalLinksInIccBrowserKey)
     }
 
-    static func openSidebarPullRequestLinksInCmuxBrowser(defaults: UserDefaults = .standard) -> Bool {
-        if defaults.object(forKey: openSidebarPullRequestLinksInCmuxBrowserKey) == nil {
-            return defaultOpenSidebarPullRequestLinksInCmuxBrowser
+    static func openSidebarPullRequestLinksInIccBrowser(defaults: UserDefaults = .standard) -> Bool {
+        if defaults.object(forKey: openSidebarPullRequestLinksInIccBrowserKey) == nil {
+            return defaultOpenSidebarPullRequestLinksInIccBrowser
         }
-        return defaults.bool(forKey: openSidebarPullRequestLinksInCmuxBrowserKey)
+        return defaults.bool(forKey: openSidebarPullRequestLinksInIccBrowserKey)
     }
 
-    static func interceptTerminalOpenCommandInCmuxBrowser(defaults: UserDefaults = .standard) -> Bool {
-        if defaults.object(forKey: interceptTerminalOpenCommandInCmuxBrowserKey) != nil {
-            return defaults.bool(forKey: interceptTerminalOpenCommandInCmuxBrowserKey)
+    static func interceptTerminalOpenCommandInIccBrowser(defaults: UserDefaults = .standard) -> Bool {
+        if defaults.object(forKey: interceptTerminalOpenCommandInIccBrowserKey) != nil {
+            return defaults.bool(forKey: interceptTerminalOpenCommandInIccBrowserKey)
         }
 
         // Migrate existing behavior for users who only had the link-click toggle.
-        if defaults.object(forKey: openTerminalLinksInCmuxBrowserKey) != nil {
-            return defaults.bool(forKey: openTerminalLinksInCmuxBrowserKey)
+        if defaults.object(forKey: openTerminalLinksInIccBrowserKey) != nil {
+            return defaults.bool(forKey: openTerminalLinksInIccBrowserKey)
         }
 
-        return defaultInterceptTerminalOpenCommandInCmuxBrowser
+        return defaultInterceptTerminalOpenCommandInIccBrowser
     }
 
-    static func initialInterceptTerminalOpenCommandInCmuxBrowserValue(defaults: UserDefaults = .standard) -> Bool {
-        interceptTerminalOpenCommandInCmuxBrowser(defaults: defaults)
+    static func initialInterceptTerminalOpenCommandInIccBrowserValue(defaults: UserDefaults = .standard) -> Bool {
+        interceptTerminalOpenCommandInIccBrowser(defaults: defaults)
     }
 
     static func hostWhitelist(defaults: UserDefaults = .standard) -> [String] {
@@ -1533,8 +1533,8 @@ actor BrowserSearchSuggestionService {
 
         // Deterministic UI-test hook for validating remote suggestion rendering
         // without relying on external network behavior.
-        let forced = ProcessInfo.processInfo.environment["CMUX_UI_TEST_REMOTE_SUGGESTIONS_JSON"]
-            ?? UserDefaults.standard.string(forKey: "CMUX_UI_TEST_REMOTE_SUGGESTIONS_JSON")
+        let forced = ProcessInfo.processInfo.environment["ICC_UI_TEST_REMOTE_SUGGESTIONS_JSON"]
+            ?? UserDefaults.standard.string(forKey: "ICC_UI_TEST_REMOTE_SUGGESTIONS_JSON")
         if let forced,
            let data = forced.data(using: .utf8),
            let parsed = try? JSONSerialization.jsonObject(with: data) as? [Any] {
@@ -1725,19 +1725,19 @@ final class BrowserPanel: Panel, ObservableObject {
 
     static let telemetryHookBootstrapScriptSource = """
     (() => {
-      if (window.__cmuxHooksInstalled) return true;
-      window.__cmuxHooksInstalled = true;
+      if (window.__iccHooksInstalled) return true;
+      window.__iccHooksInstalled = true;
 
-      window.__cmuxConsoleLog = window.__cmuxConsoleLog || [];
+      window.__iccConsoleLog = window.__iccConsoleLog || [];
       const __pushConsole = (level, args) => {
         try {
           const text = Array.from(args || []).map((x) => {
             if (typeof x === 'string') return x;
             try { return JSON.stringify(x); } catch (_) { return String(x); }
           }).join(' ');
-          window.__cmuxConsoleLog.push({ level, text, timestamp_ms: Date.now() });
-          if (window.__cmuxConsoleLog.length > 512) {
-            window.__cmuxConsoleLog.splice(0, window.__cmuxConsoleLog.length - 512);
+          window.__iccConsoleLog.push({ level, text, timestamp_ms: Date.now() });
+          if (window.__iccConsoleLog.length > 512) {
+            window.__iccConsoleLog.splice(0, window.__iccConsoleLog.length - 512);
           }
         } catch (_) {}
       };
@@ -1751,16 +1751,16 @@ final class BrowserPanel: Panel, ObservableObject {
         };
       }
 
-      window.__cmuxErrorLog = window.__cmuxErrorLog || [];
+      window.__iccErrorLog = window.__iccErrorLog || [];
       window.addEventListener('error', (ev) => {
         try {
           const message = String((ev && ev.message) || '');
           const source = String((ev && ev.filename) || '');
           const line = Number((ev && ev.lineno) || 0);
           const col = Number((ev && ev.colno) || 0);
-          window.__cmuxErrorLog.push({ message, source, line, column: col, timestamp_ms: Date.now() });
-          if (window.__cmuxErrorLog.length > 512) {
-            window.__cmuxErrorLog.splice(0, window.__cmuxErrorLog.length - 512);
+          window.__iccErrorLog.push({ message, source, line, column: col, timestamp_ms: Date.now() });
+          if (window.__iccErrorLog.length > 512) {
+            window.__iccErrorLog.splice(0, window.__iccErrorLog.length - 512);
           }
         } catch (_) {}
       });
@@ -1768,9 +1768,9 @@ final class BrowserPanel: Panel, ObservableObject {
         try {
           const reason = ev && ev.reason;
           const message = typeof reason === 'string' ? reason : (reason && reason.message ? String(reason.message) : String(reason));
-          window.__cmuxErrorLog.push({ message, source: 'unhandledrejection', line: 0, column: 0, timestamp_ms: Date.now() });
-          if (window.__cmuxErrorLog.length > 512) {
-            window.__cmuxErrorLog.splice(0, window.__cmuxErrorLog.length - 512);
+          window.__iccErrorLog.push({ message, source: 'unhandledrejection', line: 0, column: 0, timestamp_ms: Date.now() });
+          if (window.__iccErrorLog.length > 512) {
+            window.__iccErrorLog.splice(0, window.__iccErrorLog.length - 512);
           }
         } catch (_) {}
       });
@@ -1781,20 +1781,20 @@ final class BrowserPanel: Panel, ObservableObject {
 
     static let dialogTelemetryHookBootstrapScriptSource = """
     (() => {
-      if (window.__cmuxDialogHooksInstalled) return true;
-      window.__cmuxDialogHooksInstalled = true;
+      if (window.__iccDialogHooksInstalled) return true;
+      window.__iccDialogHooksInstalled = true;
 
-      window.__cmuxDialogQueue = window.__cmuxDialogQueue || [];
-      window.__cmuxDialogDefaults = window.__cmuxDialogDefaults || { confirm: false, prompt: null };
+      window.__iccDialogQueue = window.__iccDialogQueue || [];
+      window.__iccDialogDefaults = window.__iccDialogDefaults || { confirm: false, prompt: null };
       const __pushDialog = (type, message, defaultText) => {
-        window.__cmuxDialogQueue.push({
+        window.__iccDialogQueue.push({
           type,
           message: String(message || ''),
           default_text: defaultText == null ? null : String(defaultText),
           timestamp_ms: Date.now()
         });
-        if (window.__cmuxDialogQueue.length > 128) {
-          window.__cmuxDialogQueue.splice(0, window.__cmuxDialogQueue.length - 128);
+        if (window.__iccDialogQueue.length > 128) {
+          window.__iccDialogQueue.splice(0, window.__iccDialogQueue.length - 128);
         }
       };
 
@@ -1803,11 +1803,11 @@ final class BrowserPanel: Panel, ObservableObject {
       };
       window.confirm = function(message) {
         __pushDialog('confirm', message, null);
-        return !!window.__cmuxDialogDefaults.confirm;
+        return !!window.__iccDialogDefaults.confirm;
       };
       window.prompt = function(message, defaultValue) {
         __pushDialog('prompt', message, defaultValue == null ? null : defaultValue);
-        const v = window.__cmuxDialogDefaults.prompt;
+        const v = window.__iccDialogDefaults.prompt;
         if (v === null || v === undefined) {
           return defaultValue == null ? '' : String(defaultValue);
         }
@@ -1887,12 +1887,12 @@ final class BrowserPanel: Panel, ObservableObject {
     (() => {
       try {
         const syncState = (state) => {
-          window.__cmuxAddressBarFocusState = state;
+          window.__iccAddressBarFocusState = state;
           try {
             if (window.top && window.top !== window) {
-              window.top.postMessage({ cmuxAddressBarFocusState: state }, "*");
+              window.top.postMessage({ iccAddressBarFocusState: state }, "*");
             } else if (window.top) {
-              window.top.__cmuxAddressBarFocusState = state;
+              window.top.__iccAddressBarFocusState = state;
             }
           } catch (_) {}
         };
@@ -1914,10 +1914,10 @@ final class BrowserPanel: Panel, ObservableObject {
           return "cleared:noneditable";
         }
 
-        let id = active.getAttribute("data-cmux-addressbar-focus-id");
+        let id = active.getAttribute("data-icc-addressbar-focus-id");
         if (!id) {
-          id = "cmux-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-          active.setAttribute("data-cmux-addressbar-focus-id", id);
+          id = "icc-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+          active.setAttribute("data-icc-addressbar-focus-id", id);
         }
 
         const state = { id, selectionStart: null, selectionEnd: null };
@@ -1935,27 +1935,27 @@ final class BrowserPanel: Panel, ObservableObject {
     private static let addressBarFocusTrackingBootstrapScript = """
     (() => {
       try {
-        if (window.__cmuxAddressBarFocusTrackerInstalled) return true;
-        window.__cmuxAddressBarFocusTrackerInstalled = true;
+        if (window.__iccAddressBarFocusTrackerInstalled) return true;
+        window.__iccAddressBarFocusTrackerInstalled = true;
 
         const syncState = (state) => {
-          window.__cmuxAddressBarFocusState = state;
+          window.__iccAddressBarFocusState = state;
           try {
             if (window.top && window.top !== window) {
-              window.top.postMessage({ cmuxAddressBarFocusState: state }, "*");
+              window.top.postMessage({ iccAddressBarFocusState: state }, "*");
             } else if (window.top) {
-              window.top.__cmuxAddressBarFocusState = state;
+              window.top.__iccAddressBarFocusState = state;
             }
           } catch (_) {}
         };
 
-        if (window.top === window && !window.__cmuxAddressBarFocusMessageBridgeInstalled) {
-          window.__cmuxAddressBarFocusMessageBridgeInstalled = true;
+        if (window.top === window && !window.__iccAddressBarFocusMessageBridgeInstalled) {
+          window.__iccAddressBarFocusMessageBridgeInstalled = true;
           window.addEventListener("message", (ev) => {
             try {
               const data = ev ? ev.data : null;
-              if (!data || !Object.prototype.hasOwnProperty.call(data, "cmuxAddressBarFocusState")) return;
-              window.__cmuxAddressBarFocusState = data.cmuxAddressBarFocusState || null;
+              if (!data || !Object.prototype.hasOwnProperty.call(data, "iccAddressBarFocusState")) return;
+              window.__iccAddressBarFocusState = data.iccAddressBarFocusState || null;
             } catch (_) {}
           }, true);
         }
@@ -1968,10 +1968,10 @@ final class BrowserPanel: Panel, ObservableObject {
         };
 
         const ensureFocusId = (el) => {
-          let id = el.getAttribute("data-cmux-addressbar-focus-id");
+          let id = el.getAttribute("data-icc-addressbar-focus-id");
           if (!id) {
-            id = "cmux-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-            el.setAttribute("data-cmux-addressbar-focus-id", id);
+            id = "icc-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+            el.setAttribute("data-icc-addressbar-focus-id", id);
           }
           return id;
         };
@@ -2023,23 +2023,23 @@ final class BrowserPanel: Panel, ObservableObject {
     (() => {
       try {
         const readState = () => {
-          let state = window.__cmuxAddressBarFocusState;
+          let state = window.__iccAddressBarFocusState;
           try {
             if ((!state || typeof state.id !== "string" || !state.id) &&
-                window.top && window.top.__cmuxAddressBarFocusState) {
-              state = window.top.__cmuxAddressBarFocusState;
+                window.top && window.top.__iccAddressBarFocusState) {
+              state = window.top.__iccAddressBarFocusState;
             }
           } catch (_) {}
           return state;
         };
 
         const clearState = () => {
-          window.__cmuxAddressBarFocusState = null;
+          window.__iccAddressBarFocusState = null;
           try {
             if (window.top && window.top !== window) {
-              window.top.postMessage({ cmuxAddressBarFocusState: null }, "*");
+              window.top.postMessage({ iccAddressBarFocusState: null }, "*");
             } else if (window.top) {
-              window.top.__cmuxAddressBarFocusState = null;
+              window.top.__iccAddressBarFocusState = null;
             }
           } catch (_) {}
         };
@@ -2049,7 +2049,7 @@ final class BrowserPanel: Panel, ObservableObject {
           return "no_state";
         }
 
-        const selector = '[data-cmux-addressbar-focus-id="' + state.id + '"]';
+        const selector = '[data-icc-addressbar-focus-id="' + state.id + '"]';
         const findTarget = (doc) => {
           if (!doc) return null;
           const direct = doc.querySelector(selector);
@@ -2446,14 +2446,14 @@ final class BrowserPanel: Panel, ObservableObject {
     private static func makeWebView(
         profileID: UUID,
         websiteDataStore: WKWebsiteDataStore? = nil
-    ) -> CmuxWebView {
+    ) -> IccWebView {
         let config = WKWebViewConfiguration()
         configureWebViewConfiguration(
             config,
             websiteDataStore: websiteDataStore ?? BrowserProfileStore.shared.websiteDataStore(for: profileID)
         )
 
-        let webView = CmuxWebView(frame: .zero, configuration: config)
+        let webView = IccWebView(frame: .zero, configuration: config)
         webView.allowsBackForwardNavigationGestures = true
         if #available(macOS 13.3, *) {
             webView.isInspectable = true
@@ -2486,7 +2486,7 @@ final class BrowserPanel: Panel, ObservableObject {
         // Keep browser console/error/dialog telemetry active from document start on every navigation.
         // Main frame only — injecting into cross-origin iframes causes CAPTCHA providers
         // (reCAPTCHA, hCaptcha, Cloudflare Turnstile) to detect the overridden console.*
-        // methods and __cmux* globals as environment tampering, failing the challenge.
+        // methods and __icc* globals as environment tampering, failing the challenge.
         configuration.userContentController.addUserScript(
             WKUserScript(
                 source: Self.telemetryHookBootstrapScriptSource,
@@ -2506,7 +2506,7 @@ final class BrowserPanel: Panel, ObservableObject {
         )
     }
 
-    private func bindWebView(_ webView: CmuxWebView) {
+    private func bindWebView(_ webView: IccWebView) {
         webView.onContextMenuDownloadStateChanged = { [weak self] downloading in
             if downloading {
                 self?.beginDownloadActivity()
@@ -2815,8 +2815,8 @@ final class BrowserPanel: Panel, ObservableObject {
         previousWebView.stopLoading()
         previousWebView.navigationDelegate = nil
         previousWebView.uiDelegate = nil
-        if let previousCmuxWebView = previousWebView as? CmuxWebView {
-            previousCmuxWebView.onContextMenuDownloadStateChanged = nil
+        if let previousIccWebView = previousWebView as? IccWebView {
+            previousIccWebView.onContextMenuDownloadStateChanged = nil
         }
 
         profileID = resolvedProfileID
@@ -3068,7 +3068,7 @@ final class BrowserPanel: Panel, ObservableObject {
         webViewObservers.append(progressObserver)
 
         let fullscreenObserver = webView.observe(\.fullscreenState, options: [.initial, .new]) { [weak self] webView, _ in
-            let isElementFullscreenActive = webView.cmuxIsElementFullscreenActiveOrTransitioning
+            let isElementFullscreenActive = webView.iccIsElementFullscreenActiveOrTransitioning
             let fullscreenState = webView.fullscreenState
             Task { @MainActor in
                 guard let self, self.isCurrentWebView(webView, instanceID: observedWebViewInstanceID) else { return }
@@ -3139,8 +3139,8 @@ final class BrowserPanel: Panel, ObservableObject {
         oldWebView.stopLoading()
         oldWebView.navigationDelegate = nil
         oldWebView.uiDelegate = nil
-        if let oldCmuxWebView = oldWebView as? CmuxWebView {
-            oldCmuxWebView.onContextMenuDownloadStateChanged = nil
+        if let oldIccWebView = oldWebView as? IccWebView {
+            oldIccWebView.onContextMenuDownloadStateChanged = nil
         }
 
         let replacement = Self.makeWebView(
@@ -3798,7 +3798,7 @@ final class BrowserPanel: Panel, ObservableObject {
         alert.messageText = String(localized: "browser.error.insecure.title", defaultValue: "Connection isn\u{2019}t secure")
         alert.informativeText = String(localized: "browser.error.insecure.message", defaultValue: "\(host) uses plain HTTP, so traffic can be read or modified on the network.\n\nOpen this URL in your default browser, or proceed in icc.")
         alert.addButton(withTitle: String(localized: "browser.openInDefaultBrowser", defaultValue: "Open in Default Browser"))
-        alert.addButton(withTitle: String(localized: "browser.proceedInCmux", defaultValue: "Proceed in icc"))
+        alert.addButton(withTitle: String(localized: "browser.proceedInIcc", defaultValue: "Proceed in icc"))
         alert.addButton(withTitle: String(localized: "common.cancel", defaultValue: "Cancel"))
         alert.showsSuppressionButton = true
         alert.suppressionButton?.title = String(localized: "browser.alwaysAllowHost", defaultValue: "Always allow this host in icc")
@@ -3961,8 +3961,8 @@ extension BrowserPanel {
         oldWebView.stopLoading()
         oldWebView.navigationDelegate = nil
         oldWebView.uiDelegate = nil
-        if let oldCmuxWebView = oldWebView as? CmuxWebView {
-            oldCmuxWebView.onContextMenuDownloadStateChanged = nil
+        if let oldIccWebView = oldWebView as? IccWebView {
+            oldIccWebView.onContextMenuDownloadStateChanged = nil
         }
 
         let replacement = Self.makeWebView(
@@ -4252,13 +4252,13 @@ extension BrowserPanel {
         guard preferredDeveloperToolsPresentation == .unknown else { return }
         let attachSelector = NSSelectorFromString("attach")
         guard inspector.responds(to: attachSelector) else { return }
-        inspector.cmuxCallVoid(selector: attachSelector)
+        inspector.iccCallVoid(selector: attachSelector)
     }
 
     @discardableResult
     private func revealDeveloperTools(_ inspector: NSObject) -> Bool {
         let isVisibleSelector = NSSelectorFromString("isVisible")
-        if inspector.cmuxCallBool(selector: isVisibleSelector) ?? false {
+        if inspector.iccCallBool(selector: isVisibleSelector) ?? false {
             developerToolsDetachedOpenGraceDeadline = nil
             developerToolsLastKnownVisibleAt = Date()
             return true
@@ -4268,8 +4268,8 @@ extension BrowserPanel {
 
         let showSelector = NSSelectorFromString("show")
         guard inspector.responds(to: showSelector) else { return false }
-        inspector.cmuxCallVoid(selector: showSelector)
-        let visibleAfterShow = inspector.cmuxCallBool(selector: isVisibleSelector) ?? false
+        inspector.iccCallVoid(selector: showSelector)
+        let visibleAfterShow = inspector.iccCallBool(selector: isVisibleSelector) ?? false
         if visibleAfterShow {
             developerToolsLastKnownVisibleAt = Date()
         }
@@ -4286,21 +4286,21 @@ extension BrowserPanel {
     @discardableResult
     private func concealDeveloperTools(_ inspector: NSObject) -> Bool {
         let isVisibleSelector = NSSelectorFromString("isVisible")
-        guard inspector.cmuxCallBool(selector: isVisibleSelector) ?? false else { return true }
+        guard inspector.iccCallBool(selector: isVisibleSelector) ?? false else { return true }
 
         var invokedSelector = false
         for rawSelector in ["hide", "close"] {
             let selector = NSSelectorFromString(rawSelector)
             guard inspector.responds(to: selector) else { continue }
             invokedSelector = true
-            inspector.cmuxCallVoid(selector: selector)
-            if !(inspector.cmuxCallBool(selector: isVisibleSelector) ?? false) {
+            inspector.iccCallVoid(selector: selector)
+            if !(inspector.iccCallBool(selector: isVisibleSelector) ?? false) {
                 return true
             }
         }
 
         guard invokedSelector else { return false }
-        return !(inspector.cmuxCallBool(selector: isVisibleSelector) ?? false)
+        return !(inspector.iccCallBool(selector: isVisibleSelector) ?? false)
     }
 
     private var isDeveloperToolsTransitionInFlight: Bool {
@@ -4367,10 +4367,10 @@ extension BrowserPanel {
         to targetVisible: Bool,
         source: String
     ) -> Bool {
-        guard let inspector = webView.cmuxInspectorObject() else { return false }
+        guard let inspector = webView.iccInspectorObject() else { return false }
 
         let isVisibleSelector = NSSelectorFromString("isVisible")
-        let visible = inspector.cmuxCallBool(selector: isVisibleSelector) ?? false
+        let visible = inspector.iccCallBool(selector: isVisibleSelector) ?? false
         preferredDeveloperToolsVisible = targetVisible
         developerToolsTransitionTargetVisible = targetVisible
 
@@ -4392,7 +4392,7 @@ extension BrowserPanel {
         }
 
         if targetVisible {
-            let visibleAfterTransition = inspector.cmuxCallBool(selector: isVisibleSelector) ?? false
+            let visibleAfterTransition = inspector.iccCallBool(selector: isVisibleSelector) ?? false
             if visibleAfterTransition {
                 syncDeveloperToolsPresentationPreferenceFromUI()
                 cancelDeveloperToolsRestoreRetry()
@@ -4450,7 +4450,7 @@ extension BrowserPanel {
     func showDeveloperToolsConsole() -> Bool {
         guard showDeveloperTools() else { return false }
         guard !isDeveloperToolsTransitionInFlight else { return true }
-        guard let inspector = webView.cmuxInspectorObject() else { return true }
+        guard let inspector = webView.iccInspectorObject() else { return true }
         // WebKit private inspector API differs by OS; try known console selectors.
         let consoleSelectors = [
             "showConsole",
@@ -4460,7 +4460,7 @@ extension BrowserPanel {
         for raw in consoleSelectors {
             let selector = NSSelectorFromString(raw)
             if inspector.responds(to: selector) {
-                inspector.cmuxCallVoid(selector: selector)
+                inspector.iccCallVoid(selector: selector)
                 break
             }
         }
@@ -4469,8 +4469,8 @@ extension BrowserPanel {
 
     /// Called before WKWebView detaches so manual inspector closes are respected.
     func syncDeveloperToolsPreferenceFromInspector(preserveVisibleIntent: Bool = false) {
-        guard let inspector = webView.cmuxInspectorObject() else { return }
-        guard let visible = inspector.cmuxCallBool(selector: NSSelectorFromString("isVisible")) else { return }
+        guard let inspector = webView.iccInspectorObject() else { return }
+        guard let visible = inspector.iccCallBool(selector: NSSelectorFromString("isVisible")) else { return }
         if isDeveloperToolsTransitionInFlight {
             let targetVisible = pendingDeveloperToolsTransitionTargetVisible ?? developerToolsTransitionTargetVisible ?? visible
             preferredDeveloperToolsVisible = targetVisible
@@ -4544,8 +4544,8 @@ extension BrowserPanel {
             return false
         }
         guard developerToolsLastKnownVisibleAt != nil else { return false }
-        guard let inspector = inspector ?? webView.cmuxInspectorObject() else { return false }
-        guard let visible = inspector.cmuxCallBool(selector: NSSelectorFromString("isVisible")) else { return false }
+        guard let inspector = inspector ?? webView.iccInspectorObject() else { return false }
+        guard let visible = inspector.iccCallBool(selector: NSSelectorFromString("isVisible")) else { return false }
         guard !visible else {
             developerToolsLastKnownVisibleAt = Date()
             return false
@@ -4573,7 +4573,7 @@ extension BrowserPanel {
             return
         }
         guard !isDeveloperToolsTransitionInFlight else { return }
-        guard let inspector = webView.cmuxInspectorObject() else {
+        guard let inspector = webView.iccInspectorObject() else {
             scheduleDeveloperToolsRestoreRetry()
             return
         }
@@ -4581,7 +4581,7 @@ extension BrowserPanel {
         let shouldForceRefresh = forceDeveloperToolsRefreshOnNextAttach
         forceDeveloperToolsRefreshOnNextAttach = false
 
-        let visible = inspector.cmuxCallBool(selector: NSSelectorFromString("isVisible")) ?? false
+        let visible = inspector.iccCallBool(selector: NSSelectorFromString("isVisible")) ?? false
         if visible {
             developerToolsDetachedOpenGraceDeadline = nil
             syncDeveloperToolsPresentationPreferenceFromUI()
@@ -4621,11 +4621,11 @@ extension BrowserPanel {
         // WebKit inspector show can trigger transient first-responder churn while
         // panel attachment is still stabilizing. Keep this auto-restore path from
         // mutating first responder so AppKit doesn't walk tearing-down responder chains.
-        cmuxWithWindowFirstResponderBypass {
+        iccWithWindowFirstResponderBypass {
             _ = revealDeveloperTools(inspector)
         }
         preferredDeveloperToolsVisible = true
-        let visibleAfterShow = inspector.cmuxCallBool(selector: NSSelectorFromString("isVisible")) ?? false
+        let visibleAfterShow = inspector.iccCallBool(selector: NSSelectorFromString("isVisible")) ?? false
         if visibleAfterShow {
             syncDeveloperToolsPresentationPreferenceFromUI()
             developerToolsLastKnownVisibleAt = Date()
@@ -4638,8 +4638,8 @@ extension BrowserPanel {
 
     @discardableResult
     func isDeveloperToolsVisible() -> Bool {
-        guard let inspector = webView.cmuxInspectorObject() else { return false }
-        return inspector.cmuxCallBool(selector: NSSelectorFromString("isVisible")) ?? false
+        guard let inspector = webView.iccInspectorObject() else { return false }
+        return inspector.iccCallBool(selector: NSSelectorFromString("isVisible")) ?? false
     }
 
     @discardableResult
@@ -5409,7 +5409,7 @@ private extension BrowserPanel {
 
         return """
         (() => {
-          const metaId = 'cmux-browser-theme-mode-meta';
+          const metaId = 'icc-browser-theme-mode-meta';
           const colorScheme = \(colorSchemeLiteral);
           const root = document.documentElement || document.body;
           if (!root) return;
@@ -5417,7 +5417,7 @@ private extension BrowserPanel {
           let meta = document.getElementById(metaId);
           if (colorScheme) {
             root.style.setProperty('color-scheme', colorScheme, 'important');
-            root.setAttribute('data-cmux-browser-theme', colorScheme);
+            root.setAttribute('data-icc-browser-theme', colorScheme);
             if (!meta) {
               meta = document.createElement('meta');
               meta.id = metaId;
@@ -5427,7 +5427,7 @@ private extension BrowserPanel {
             meta.setAttribute('content', colorScheme);
           } else {
             root.style.removeProperty('color-scheme');
-            root.removeAttribute('data-cmux-browser-theme');
+            root.removeAttribute('data-icc-browser-theme');
             if (meta) {
               meta.remove();
             }
@@ -5518,7 +5518,7 @@ extension BrowserPanel {
     func debugDeveloperToolsStateSummary() -> String {
         let preferred = preferredDeveloperToolsVisible ? 1 : 0
         let visible = isDeveloperToolsVisible() ? 1 : 0
-        let inspector = webView.cmuxInspectorObject() == nil ? 0 : 1
+        let inspector = webView.iccInspectorObject() == nil ? 0 : 1
         let attached = webView.superview == nil ? 0 : 1
         let inWindow = webView.window == nil ? 0 : 1
         let forceRefresh = forceDeveloperToolsRefreshOnNextAttach ? 1 : 0
@@ -5640,7 +5640,7 @@ extension BrowserPanel {
 }
 
 extension WKWebView {
-    func cmuxInspectorObject() -> NSObject? {
+    func iccInspectorObject() -> NSObject? {
         let selector = NSSelectorFromString("_inspector")
         guard responds(to: selector),
               let inspector = perform(selector)?.takeUnretainedValue() as? NSObject else {
@@ -5649,8 +5649,8 @@ extension WKWebView {
         return inspector
     }
 
-    func cmuxInspectorFrontendWebView() -> WKWebView? {
-        guard let inspector = cmuxInspectorObject() else { return nil }
+    func iccInspectorFrontendWebView() -> WKWebView? {
+        guard let inspector = iccInspectorObject() else { return nil }
         let selector = NSSelectorFromString("inspectorWebView")
         guard inspector.responds(to: selector),
               let inspectorWebView = inspector.perform(selector)?.takeUnretainedValue() as? WKWebView else {
@@ -5661,14 +5661,14 @@ extension WKWebView {
 }
 
 private extension NSObject {
-    func cmuxCallBool(selector: Selector) -> Bool? {
+    func iccCallBool(selector: Selector) -> Bool? {
         guard responds(to: selector) else { return nil }
         typealias Fn = @convention(c) (AnyObject, Selector) -> Bool
         let fn = unsafeBitCast(method(for: selector), to: Fn.self)
         return fn(self, selector)
     }
 
-    func cmuxCallVoid(selector: Selector) {
+    func iccCallVoid(selector: Selector) {
         guard responds(to: selector) else { return }
         typealias Fn = @convention(c) (AnyObject, Selector) -> Void
         let fn = unsafeBitCast(method(for: selector), to: Fn.self)
@@ -6035,7 +6035,7 @@ private class BrowserNavigationDelegate: NSObject, WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        let hasRecentMiddleClickIntent = CmuxWebView.hasRecentMiddleClickIntent(for: webView)
+        let hasRecentMiddleClickIntent = IccWebView.hasRecentMiddleClickIntent(for: webView)
         let shouldOpenInNewTab = browserNavigationShouldOpenInNewTab(
             navigationType: navigationAction.navigationType,
             modifierFlags: navigationAction.modifierFlags,
@@ -6265,7 +6265,7 @@ private class BrowserUIDelegate: NSObject, WKUIDelegate {
             navigationType: navigationAction.navigationType,
             modifierFlags: navigationAction.modifierFlags,
             buttonNumber: navigationAction.buttonNumber,
-            hasRecentMiddleClickIntent: CmuxWebView.hasRecentMiddleClickIntent(for: webView)
+            hasRecentMiddleClickIntent: IccWebView.hasRecentMiddleClickIntent(for: webView)
         )
 
         if isScriptedPopup, let popupWebView = openPopup?(configuration, windowFeatures) {
@@ -8748,7 +8748,7 @@ enum BrowserDataImporter {
     ) throws {
         let fileManager = FileManager.default
         let tempRoot = fileManager.temporaryDirectory.appendingPathComponent(
-            "cmux-browser-import-\(UUID().uuidString)",
+            "icc-browser-import-\(UUID().uuidString)",
             isDirectory: true
         )
         try fileManager.createDirectory(at: tempRoot, withIntermediateDirectories: true)
@@ -8845,7 +8845,7 @@ enum BrowserImportUITestFixtureLoader {
     }
 
     static func browsers(from environment: [String: String]) -> [InstalledBrowserCandidate]? {
-        guard let rawFixture = environment["CMUX_UI_TEST_BROWSER_IMPORT_FIXTURE"],
+        guard let rawFixture = environment["ICC_UI_TEST_BROWSER_IMPORT_FIXTURE"],
               let data = rawFixture.data(using: .utf8),
               let fixture = try? JSONDecoder().decode(BrowserFixture.self, from: data) else {
             return nil
@@ -8855,7 +8855,7 @@ enum BrowserImportUITestFixtureLoader {
             InstalledBrowserProfile(
                 displayName: name,
                 rootURL: FileManager.default.temporaryDirectory
-                    .appendingPathComponent("cmux-ui-test-browser-import")
+                    .appendingPathComponent("icc-ui-test-browser-import")
                     .appendingPathComponent(
                         fixture.browserName
                             .lowercased()
@@ -8899,7 +8899,7 @@ enum BrowserImportUITestFixtureLoader {
     }
 
     static func destinationProfiles(from environment: [String: String]) -> [BrowserProfileDefinition]? {
-        guard let rawDestinations = environment["CMUX_UI_TEST_BROWSER_IMPORT_DESTINATIONS"],
+        guard let rawDestinations = environment["ICC_UI_TEST_BROWSER_IMPORT_DESTINATIONS"],
               let data = rawDestinations.data(using: .utf8),
               let names = try? JSONDecoder().decode([String].self, from: data),
               !names.isEmpty else {
@@ -9084,8 +9084,8 @@ final class BrowserDataImportCoordinator {
         destinationProfiles: [BrowserProfileDefinition]?
     ) -> Bool {
         let environment = ProcessInfo.processInfo.environment
-        guard environment["CMUX_UI_TEST_BROWSER_IMPORT_MODE"] == "capture-only" else { return false }
-        guard let path = environment["CMUX_UI_TEST_BROWSER_IMPORT_CAPTURE_PATH"], !path.isEmpty else {
+        guard environment["ICC_UI_TEST_BROWSER_IMPORT_MODE"] == "capture-only" else { return false }
+        guard let path = environment["ICC_UI_TEST_BROWSER_IMPORT_CAPTURE_PATH"], !path.isEmpty else {
             return true
         }
 
@@ -9645,7 +9645,7 @@ final class BrowserDataImportCoordinator {
 
             let destinationTitleLabel = NSTextField(
                 labelWithString: String(
-                    localized: "browser.import.destination.cmux",
+                    localized: "browser.import.destination.icc",
                     defaultValue: "icc destination"
                 )
             )

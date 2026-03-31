@@ -70,7 +70,7 @@ final class WindowDecorationsController {
 
     private func trafficLightOffset(for window: NSWindow) -> NSPoint {
         guard let raw = window.identifier?.rawValue,
-              raw == "cmux.settings" || raw == "iatlas.settings" || raw == "icc.settings" else { return .zero }
+              raw == "icc.settings" || raw == "iatlas.settings" || raw == "icc.settings" else { return .zero }
         // Nudge controls slightly right/down to align with the custom Settings title row.
         return NSPoint(x: 7, y: -4)
     }

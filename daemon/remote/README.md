@@ -1,11 +1,11 @@
-# cmuxd-remote
+# iccd-remote
 
-`cmuxd-remote` is the internal remote helper used by `icc` for managed SSH workspaces.
+`iccd-remote` is the internal remote helper used by `icc` for managed SSH workspaces.
 
 Historical note:
 
 - The product is `icc`.
-- The daemon binary intentionally retains the legacy name `cmuxd-remote`.
+- The daemon binary intentionally retains the legacy name `iccd-remote`.
 
 ## Responsibilities
 
@@ -16,11 +16,11 @@ Historical note:
 
 ## Main commands
 
-1. `cmuxd-remote version`
-2. `cmuxd-remote serve --stdio`
-3. `cmuxd-remote cli <command> [args...]`
+1. `iccd-remote version`
+2. `iccd-remote serve --stdio`
+3. `iccd-remote cli <command> [args...]`
 
-When invoked as `cmux` through the installed remote wrapper, the binary can auto-dispatch to the CLI relay path.
+When invoked as `icc` through the installed remote wrapper, the binary can auto-dispatch to the CLI relay path.
 
 ## RPC families
 

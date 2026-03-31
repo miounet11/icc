@@ -9,7 +9,13 @@ import Combine
 import ObjectiveC.runtime
 import Darwin
 
-final class MainWindowHostingView<Content: View>: NSHostingView<Content> {
+class IccFirstMouseHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        true
+    }
+}
+
+final class MainWindowHostingView<Content: View>: IccFirstMouseHostingView<Content> {
     private let zeroSafeAreaLayoutGuide = NSLayoutGuide()
 
     override var safeAreaInsets: NSEdgeInsets { NSEdgeInsetsZero }
@@ -33,26 +39,26 @@ final class MainWindowHostingView<Content: View>: NSHostingView<Content> {
     }
 }
 
-private enum CmuxThemeNotifications {
+private enum IccThemeNotifications {
     static let reloadConfig = Notification.Name("com.icc.themes.reload-config")
 }
 
 #if DEBUG
-enum CmuxTypingTiming {
+enum IccTypingTiming {
     static let isEnabled: Bool = {
         let environment = ProcessInfo.processInfo.environment
-        if environment["CMUX_TYPING_TIMING_LOGS"] == "1" || environment["CMUX_KEY_LATENCY_PROBE"] == "1" {
+        if environment["ICC_TYPING_TIMING_LOGS"] == "1" || environment["ICC_KEY_LATENCY_PROBE"] == "1" {
             return true
         }
         let defaults = UserDefaults.standard
-        return defaults.bool(forKey: "cmuxTypingTimingLogs") || defaults.bool(forKey: "cmuxKeyLatencyProbe")
+        return defaults.bool(forKey: "iccTypingTimingLogs") || defaults.bool(forKey: "iccKeyLatencyProbe")
     }()
     static let isVerboseProbeEnabled: Bool = {
         let environment = ProcessInfo.processInfo.environment
-        if environment["CMUX_KEY_LATENCY_PROBE"] == "1" {
+        if environment["ICC_KEY_LATENCY_PROBE"] == "1" {
             return true
         }
-        return UserDefaults.standard.bool(forKey: "cmuxKeyLatencyProbe")
+        return UserDefaults.standard.bool(forKey: "iccKeyLatencyProbe")
     }()
     private static let delayLogThresholdMs: Double = 6.0
     private static let durationLogThresholdMs: Double = 1.0
@@ -74,7 +80,7 @@ enum CmuxTypingTiming {
 
     @inline(__always)
     static func logDuration(path: String, startedAt: TimeInterval?, event: NSEvent? = nil, extra: String? = nil) {
-        CmuxMainThreadTurnProfiler.endMeasure(path, startedAt: startedAt)
+        IccMainThreadTurnProfiler.endMeasure(path, startedAt: startedAt)
         guard let startedAt else { return }
         let elapsedMs = max(0, (ProcessInfo.processInfo.systemUptime - startedAt) * 1000.0)
         let delayMs: Double? = {
@@ -154,8 +160,8 @@ enum CmuxTypingTiming {
     }
 }
 
-final class CmuxMainRunLoopStallMonitor {
-    static let shared = CmuxMainRunLoopStallMonitor()
+final class IccMainRunLoopStallMonitor {
+    static let shared = IccMainRunLoopStallMonitor()
 
     private let thresholdMs: Double = 8.0
     private var observer: CFRunLoopObserver?
@@ -166,7 +172,7 @@ final class CmuxMainRunLoopStallMonitor {
     private init() {}
 
     func installIfNeeded() {
-        guard CmuxTypingTiming.isEnabled else { return }
+        guard IccTypingTiming.isEnabled else { return }
         guard !installed else { return }
 
         var context = CFRunLoopObserverContext(
@@ -184,7 +190,7 @@ final class CmuxMainRunLoopStallMonitor {
             CFIndex.max,
             { _, activity, info in
                 guard let info else { return }
-                let monitor = Unmanaged<CmuxMainRunLoopStallMonitor>.fromOpaque(info).takeUnretainedValue()
+                let monitor = Unmanaged<IccMainRunLoopStallMonitor>.fromOpaque(info).takeUnretainedValue()
                 monitor.handle(activity: activity)
             },
             &context
@@ -240,8 +246,8 @@ final class CmuxMainRunLoopStallMonitor {
     }
 }
 
-final class CmuxMainThreadTurnProfiler {
-    static let shared = CmuxMainThreadTurnProfiler()
+final class IccMainThreadTurnProfiler {
+    static let shared = IccMainThreadTurnProfiler()
 
     private struct BucketStats {
         var count: Int = 0
@@ -260,13 +266,13 @@ final class CmuxMainThreadTurnProfiler {
 
     @inline(__always)
     static func endMeasure(_ bucket: String, startedAt: TimeInterval?) {
-        guard let startedAt, CmuxTypingTiming.isEnabled, Thread.isMainThread else { return }
+        guard let startedAt, IccTypingTiming.isEnabled, Thread.isMainThread else { return }
         let elapsedMs = max(0, (ProcessInfo.processInfo.systemUptime - startedAt) * 1000.0)
         shared.record(bucket: bucket, elapsedMs: elapsedMs, count: 1)
     }
 
     func installIfNeeded() {
-        guard CmuxTypingTiming.isEnabled else { return }
+        guard IccTypingTiming.isEnabled else { return }
         guard !installed else { return }
 
         var context = CFRunLoopObserverContext(
@@ -284,7 +290,7 @@ final class CmuxMainThreadTurnProfiler {
             CFIndex.max,
             { _, activity, info in
                 guard let info else { return }
-                let profiler = Unmanaged<CmuxMainThreadTurnProfiler>.fromOpaque(info).takeUnretainedValue()
+                let profiler = Unmanaged<IccMainThreadTurnProfiler>.fromOpaque(info).takeUnretainedValue()
                 profiler.handle(activity: activity)
             },
             &context
@@ -716,8 +722,8 @@ final class VSCodeServeWebController {
     static let shared = VSCodeServeWebController()
     private static let serveWebStartupTimeoutSeconds: TimeInterval = 60
 
-    private let queue = DispatchQueue(label: "cmux.vscode.serveWeb")
-    private let launchQueue = DispatchQueue(label: "cmux.vscode.serveWeb.launch")
+    private let queue = DispatchQueue(label: "icc.vscode.serveWeb")
+    private let launchQueue = DispatchQueue(label: "icc.vscode.serveWeb.launch")
     private let launchProcessOverride: ((URL, UInt64) -> (process: Process, url: URL)?)?
     private var serveWebProcess: Process?
     private var launchingProcess: Process?
@@ -1032,7 +1038,7 @@ final class VSCodeServeWebController {
 
     private static func makeConnectionTokenFile() -> URL? {
         let token = randomConnectionToken()
-        let tokenFileName = "cmux-vscode-token-\(UUID().uuidString)"
+        let tokenFileName = "icc-vscode-token-\(UUID().uuidString)"
         let tokenFileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent(tokenFileName, isDirectory: false)
         guard let tokenData = token.data(using: .utf8) else { return nil }
@@ -1141,7 +1147,7 @@ enum WorkspaceShortcutMapper {
     }
 }
 
-struct CmuxCLIPathInstaller {
+struct IccCLIPathInstaller {
     struct InstallOutcome {
         let usedAdministratorPrivileges: Bool
         let destinationURL: URL
@@ -1194,9 +1200,9 @@ struct CmuxCLIPathInstaller {
         fileManager: FileManager = .default,
         destinationURL: URL = URL(fileURLWithPath: "/usr/local/bin/icc"),
         bundledCLIURLProvider: @escaping () -> URL? = {
-            CmuxCLIPathInstaller.defaultBundledCLIURL()
+            IccCLIPathInstaller.defaultBundledCLIURL()
         },
-        expectedBundledCLIPath: String = CmuxCLIPathInstaller.defaultBundledCLIExpectedPath(),
+        expectedBundledCLIPath: String = IccCLIPathInstaller.defaultBundledCLIExpectedPath(),
         privilegedInstaller: PrivilegedInstallHandler? = nil,
         privilegedUninstaller: PrivilegedUninstallHandler? = nil
     ) {
@@ -1457,7 +1463,7 @@ struct CmuxCLIPathInstaller {
 }
 
 private extension NSScreen {
-    var cmuxDisplayID: UInt32? {
+    var iccDisplayID: UInt32? {
         let key = NSDeviceDescriptionKey("NSScreenNumber")
         guard let value = deviceDescription[key] as? NSNumber else { return nil }
         return value.uint32Value
@@ -1798,20 +1804,20 @@ func shouldRouteCommandEquivalentDirectlyToMainMenu(_ event: NSEvent) -> Bool {
     return true
 }
 
-func cmuxOwningGhosttyView(for responder: NSResponder?) -> GhosttyNSView? {
+func iccOwningGhosttyView(for responder: NSResponder?) -> GhosttyNSView? {
     guard let responder else { return nil }
     if let ghosttyView = responder as? GhosttyNSView {
         return ghosttyView
     }
 
     if let view = responder as? NSView,
-       let ghosttyView = cmuxOwningGhosttyView(for: view) {
+       let ghosttyView = iccOwningGhosttyView(for: view) {
         return ghosttyView
     }
 
     if let textView = responder as? NSTextView,
        let delegateView = textView.delegate as? NSView,
-       let ghosttyView = cmuxOwningGhosttyView(for: delegateView) {
+       let ghosttyView = iccOwningGhosttyView(for: delegateView) {
         return ghosttyView
     }
 
@@ -1821,7 +1827,7 @@ func cmuxOwningGhosttyView(for responder: NSResponder?) -> GhosttyNSView? {
             return ghosttyView
         }
         if let view = next as? NSView,
-           let ghosttyView = cmuxOwningGhosttyView(for: view) {
+           let ghosttyView = iccOwningGhosttyView(for: view) {
             return ghosttyView
         }
         current = next.nextResponder
@@ -1830,7 +1836,7 @@ func cmuxOwningGhosttyView(for responder: NSResponder?) -> GhosttyNSView? {
     return nil
 }
 
-private func cmuxOwningGhosttyView(for view: NSView) -> GhosttyNSView? {
+private func iccOwningGhosttyView(for view: NSView) -> GhosttyNSView? {
     if let ghosttyView = view as? GhosttyNSView {
         return ghosttyView
     }
@@ -1936,7 +1942,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         if env["XCInjectBundle"] != nil { return true }
         if env["XCInjectBundleInto"] != nil { return true }
         if env["DYLD_INSERT_LIBRARIES"]?.contains("libXCTest") == true { return true }
-        if env.keys.contains(where: { $0.hasPrefix("CMUX_UI_TEST_") }) { return true }
+        if env.keys.contains(where: { $0.hasPrefix("ICC_UI_TEST_") }) { return true }
         return false
     }
 
@@ -1994,7 +2000,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         let display: SessionDisplaySnapshot?
     }
 
-    private static let persistedWindowGeometryDefaultsKey = "cmux.session.lastWindowGeometry.v1"
+    private static let persistedWindowGeometryDefaultsKey = "icc.session.lastWindowGeometry.v1"
 
     weak var tabManager: TabManager?
     weak var notificationStore: TerminalNotificationStore?
@@ -2029,7 +2035,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     private static let didInstallWindowKeyEquivalentSwizzle: Void = {
         let targetClass: AnyClass = NSWindow.self
         let originalSelector = #selector(NSWindow.performKeyEquivalent(with:))
-        let swizzledSelector = #selector(NSWindow.cmux_performKeyEquivalent(with:))
+        let swizzledSelector = #selector(NSWindow.icc_performKeyEquivalent(with:))
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else {
             return
@@ -2039,7 +2045,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     private static let didInstallWindowFirstResponderSwizzle: Void = {
         let targetClass: AnyClass = NSWindow.self
         let originalSelector = #selector(NSWindow.makeFirstResponder(_:))
-        let swizzledSelector = #selector(NSWindow.cmux_makeFirstResponder(_:))
+        let swizzledSelector = #selector(NSWindow.icc_makeFirstResponder(_:))
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else {
             return
@@ -2049,7 +2055,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     private static let didInstallWindowSendEventSwizzle: Void = {
         let targetClass: AnyClass = NSWindow.self
         let originalSelector = #selector(NSWindow.sendEvent(_:))
-        let swizzledSelector = #selector(NSWindow.cmux_sendEvent(_:))
+        let swizzledSelector = #selector(NSWindow.icc_sendEvent(_:))
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else {
             return
@@ -2059,7 +2065,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     private static let didInstallApplicationSendEventSwizzle: Void = {
         let targetClass: AnyClass = NSApplication.self
         let originalSelector = #selector(NSApplication.sendEvent(_:))
-        let swizzledSelector = #selector(NSApplication.cmux_applicationSendEvent(_:))
+        let swizzledSelector = #selector(NSApplication.icc_applicationSendEvent(_:))
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else {
             return
@@ -2094,8 +2100,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func childExitKeyboardProbePath() -> String? {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_CHILD_EXIT_KEYBOARD_SETUP"] == "1",
-              let path = env["CMUX_UI_TEST_CHILD_EXIT_KEYBOARD_PATH"],
+        guard env["ICC_UI_TEST_CHILD_EXIT_KEYBOARD_SETUP"] == "1",
+              let path = env["ICC_UI_TEST_CHILD_EXIT_KEYBOARD_PATH"],
               !path.isEmpty else {
             return nil
         }
@@ -2245,7 +2251,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         DistributedNotificationCenter.default().addObserver(
             self,
             selector: #selector(handleThemesReloadNotification(_:)),
-            name: CmuxThemeNotifications.reloadConfig,
+            name: IccThemeNotifications.reloadConfig,
             object: nil,
             suspensionBehavior: .deliverImmediately
         )
@@ -2260,8 +2266,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
 #if DEBUG
         writeUITestDiagnosticsIfNeeded(stage: "didFinishLaunching")
-        CmuxMainRunLoopStallMonitor.shared.installIfNeeded()
-        CmuxMainThreadTurnProfiler.shared.installIfNeeded()
+        IccMainRunLoopStallMonitor.shared.installIfNeeded()
+        IccMainThreadTurnProfiler.shared.installIfNeeded()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             self?.writeUITestDiagnosticsIfNeeded(stage: "after1s")
         }
@@ -2304,7 +2310,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             PostHogAnalytics.shared.startIfNeeded()
         }
 
-        let forceDuplicateLaunchObserver = env["CMUX_UI_TEST_ENABLE_DUPLICATE_LAUNCH_OBSERVER"] == "1"
+        let forceDuplicateLaunchObserver = env["ICC_UI_TEST_ENABLE_DUPLICATE_LAUNCH_OBSERVER"] == "1"
 
         // UI tests frequently time out waiting for the main window if we do heavyweight
         // LaunchServices registration / single-instance enforcement synchronously at startup.
@@ -2344,12 +2350,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         NSApp.servicesProvider = self
 #if DEBUG
         UpdateTestSupport.applyIfNeeded(to: updateController.viewModel)
-        if env["CMUX_UI_TEST_MODE"] == "1" {
-            let trigger = env["CMUX_UI_TEST_TRIGGER_UPDATE_CHECK"] ?? "<nil>"
-            let feed = env["CMUX_UI_TEST_FEED_URL"] ?? "<nil>"
+        if env["ICC_UI_TEST_MODE"] == "1" {
+            let trigger = env["ICC_UI_TEST_TRIGGER_UPDATE_CHECK"] ?? "<nil>"
+            let feed = env["ICC_UI_TEST_FEED_URL"] ?? "<nil>"
             UpdateLogStore.shared.append("ui test env: trigger=\(trigger) feed=\(feed)")
         }
-        if env["CMUX_UI_TEST_TRIGGER_UPDATE_CHECK"] == "1" {
+        if env["ICC_UI_TEST_TRIGGER_UPDATE_CHECK"] == "1" {
             UpdateLogStore.shared.append("ui test trigger update check detected")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
                 guard let self else { return }
@@ -2365,19 +2371,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // In UI tests, `WindowGroup` occasionally fails to materialize a window quickly on the VM.
         // If there are no windows shortly after launch, force-create one so XCUITest can proceed.
         if isRunningUnderXCTest {
-            if let rawVariant = env["CMUX_UI_TEST_BROWSER_IMPORT_HINT_VARIANT"] {
+            if let rawVariant = env["ICC_UI_TEST_BROWSER_IMPORT_HINT_VARIANT"] {
                 UserDefaults.standard.set(
                     BrowserImportHintSettings.variant(for: rawVariant).rawValue,
                     forKey: BrowserImportHintSettings.variantKey
                 )
             }
-            if let rawShow = env["CMUX_UI_TEST_BROWSER_IMPORT_HINT_SHOW"] {
+            if let rawShow = env["ICC_UI_TEST_BROWSER_IMPORT_HINT_SHOW"] {
                 UserDefaults.standard.set(
                     rawShow == "1",
                     forKey: BrowserImportHintSettings.showOnBlankTabsKey
                 )
             }
-            if let rawDismissed = env["CMUX_UI_TEST_BROWSER_IMPORT_HINT_DISMISSED"] {
+            if let rawDismissed = env["ICC_UI_TEST_BROWSER_IMPORT_HINT_DISMISSED"] {
                 UserDefaults.standard.set(
                     rawDismissed == "1",
                     forKey: BrowserImportHintSettings.dismissedKey
@@ -2392,13 +2398,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
                 self.writeUITestDiagnosticsIfNeeded(stage: "afterForceWindow")
             }
-            if env["CMUX_UI_TEST_BROWSER_IMPORT_HINT_OPEN_BLANK_BROWSER"] == "1" {
+            if env["ICC_UI_TEST_BROWSER_IMPORT_HINT_OPEN_BLANK_BROWSER"] == "1" {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
                     guard let self else { return }
                     _ = self.openBrowserAndFocusAddressBar(insertAtEnd: true)
                 }
             }
-            if env["CMUX_UI_TEST_BROWSER_IMPORT_HINT_OPEN_SETTINGS"] == "1" {
+            if env["ICC_UI_TEST_BROWSER_IMPORT_HINT_OPEN_SETTINGS"] == "1" {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) { [weak self] in
                     self?.openPreferencesWindow(
                         debugSource: "uiTest.browserImportHint",
@@ -2406,7 +2412,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                     )
                 }
             }
-            if env["CMUX_UI_TEST_BROWSER_IMPORT_AUTO_OPEN"] == "1" {
+            if env["ICC_UI_TEST_BROWSER_IMPORT_AUTO_OPEN"] == "1" {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     BrowserDataImportCoordinator.shared.presentImportDialog()
                 }
@@ -2418,7 +2424,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 #if DEBUG
     private func writeUITestDiagnosticsIfNeeded(stage: String) {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_DIAGNOSTICS_PATH"], !path.isEmpty else { return }
+        guard let path = env["ICC_UI_TEST_DIAGNOSTICS_PATH"], !path.isEmpty else { return }
 
         var payload = loadUITestDiagnostics(at: path)
         let isRunningUnderXCTest = isRunningUnderXCTest(env)
@@ -2426,8 +2432,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         let windows = NSApp.windows
         let ids = windows.map { $0.identifier?.rawValue ?? "" }.joined(separator: ",")
         let vis = windows.map { $0.isVisible ? "1" : "0" }.joined(separator: ",")
-        let screenIDs = windows.map { $0.screen?.cmuxDisplayID.map(String.init) ?? "" }.joined(separator: ",")
-        let targetDisplayID = env["CMUX_UI_TEST_TARGET_DISPLAY_ID"] ?? ""
+        let screenIDs = windows.map { $0.screen?.iccDisplayID.map(String.init) ?? "" }.joined(separator: ",")
+        let targetDisplayID = env["ICC_UI_TEST_TARGET_DISPLAY_ID"] ?? ""
 
         payload["stage"] = stage
         payload["pid"] = String(ProcessInfo.processInfo.processIdentifier)
@@ -2439,8 +2445,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         payload["windowScreenDisplayIDs"] = screenIDs
         payload["uiTestTargetDisplayID"] = targetDisplayID
         if let rawDisplayID = UInt32(targetDisplayID) {
-            let screenPresent = NSScreen.screens.contains(where: { $0.cmuxDisplayID == rawDisplayID })
-            let movedWindow = windows.contains(where: { $0.screen?.cmuxDisplayID == rawDisplayID })
+            let screenPresent = NSScreen.screens.contains(where: { $0.iccDisplayID == rawDisplayID })
+            let movedWindow = windows.contains(where: { $0.screen?.iccDisplayID == rawDisplayID })
             payload["targetDisplayPresent"] = screenPresent ? "1" : "0"
             payload["targetDisplayMoveSucceeded"] = movedWindow ? "1" : "0"
         }
@@ -2463,10 +2469,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         _ payload: inout [String: String],
         environment env: [String: String]
     ) {
-        guard env["CMUX_UI_TEST_SOCKET_SANITY"] == "1" else { return }
+        guard env["ICC_UI_TEST_SOCKET_SANITY"] == "1" else { return }
 
         guard let config = socketListenerConfigurationIfEnabled() else {
-            payload["socketExpectedPath"] = env["CMUX_SOCKET_PATH"] ?? ""
+            payload["socketExpectedPath"] = env["ICC_SOCKET_PATH"] ?? ""
             payload["socketMode"] = "off"
             payload["socketReady"] = "0"
             payload["socketPingResponse"] = ""
@@ -2504,7 +2510,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         _ payload: inout [String: String],
         environment env: [String: String]
     ) {
-        guard env["CMUX_UI_TEST_DISPLAY_RENDER_STATS"] == "1" else { return }
+        guard env["ICC_UI_TEST_DISPLAY_RENDER_STATS"] == "1" else { return }
 
         guard let renderState = currentUITestRenderDiagnostics() else {
             payload["renderStatsAvailable"] = "0"
@@ -2566,12 +2572,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func moveUITestWindowToTargetDisplayIfNeeded(attempt: Int = 0) {
         let env = ProcessInfo.processInfo.environment
-        guard let rawDisplayID = env["CMUX_UI_TEST_TARGET_DISPLAY_ID"],
+        guard let rawDisplayID = env["ICC_UI_TEST_TARGET_DISPLAY_ID"],
               let targetDisplayID = UInt32(rawDisplayID) else {
             return
         }
 
-        guard let screen = NSScreen.screens.first(where: { $0.cmuxDisplayID == targetDisplayID }) else {
+        guard let screen = NSScreen.screens.first(where: { $0.iccDisplayID == targetDisplayID }) else {
             if attempt < 20 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
                     self?.moveUITestWindowToTargetDisplayIfNeeded(attempt: attempt + 1)
@@ -2604,7 +2610,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         window.setFrame(frame, display: true, animate: false)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
-        if window.screen?.cmuxDisplayID != targetDisplayID, attempt < 20 {
+        if window.screen?.iccDisplayID != targetDisplayID, attempt < 20 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
                 self?.moveUITestWindowToTargetDisplayIfNeeded(attempt: attempt + 1)
             }
@@ -2705,7 +2711,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 #if DEBUG
     private func scheduleUITestSocketSanityCheckIfNeeded() {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_SOCKET_SANITY"] == "1" else { return }
+        guard env["ICC_UI_TEST_SOCKET_SANITY"] == "1" else { return }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) { [weak self] in
             guard let self else { return }
@@ -2735,7 +2741,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func setupDisplayResolutionUITestDiagnosticsIfNeeded() {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_DISPLAY_RENDER_STATS"] == "1" else { return }
+        guard env["ICC_UI_TEST_DISPLAY_RENDER_STATS"] == "1" else { return }
         guard !didSetupDisplayResolutionUITestDiagnostics else { return }
         didSetupDisplayResolutionUITestDiagnostics = true
 
@@ -2811,14 +2817,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     ) {
         let available = NSScreen.screens.map { screen in
             SessionDisplayGeometry(
-                displayID: screen.cmuxDisplayID,
+                displayID: screen.iccDisplayID,
                 frame: screen.frame,
                 visibleFrame: screen.visibleFrame
             )
         }
         let fallback = (NSScreen.main ?? NSScreen.screens.first).map { screen in
             SessionDisplayGeometry(
-                displayID: screen.cmuxDisplayID,
+                displayID: screen.iccDisplayID,
                 frame: screen.frame,
                 visibleFrame: screen.visibleFrame
             )
@@ -3228,7 +3234,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         guard let screen else { return nil }
 
         return SessionDisplaySnapshot(
-            displayID: screen.cmuxDisplayID,
+            displayID: screen.iccDisplayID,
             frame: SessionRectSnapshot(screen.frame),
             visibleFrame: SessionRectSnapshot(screen.visibleFrame)
         )
@@ -3401,9 +3407,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             includeScrollback: includeScrollback
         )
 #if DEBUG
-        let timingStart = CmuxTypingTiming.start()
+        let timingStart = IccTypingTiming.start()
         defer {
-            CmuxTypingTiming.logDuration(
+            IccTypingTiming.logDuration(
                 path: "session.saveSnapshot",
                 startedAt: timingStart,
                 extra: "includeScrollback=\(includeScrollback ? 1 : 0) removeWhenEmpty=\(removeWhenEmpty ? 1 : 0) sync=\(writeSynchronously ? 1 : 0)"
@@ -3499,14 +3505,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
         sessionAutosaveTickInFlight = true
 #if DEBUG
-        let timingStart = CmuxTypingTiming.start()
+        let timingStart = IccTypingTiming.start()
         let phaseStart = ProcessInfo.processInfo.systemUptime
         var fingerprintMs: Double = 0
         var saveMs: Double = 0
         defer {
             sessionAutosaveTickInFlight = false
             let totalMs = (ProcessInfo.processInfo.systemUptime - phaseStart) * 1000.0
-            CmuxTypingTiming.logBreakdown(
+            IccTypingTiming.logBreakdown(
                 path: "session.autosaveTick.phase",
                 totalMs: totalMs,
                 thresholdMs: 2.0,
@@ -3516,7 +3522,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 ],
                 extra: "source=\(source)"
             )
-            CmuxTypingTiming.logDuration(
+            IccTypingTiming.logDuration(
                 path: "session.autosaveTick",
                 startedAt: timingStart,
                 extra: "source=\(source)"
@@ -5291,7 +5297,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         let responder = targetWindow?.firstResponder
             ?? NSApp.keyWindow?.firstResponder
             ?? NSApp.mainWindow?.firstResponder
-        guard let ghosttyView = cmuxOwningGhosttyView(for: responder),
+        guard let ghosttyView = iccOwningGhosttyView(for: responder),
               let workspaceId = ghosttyView.tabId,
               let panelId = ghosttyView.terminalSurface?.id,
               let manager = resolveShortcutTabManager(for: workspaceId, preferredWindow: targetWindow) else {
@@ -5908,12 +5914,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         updateController.attemptUpdate()
     }
 
-    func isCmuxCLIInstalledInPATH() -> Bool {
-        CmuxCLIPathInstaller().isInstalled()
+    func isIccCLIInstalledInPATH() -> Bool {
+        IccCLIPathInstaller().isInstalled()
     }
 
-    @objc func installCmuxCLIInPath(_ sender: Any?) {
-        let installer = CmuxCLIPathInstaller()
+    @objc func installIccCLIInPath(_ sender: Any?) {
+        let installer = IccCLIPathInstaller()
         do {
             let outcome = try installer.install()
             var informativeText = String(localized: "cli.install.symlinkCreated", defaultValue: "Created symlink:\n\n\(outcome.destinationURL.path) -> \(outcome.sourceURL.path)")
@@ -5934,8 +5940,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    @objc func uninstallCmuxCLIInPath(_ sender: Any?) {
-        let installer = CmuxCLIPathInstaller()
+    @objc func uninstallIccCLIInPath(_ sender: Any?) {
+        let installer = IccCLIPathInstaller()
         do {
             let outcome = try installer.uninstall()
             let prefix = outcome.removedExistingEntry
@@ -6814,7 +6820,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         guard !didSetupJumpUnreadUITest else { return }
         didSetupJumpUnreadUITest = true
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" else { return }
+        guard env["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" else { return }
         guard let notificationStore else { return }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
@@ -6884,7 +6890,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     func armJumpUnreadFocusRecord(tabId: UUID, surfaceId: UUID) {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_JUMP_UNREAD_PATH"], !path.isEmpty else { return }
+        guard let path = env["ICC_UI_TEST_JUMP_UNREAD_PATH"], !path.isEmpty else { return }
         jumpUnreadFocusExpectation = (tabId: tabId, surfaceId: surfaceId)
         installJumpUnreadFocusObserverIfNeeded()
     }
@@ -6916,7 +6922,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func writeJumpUnreadTestData(_ updates: [String: String]) {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_JUMP_UNREAD_PATH"], !path.isEmpty else { return }
+        guard let path = env["ICC_UI_TEST_JUMP_UNREAD_PATH"], !path.isEmpty else { return }
         var payload = loadJumpUnreadTestData(at: path)
         for (key, value) in updates {
             payload[key] = value
@@ -6937,10 +6943,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         guard !didSetupGotoSplitUITest else { return }
         didSetupGotoSplitUITest = true
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_GOTO_SPLIT_SETUP"] == "1" else { return }
+        guard env["ICC_UI_TEST_GOTO_SPLIT_SETUP"] == "1" else { return }
         guard tabManager != nil else { return }
 
-        let useGhosttyConfig = env["CMUX_UI_TEST_GOTO_SPLIT_USE_GHOSTTY_CONFIG"] == "1"
+        let useGhosttyConfig = env["ICC_UI_TEST_GOTO_SPLIT_USE_GHOSTTY_CONFIG"] == "1"
 
         if useGhosttyConfig {
             // Keep the test hermetic: ensure the app does not accidentally pass using a persisted
@@ -6978,7 +6984,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         func hasMainTerminalWindow() -> Bool {
             NSApp.windows.contains { window in
                 guard let raw = window.identifier?.rawValue else { return false }
-                return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+                return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
             }
         }
 
@@ -7025,15 +7031,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         guard !didSetupBonsplitTabDragUITest else { return }
         didSetupBonsplitTabDragUITest = true
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_BONSPLIT_TAB_DRAG_SETUP"] == "1" else { return }
+        guard env["ICC_UI_TEST_BONSPLIT_TAB_DRAG_SETUP"] == "1" else { return }
         guard tabManager != nil else { return }
-        let startWithHiddenSidebar = env["CMUX_UI_TEST_BONSPLIT_START_WITH_HIDDEN_SIDEBAR"] == "1"
+        let startWithHiddenSidebar = env["ICC_UI_TEST_BONSPLIT_START_WITH_HIDDEN_SIDEBAR"] == "1"
 
         let deadline = Date().addingTimeInterval(20.0)
         func hasMainTerminalWindow() -> Bool {
             NSApp.windows.contains { window in
                 guard let raw = window.identifier?.rawValue else { return false }
-                return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+                return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
             }
         }
 
@@ -7050,7 +7056,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             }
             if let mainWindow = NSApp.windows.first(where: { window in
                 guard let raw = window.identifier?.rawValue else { return false }
-                return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+                return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
             }) {
                 let screenFrame = mainWindow.screen?.visibleFrame ?? NSScreen.main?.visibleFrame
                 if let screenFrame {
@@ -7113,8 +7119,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func bonsplitTabDragUITestDataPath() -> String? {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_BONSPLIT_TAB_DRAG_SETUP"] == "1",
-              let path = env["CMUX_UI_TEST_BONSPLIT_TAB_DRAG_PATH"],
+        guard env["ICC_UI_TEST_BONSPLIT_TAB_DRAG_SETUP"] == "1",
+              let path = env["ICC_UI_TEST_BONSPLIT_TAB_DRAG_PATH"],
               !path.isEmpty else {
             return nil
         }
@@ -7193,13 +7199,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
     private func isGotoSplitUITestRecordingEnabled() -> Bool {
         let env = ProcessInfo.processInfo.environment
-        return env["CMUX_UI_TEST_GOTO_SPLIT_SETUP"] == "1" || env["CMUX_UI_TEST_GOTO_SPLIT_RECORD_ONLY"] == "1"
+        return env["ICC_UI_TEST_GOTO_SPLIT_SETUP"] == "1" || env["ICC_UI_TEST_GOTO_SPLIT_RECORD_ONLY"] == "1"
     }
 
     private func gotoSplitUITestDataPath() -> String? {
         guard isGotoSplitUITestRecordingEnabled() else { return nil }
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_GOTO_SPLIT_PATH"], !path.isEmpty else { return nil }
+        guard let path = env["ICC_UI_TEST_GOTO_SPLIT_PATH"], !path.isEmpty else { return nil }
         return path
     }
 
@@ -7300,7 +7306,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 "ghosttyGotoSplitDownShortcut": ghosttyGotoSplitDownShortcut?.displayString ?? "",
                 "webViewFocused": "true"
             ])
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_GOTO_SPLIT_INPUT_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_GOTO_SPLIT_INPUT_SETUP"] == "1" {
                 setupFocusedInputForGotoSplitUITest(panel: panel)
             }
         }
@@ -7500,11 +7506,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
               secondaryCenterY: -1,
               activeId: active && typeof active.id === "string" ? active.id : "",
               activeTag: active && active.tagName ? active.tagName.toLowerCase() : "",
-              trackerInstalled: window.__cmuxAddressBarFocusTrackerInstalled === true,
+              trackerInstalled: window.__iccAddressBarFocusTrackerInstalled === true,
               trackedStateId:
-                window.__cmuxAddressBarFocusState &&
-                typeof window.__cmuxAddressBarFocusState.id === "string"
-                  ? window.__cmuxAddressBarFocusState.id
+                window.__iccAddressBarFocusState &&
+                typeof window.__iccAddressBarFocusState.id === "string"
+                  ? window.__iccAddressBarFocusState.id
                   : "",
               readyState: String(document.readyState || "")
             };
@@ -7538,10 +7544,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
               return input;
             };
 
-            let container = document.getElementById("cmux-ui-test-focus-container");
+            let container = document.getElementById("icc-ui-test-focus-container");
             if (!container || !container.tagName || container.tagName.toLowerCase() !== "div") {
               container = document.createElement("div");
-              container.id = "cmux-ui-test-focus-container";
+              container.id = "icc-ui-test-focus-container";
               document.body.appendChild(container);
             }
             container.style.position = "fixed";
@@ -7557,8 +7563,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             container.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
             container.style.zIndex = "2147483647";
 
-            const input = ensureInput("cmux-ui-test-focus-input", "cmux-ui-focus-primary");
-            const secondaryInput = ensureInput("cmux-ui-test-focus-input-secondary", "cmux-ui-focus-secondary");
+            const input = ensureInput("icc-ui-test-focus-input", "icc-ui-focus-primary");
+            const secondaryInput = ensureInput("icc-ui-test-focus-input-secondary", "icc-ui-focus-secondary");
             if (input.parentElement !== container) {
               container.appendChild(input);
             }
@@ -7572,19 +7578,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
               input.setSelectionRange(end, end);
             }
 
-            let trackedFocusId = input.getAttribute("data-cmux-addressbar-focus-id");
+            let trackedFocusId = input.getAttribute("data-icc-addressbar-focus-id");
             if (!trackedFocusId) {
-              trackedFocusId = "cmux-ui-test-focus-input-tracked";
-              input.setAttribute("data-cmux-addressbar-focus-id", trackedFocusId);
+              trackedFocusId = "icc-ui-test-focus-input-tracked";
+              input.setAttribute("data-icc-addressbar-focus-id", trackedFocusId);
             }
             const selectionStart = typeof input.selectionStart === "number" ? input.selectionStart : null;
             const selectionEnd = typeof input.selectionEnd === "number" ? input.selectionEnd : null;
             if (
-              !window.__cmuxAddressBarFocusState ||
-              typeof window.__cmuxAddressBarFocusState.id !== "string" ||
-              window.__cmuxAddressBarFocusState.id !== trackedFocusId
+              !window.__iccAddressBarFocusState ||
+              typeof window.__iccAddressBarFocusState.id !== "string" ||
+              window.__iccAddressBarFocusState.id !== trackedFocusId
             ) {
-              window.__cmuxAddressBarFocusState = { id: trackedFocusId, selectionStart, selectionEnd };
+              window.__iccAddressBarFocusState = { id: trackedFocusId, selectionStart, selectionEnd };
             }
 
             const secondaryRect = secondaryInput.getBoundingClientRect();
@@ -7607,17 +7613,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
               secondaryCenterY,
               activeId: active && typeof active.id === "string" ? active.id : "",
               activeTag: active && active.tagName ? active.tagName.toLowerCase() : "",
-              trackerInstalled: window.__cmuxAddressBarFocusTrackerInstalled === true,
+              trackerInstalled: window.__iccAddressBarFocusTrackerInstalled === true,
               trackedStateId:
-                window.__cmuxAddressBarFocusState &&
-                typeof window.__cmuxAddressBarFocusState.id === "string"
-                  ? window.__cmuxAddressBarFocusState.id
+                window.__iccAddressBarFocusState &&
+                typeof window.__iccAddressBarFocusState.id === "string"
+                  ? window.__iccAddressBarFocusState.id
                   : "",
               readyState: String(document.readyState || "")
             };
           };
           const ready = () =>
-            window.__cmuxAddressBarFocusTrackerInstalled === true &&
+            window.__iccAddressBarFocusTrackerInstalled === true &&
             String(document.readyState || "") === "complete";
 
           if (ready()) {
@@ -7794,7 +7800,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                   type: "",
                   editable: "false",
                   trackedFocusStateId: "",
-                  focusTrackerInstalled: window.__cmuxAddressBarFocusTrackerInstalled === true ? "true" : "false"
+                  focusTrackerInstalled: window.__iccAddressBarFocusTrackerInstalled === true ? "true" : "false"
                 };
               }
               const tag = (active.tagName || "").toLowerCase();
@@ -7809,12 +7815,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 type,
                 editable: editable ? "true" : "false",
                 trackedFocusStateId:
-                  window.__cmuxAddressBarFocusState &&
-                  typeof window.__cmuxAddressBarFocusState.id === "string"
-                    ? window.__cmuxAddressBarFocusState.id
+                  window.__iccAddressBarFocusState &&
+                  typeof window.__iccAddressBarFocusState.id === "string"
+                    ? window.__iccAddressBarFocusState.id
                     : "",
                 focusTrackerInstalled:
-                  window.__cmuxAddressBarFocusTrackerInstalled === true ? "true" : "false"
+                  window.__iccAddressBarFocusTrackerInstalled === true ? "true" : "false"
               };
             } catch (_) {
               return {
@@ -7896,7 +7902,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func gotoSplitUITestExpectedInputId() -> String? {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_GOTO_SPLIT_PATH"], !path.isEmpty else { return nil }
+        guard let path = env["ICC_UI_TEST_GOTO_SPLIT_PATH"], !path.isEmpty else { return nil }
         return loadGotoSplitTestData(at: path)["webInputFocusElementId"]
     }
 
@@ -8089,8 +8095,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         didSetupMultiWindowNotificationsUITest = true
 
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_MULTI_WINDOW_NOTIF_SETUP"] == "1" else { return }
-        guard let path = env["CMUX_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
+        guard env["ICC_UI_TEST_MULTI_WINDOW_NOTIF_SETUP"] == "1" else { return }
+        guard let path = env["ICC_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
 
         try? FileManager.default.removeItem(atPath: path)
 
@@ -8300,7 +8306,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         surfaceId: UUID
     ) {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_NOTIFY_SOURCE_TERMINAL_READY"] == "1" else { return }
+        guard env["ICC_UI_TEST_NOTIFY_SOURCE_TERMINAL_READY"] == "1" else { return }
 
         writeMultiWindowNotificationTestData([
             "sourceTerminalReady": "pending",
@@ -8428,11 +8434,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     private func publishMultiWindowNotificationSocketStateIfNeeded(at path: String) {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_SOCKET_SANITY"] == "1" else { return }
+        guard env["ICC_UI_TEST_SOCKET_SANITY"] == "1" else { return }
 
         guard let config = socketListenerConfigurationIfEnabled() else {
             writeMultiWindowNotificationTestData([
-                "socketExpectedPath": env["CMUX_SOCKET_PATH"] ?? "",
+                "socketExpectedPath": env["ICC_SOCKET_PATH"] ?? "",
                 "socketMode": "off",
                 "socketReady": "0",
                 "socketPingResponse": "",
@@ -8539,7 +8545,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         sidebarSelection: SidebarSelection
     ) {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
+        guard let path = env["ICC_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
         let sidebarSelectionString: String = {
             switch sidebarSelection {
             case .tabs: return "tabs"
@@ -8666,7 +8672,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     func jumpToLatestUnread() {
         guard let notificationStore else { return }
 #if DEBUG
-        if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+        if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
             writeJumpUnreadTestData([
                 "jumpUnreadInvoked": "1",
                 "jumpUnreadNotificationCount": String(notificationStore.notifications.count),
@@ -8691,13 +8697,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
 #if DEBUG
     static func setWindowFirstResponderGuardTesting(currentEvent: NSEvent?, hitView: NSView?) {
-        cmuxFirstResponderGuardCurrentEventOverride = currentEvent
-        cmuxFirstResponderGuardHitViewOverride = hitView
+        iccFirstResponderGuardCurrentEventOverride = currentEvent
+        iccFirstResponderGuardHitViewOverride = hitView
     }
 
     static func clearWindowFirstResponderGuardTesting() {
-        cmuxFirstResponderGuardCurrentEventOverride = nil
-        cmuxFirstResponderGuardHitViewOverride = nil
+        iccFirstResponderGuardCurrentEventOverride = nil
+        iccFirstResponderGuardHitViewOverride = nil
     }
 #endif
 
@@ -8718,10 +8724,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 let preludeStart = ProcessInfo.processInfo.systemUptime
                 var preludeMs: Double = 0
                 var shortcutMs: Double = 0
-                CmuxTypingTiming.logEventDelay(path: "appMonitor", event: event)
+                IccTypingTiming.logEventDelay(path: "appMonitor", event: event)
                 let shortcutMonitorTraceEnabled =
-                    ProcessInfo.processInfo.environment["CMUX_SHORTCUT_MONITOR_TRACE"] == "1"
-                    || UserDefaults.standard.bool(forKey: "cmuxShortcutMonitorTrace")
+                    ProcessInfo.processInfo.environment["ICC_SHORTCUT_MONITOR_TRACE"] == "1"
+                    || UserDefaults.standard.bool(forKey: "iccShortcutMonitorTrace")
                 if shortcutMonitorTraceEnabled {
                     let frType = NSApp.keyWindow?.firstResponder.map { String(describing: type(of: $0)) } ?? "nil"
                     dlog(
@@ -8732,13 +8738,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                     self.logDeveloperToolsShortcutSnapshot(phase: "monitor.pre.\(probeKind)", event: event)
                 }
                 preludeMs = (ProcessInfo.processInfo.systemUptime - preludeStart) * 1000.0
-                let shortcutTimingStart = CmuxTypingTiming.start()
+                let shortcutTimingStart = IccTypingTiming.start()
 #endif
                 let shortcutStart = ProcessInfo.processInfo.systemUptime
                 let handledByShortcut = self.handleCustomShortcut(event: event)
 #if DEBUG
                 shortcutMs = (ProcessInfo.processInfo.systemUptime - shortcutStart) * 1000.0
-                CmuxTypingTiming.logDuration(
+                IccTypingTiming.logDuration(
                     path: "appMonitor.handleCustomShortcut",
                     startedAt: shortcutTimingStart,
                     event: event,
@@ -8751,7 +8757,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                     elapsedMs: shortcutElapsedMs
                 )
                 let totalMs = (ProcessInfo.processInfo.systemUptime - phaseTotalStart) * 1000.0
-                CmuxTypingTiming.logBreakdown(
+                IccTypingTiming.logBreakdown(
                     path: "appMonitor.phase",
                     totalMs: totalMs,
                     event: event,
@@ -8944,9 +8950,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "dialog.quitCmux.title", defaultValue: "Quit icc?")
-        alert.informativeText = String(localized: "dialog.quitCmux.message", defaultValue: "This will close all windows and workspaces.")
-        alert.addButton(withTitle: String(localized: "dialog.quitCmux.quit", defaultValue: "Quit"))
+        alert.messageText = String(localized: "dialog.quitIcc.title", defaultValue: "Quit icc?")
+        alert.informativeText = String(localized: "dialog.quitIcc.message", defaultValue: "This will close all windows and workspaces.")
+        alert.addButton(withTitle: String(localized: "dialog.quitIcc.quit", defaultValue: "Quit"))
         alert.addButton(withTitle: String(localized: "common.cancel", defaultValue: "Cancel"))
         alert.showsSuppressionButton = true
         alert.suppressionButton?.title = String(localized: "dialog.dontWarnCmdQ", defaultValue: "Don't warn again for Cmd+Q")
@@ -9211,7 +9217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // (e.g., split that doesn't properly blur the address bar). If the first responder
         // is a terminal surface, the address bar can't be focused.
         if browserAddressBarFocusedPanelId != nil,
-           cmuxOwningGhosttyView(for: NSApp.keyWindow?.firstResponder) != nil {
+           iccOwningGhosttyView(for: NSApp.keyWindow?.firstResponder) != nil {
 #if DEBUG
             let stalePanelToken = browserAddressBarFocusedPanelId.map { String($0.uuidString.prefix(5)) } ?? "nil"
             let firstResponderType = NSApp.keyWindow?.firstResponder.map { String(describing: type(of: $0)) } ?? "nil"
@@ -9290,7 +9296,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // input method. Cmd-based shortcuts (Cmd+T, Cmd+Shift+L, etc.) should still
         // work during composition since Cmd is never part of IME input sequences.
         if !normalizedFlags.contains(.command),
-           let ghosttyView = cmuxOwningGhosttyView(for: NSApp.keyWindow?.firstResponder),
+           let ghosttyView = iccOwningGhosttyView(for: NSApp.keyWindow?.firstResponder),
            ghosttyView.hasMarkedText() {
             return false
         }
@@ -9433,7 +9439,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // Check Jump to Unread shortcut
         if matchShortcut(event: event, shortcut: KeyboardShortcutSettings.shortcut(for: .jumpToUnread)) {
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData(["jumpUnreadShortcutHandled": "1"])
             }
 #endif
@@ -9535,7 +9541,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 targetWindow.performClose(nil)
                 return true
             } else if let targetWindow = event.window ?? NSApp.keyWindow ?? NSApp.mainWindow,
-               cmuxWindowShouldOwnCloseShortcut(targetWindow) {
+               iccWindowShouldOwnCloseShortcut(targetWindow) {
                 targetWindow.performClose(nil)
             } else {
                 let targetWindow = event.window ?? NSApp.keyWindow ?? NSApp.mainWindow
@@ -11171,7 +11177,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             return true
         }
         guard let raw = window.identifier?.rawValue else { return false }
-        return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+        return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
     }
 
     private func contextContainingTabId(_ tabId: UUID) -> MainWindowContext? {
@@ -11208,7 +11214,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     @discardableResult
     func openNotification(tabId: UUID, surfaceId: UUID?, notificationId: UUID?) -> Bool {
 #if DEBUG
-        let isJumpUnreadUITest = ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1"
+        let isJumpUnreadUITest = ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1"
         if isJumpUnreadUITest {
             writeJumpUnreadTestData([
                 "jumpUnreadOpenCalled": "1",
@@ -11272,7 +11278,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 notificationId: notificationId,
                 reason: "focus_failed"
             )
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData(["jumpUnreadOpenResult": "0"])
             }
 #endif
@@ -11306,7 +11312,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             surfaceId: surfaceId,
             sidebarSelection: context.sidebarSelectionState.selection
         )
-        if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+        if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
             writeJumpUnreadTestData(["jumpUnreadOpenInContext": "1", "jumpUnreadOpenResult": "1"])
         }
 #endif
@@ -11317,7 +11323,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // If the owning window context hasn't been registered yet, fall back to the "active" window.
         guard let tabManager else {
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData(["jumpUnreadFallbackFail": "missing_tabManager"])
             }
 #endif
@@ -11325,7 +11331,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
         guard tabManager.tabs.contains(where: { $0.id == tabId }) else {
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData(["jumpUnreadFallbackFail": "tab_not_in_active_manager"])
             }
 #endif
@@ -11333,7 +11339,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
         guard let window = (NSApp.keyWindow ?? NSApp.windows.first(where: { isMainTerminalWindow($0) })) else {
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData(["jumpUnreadFallbackFail": "missing_window"])
             }
 #endif
@@ -11344,7 +11350,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         bringToFront(window)
         guard tabManager.focusTabFromNotification(tabId, surfaceId: surfaceId) else {
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
                 writeJumpUnreadTestData([
                     "jumpUnreadFallbackFail": "focus_failed",
                     "jumpUnreadOpenResult": "0",
@@ -11372,7 +11378,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             )
         }
 #if DEBUG
-        if ProcessInfo.processInfo.environment["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
+        if ProcessInfo.processInfo.environment["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" {
             writeJumpUnreadTestData(["jumpUnreadOpenInFallback": "1", "jumpUnreadOpenResult": "1"])
         }
 #endif
@@ -11386,7 +11392,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         expectedSurfaceId: UUID?
     ) {
         let env = ProcessInfo.processInfo.environment
-        guard env["CMUX_UI_TEST_JUMP_UNREAD_SETUP"] == "1" else { return }
+        guard env["ICC_UI_TEST_JUMP_UNREAD_SETUP"] == "1" else { return }
         guard let expectedSurfaceId else { return }
 
         // Ensure the expectation is armed even if the view doesn't become first responder.
@@ -11490,7 +11496,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         reason: String
     ) {
         let env = ProcessInfo.processInfo.environment
-        guard let path = env["CMUX_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
+        guard let path = env["ICC_UI_TEST_MULTI_WINDOW_NOTIF_PATH"], !path.isEmpty else { return }
 
         let contextSummaries: [String] = mainWindowContexts.values.map { ctx in
             let tabIds = ctx.tabManager.tabs.map { $0.id.uuidString }.joined(separator: ",")
@@ -11535,7 +11541,7 @@ final class MenuBarExtraController: NSObject, NSMenuDelegate {
     private let clearAllItem = NSMenuItem(title: String(localized: "statusMenu.clearAll", defaultValue: "Clear All"), action: nil, keyEquivalent: "")
     private let checkForUpdatesItem = NSMenuItem(title: String(localized: "menu.checkForUpdates", defaultValue: "Check for Updates…"), action: nil, keyEquivalent: "")
     private let preferencesItem = NSMenuItem(title: String(localized: "menu.preferences", defaultValue: "Preferences…"), action: nil, keyEquivalent: "")
-    private let quitItem = NSMenuItem(title: String(localized: "menu.quitCmux", defaultValue: "Quit iatlas"), action: nil, keyEquivalent: "")
+    private let quitItem = NSMenuItem(title: String(localized: "menu.quitIcc", defaultValue: "Quit iatlas"), action: nil, keyEquivalent: "")
 
     private var notificationItems: [NSMenuItem] = []
     private let maxInlineNotificationItems = 6
@@ -12122,7 +12128,7 @@ enum MenuBarIconRenderer {
     }
 
     private static func drawGlyph(in rect: NSRect) {
-        // Match the canonical cmux center-mark path from Icon Center Image Artwork.svg.
+        // Match the canonical icc center-mark path from Icon Center Image Artwork.svg.
         let srcMinX: CGFloat = 384.0
         let srcMinY: CGFloat = 255.0
         let srcWidth: CGFloat = 369.0
@@ -12173,56 +12179,56 @@ enum MenuBarIconRenderer {
 
 
 #if DEBUG
-private var cmuxFirstResponderGuardCurrentEventOverride: NSEvent?
-private var cmuxFirstResponderGuardHitViewOverride: NSView?
+private var iccFirstResponderGuardCurrentEventOverride: NSEvent?
+private var iccFirstResponderGuardHitViewOverride: NSView?
 #endif
-private var cmuxFirstResponderGuardCurrentEventContext: NSEvent?
-private var cmuxFirstResponderGuardHitViewContext: NSView?
-private var cmuxFirstResponderGuardContextWindowNumber: Int?
-private var cmuxBrowserReturnForwardingDepth = 0
-private var cmuxWindowFirstResponderBypassDepth = 0
-private var cmuxFieldEditorOwningWebViewAssociationKey: UInt8 = 0
+private var iccFirstResponderGuardCurrentEventContext: NSEvent?
+private var iccFirstResponderGuardHitViewContext: NSView?
+private var iccFirstResponderGuardContextWindowNumber: Int?
+private var iccBrowserReturnForwardingDepth = 0
+private var iccWindowFirstResponderBypassDepth = 0
+private var iccFieldEditorOwningWebViewAssociationKey: UInt8 = 0
 
 @discardableResult
-func cmuxWithWindowFirstResponderBypass<T>(_ body: () -> T) -> T {
-    cmuxWindowFirstResponderBypassDepth += 1
+func iccWithWindowFirstResponderBypass<T>(_ body: () -> T) -> T {
+    iccWindowFirstResponderBypassDepth += 1
     defer {
-        cmuxWindowFirstResponderBypassDepth = max(0, cmuxWindowFirstResponderBypassDepth - 1)
+        iccWindowFirstResponderBypassDepth = max(0, iccWindowFirstResponderBypassDepth - 1)
     }
     return body()
 }
 
-func cmuxIsWindowFirstResponderBypassActive() -> Bool {
-    cmuxWindowFirstResponderBypassDepth > 0
+func iccIsWindowFirstResponderBypassActive() -> Bool {
+    iccWindowFirstResponderBypassDepth > 0
 }
 
-private final class CmuxFieldEditorOwningWebViewBox: NSObject {
-    weak var webView: CmuxWebView?
+private final class IccFieldEditorOwningWebViewBox: NSObject {
+    weak var webView: IccWebView?
 
-    init(webView: CmuxWebView?) {
+    init(webView: IccWebView?) {
         self.webView = webView
     }
 }
 
 private extension NSApplication {
-    @objc func cmux_applicationSendEvent(_ event: NSEvent) {
+    @objc func icc_applicationSendEvent(_ event: NSEvent) {
 #if DEBUG
-        let typingTimingStart = event.type == .keyDown ? CmuxTypingTiming.start() : nil
+        let typingTimingStart = event.type == .keyDown ? IccTypingTiming.start() : nil
         let phaseTotalStart = event.type == .keyDown ? ProcessInfo.processInfo.systemUptime : 0
         if event.type == .keyDown {
-            CmuxTypingTiming.logEventDelay(path: "app.sendEvent", event: event)
+            IccTypingTiming.logEventDelay(path: "app.sendEvent", event: event)
         }
         defer {
             if event.type == .keyDown {
                 let totalMs = (ProcessInfo.processInfo.systemUptime - phaseTotalStart) * 1000.0
-                CmuxTypingTiming.logBreakdown(
+                IccTypingTiming.logBreakdown(
                     path: "app.sendEvent.phase",
                     totalMs: totalMs,
                     event: event,
                     thresholdMs: 1.0,
                     parts: [("dispatchMs", totalMs)]
                 )
-                CmuxTypingTiming.logDuration(
+                IccTypingTiming.logDuration(
                     path: "app.sendEvent",
                     startedAt: typingTimingStart,
                     event: event
@@ -12230,21 +12236,21 @@ private extension NSApplication {
             }
         }
 #endif
-        cmux_applicationSendEvent(event)
+        icc_applicationSendEvent(event)
     }
 }
 
 private extension AppDelegate {
     @objc func handleThemesReloadNotification(_ notification: Notification) {
         DispatchQueue.main.async {
-            GhosttyApp.shared.reloadConfiguration(source: "distributed.cmux.themes")
+            GhosttyApp.shared.reloadConfiguration(source: "distributed.icc.themes")
         }
     }
 }
 
 private extension NSWindow {
-    @objc func cmux_makeFirstResponder(_ responder: NSResponder?) -> Bool {
-        if cmuxIsWindowFirstResponderBypassActive() {
+    @objc func icc_makeFirstResponder(_ responder: NSResponder?) -> Bool {
+        if iccIsWindowFirstResponderBypassActive() {
 #if DEBUG
             dlog(
                 "focus.guard bypassFirstResponder responder=\(String(describing: responder.map { type(of: $0) })) " +
@@ -12254,9 +12260,9 @@ private extension NSWindow {
             return false
         }
 
-        let currentEvent = Self.cmuxCurrentEvent(for: self)
+        let currentEvent = Self.iccCurrentEvent(for: self)
         let responderWebView = responder.flatMap {
-            Self.cmuxOwningWebView(for: $0, in: self, event: currentEvent)
+            Self.iccOwningWebView(for: $0, in: self, event: currentEvent)
         }
         var pointerInitiatedWebFocus = false
 
@@ -12276,7 +12282,7 @@ private extension NSWindow {
         if let responder,
            let webView = responderWebView,
            !webView.allowsFirstResponderAcquisitionEffective {
-            let pointerInitiatedFocus = Self.cmuxShouldAllowPointerInitiatedWebViewFocus(
+            let pointerInitiatedFocus = Self.iccShouldAllowPointerInitiatedWebViewFocus(
                 window: self,
                 webView: webView,
                 event: currentEvent
@@ -12321,27 +12327,27 @@ private extension NSWindow {
 #endif
         let result: Bool
         if pointerInitiatedWebFocus, let webView = responderWebView {
-            // `NSWindow.makeFirstResponder` may run before `CmuxWebView.mouseDown(with:)`.
+            // `NSWindow.makeFirstResponder` may run before `IccWebView.mouseDown(with:)`.
             // Preserve pointer intent during this synchronous responder change.
             result = webView.withPointerFocusAllowance {
-                cmux_makeFirstResponder(responder)
+                icc_makeFirstResponder(responder)
             }
         } else {
-            result = cmux_makeFirstResponder(responder)
+            result = icc_makeFirstResponder(responder)
         }
         if result {
             if let fieldEditor = responder as? NSTextView, fieldEditor.isFieldEditor {
-                Self.cmuxTrackFieldEditor(fieldEditor, owningWebView: responderWebView)
+                Self.iccTrackFieldEditor(fieldEditor, owningWebView: responderWebView)
             } else if let fieldEditor = self.firstResponder as? NSTextView, fieldEditor.isFieldEditor {
-                Self.cmuxTrackFieldEditor(fieldEditor, owningWebView: responderWebView)
+                Self.iccTrackFieldEditor(fieldEditor, owningWebView: responderWebView)
             }
         }
         return result
     }
 
-    @objc func cmux_sendEvent(_ event: NSEvent) {
+    @objc func icc_sendEvent(_ event: NSEvent) {
 #if DEBUG
-        let typingTimingStart = event.type == .keyDown ? CmuxTypingTiming.start() : nil
+        let typingTimingStart = event.type == .keyDown ? IccTypingTiming.start() : nil
         let phaseTotalStart = event.type == .keyDown ? ProcessInfo.processInfo.systemUptime : 0
         var contextSetupMs: Double = 0
         var folderGuardMs: Double = 0
@@ -12349,16 +12355,16 @@ private extension NSWindow {
         let typingTimingExtra: String? = {
             guard event.type == .keyDown else { return nil }
             let responderWebView = self.firstResponder.flatMap {
-                Self.cmuxOwningWebView(for: $0, in: self, event: event)
+                Self.iccOwningWebView(for: $0, in: self, event: event)
             }
-            let hitWebView = Self.cmuxHitViewForEventDispatch(in: self, event: event).flatMap {
-                Self.cmuxOwningWebView(for: $0)
+            let hitWebView = Self.iccHitViewForEventDispatch(in: self, event: event).flatMap {
+                Self.iccOwningWebView(for: $0)
             }
             let firstResponderType = self.firstResponder.map { String(describing: type(of: $0)) } ?? "nil"
             return "browser=\((responderWebView != nil || hitWebView != nil) ? 1 : 0) firstResponder=\(firstResponderType)"
         }()
         if event.type == .keyDown {
-            CmuxTypingTiming.logEventDelay(path: "window.sendEvent", event: event)
+            IccTypingTiming.logEventDelay(path: "window.sendEvent", event: event)
         }
 #endif
         // recordTypingActivity must run in all builds so runSessionAutosaveTick
@@ -12370,7 +12376,7 @@ private extension NSWindow {
         defer {
             if event.type == .keyDown {
                 let totalMs = (ProcessInfo.processInfo.systemUptime - phaseTotalStart) * 1000.0
-                CmuxTypingTiming.logBreakdown(
+                IccTypingTiming.logBreakdown(
                     path: "window.sendEvent.phase",
                     totalMs: totalMs,
                     event: event,
@@ -12382,7 +12388,7 @@ private extension NSWindow {
                     ],
                     extra: typingTimingExtra
                 )
-                CmuxTypingTiming.logDuration(
+                IccTypingTiming.logDuration(
                     path: "window.sendEvent",
                     startedAt: typingTimingStart,
                     event: event,
@@ -12392,12 +12398,12 @@ private extension NSWindow {
         }
         let contextSetupStart = event.type == .keyDown ? ProcessInfo.processInfo.systemUptime : 0
 #endif
-        let previousContextEvent = cmuxFirstResponderGuardCurrentEventContext
-        let previousContextHitView = cmuxFirstResponderGuardHitViewContext
-        let previousContextWindowNumber = cmuxFirstResponderGuardContextWindowNumber
-        cmuxFirstResponderGuardCurrentEventContext = event
-        cmuxFirstResponderGuardHitViewContext = Self.cmuxHitViewForEventDispatch(in: self, event: event)
-        cmuxFirstResponderGuardContextWindowNumber = self.windowNumber
+        let previousContextEvent = iccFirstResponderGuardCurrentEventContext
+        let previousContextHitView = iccFirstResponderGuardHitViewContext
+        let previousContextWindowNumber = iccFirstResponderGuardContextWindowNumber
+        iccFirstResponderGuardCurrentEventContext = event
+        iccFirstResponderGuardHitViewContext = Self.iccHitViewForEventDispatch(in: self, event: event)
+        iccFirstResponderGuardContextWindowNumber = self.windowNumber
 #if DEBUG
         if event.type == .keyDown {
             contextSetupMs = (ProcessInfo.processInfo.systemUptime - contextSetupStart) * 1000.0
@@ -12405,9 +12411,9 @@ private extension NSWindow {
         let folderGuardStart = event.type == .keyDown ? ProcessInfo.processInfo.systemUptime : 0
 #endif
         defer {
-            cmuxFirstResponderGuardCurrentEventContext = previousContextEvent
-            cmuxFirstResponderGuardHitViewContext = previousContextHitView
-            cmuxFirstResponderGuardContextWindowNumber = previousContextWindowNumber
+            iccFirstResponderGuardCurrentEventContext = previousContextEvent
+            iccFirstResponderGuardHitViewContext = previousContextHitView
+            iccFirstResponderGuardContextWindowNumber = previousContextWindowNumber
         }
 
         guard shouldSuppressWindowMoveForFolderDrag(window: self, event: event),
@@ -12416,12 +12422,12 @@ private extension NSWindow {
             if event.type == .keyDown {
                 folderGuardMs = (ProcessInfo.processInfo.systemUptime - folderGuardStart) * 1000.0
                 let originalDispatchStart = ProcessInfo.processInfo.systemUptime
-                cmux_sendEvent(event)
+                icc_sendEvent(event)
                 originalDispatchMs = (ProcessInfo.processInfo.systemUptime - originalDispatchStart) * 1000.0
                 return
             }
 #endif
-            cmux_sendEvent(event)
+            icc_sendEvent(event)
             return
         }
 #if DEBUG
@@ -12443,7 +12449,7 @@ private extension NSWindow {
         dlog("window.sendEvent.folderDown suppress=1 hit=\(hitDesc) wasMovable=\(previousMovableState)")
         #endif
 
-        cmux_sendEvent(event)
+        icc_sendEvent(event)
 #if DEBUG
         if event.type == .keyDown {
             originalDispatchMs = (ProcessInfo.processInfo.systemUptime - originalDispatchStart) * 1000.0
@@ -12459,11 +12465,11 @@ private extension NSWindow {
         #endif
     }
 
-    @objc func cmux_performKeyEquivalent(with event: NSEvent) -> Bool {
+    @objc func icc_performKeyEquivalent(with event: NSEvent) -> Bool {
 #if DEBUG
-        let typingTimingStart = CmuxTypingTiming.start()
+        let typingTimingStart = IccTypingTiming.start()
         defer {
-            CmuxTypingTiming.logDuration(
+            IccTypingTiming.logDuration(
                 path: "window.performKeyEquivalent",
                 startedAt: typingTimingStart,
                 event: event
@@ -12488,9 +12494,9 @@ private extension NSWindow {
         // Command shortcuts when the terminal is focused — the local event monitor
         // (handleCustomShortcut) already handles app-level shortcuts, and anything
         // remaining should be menu items.
-        let firstResponderGhosttyView = cmuxOwningGhosttyView(for: self.firstResponder)
+        let firstResponderGhosttyView = iccOwningGhosttyView(for: self.firstResponder)
         let firstResponderWebView = self.firstResponder.flatMap {
-            Self.cmuxOwningWebView(for: $0, in: self, event: event)
+            Self.iccOwningWebView(for: $0, in: self, event: event)
         }
         if let ghosttyView = firstResponderGhosttyView {
             // If the IME is composing and the key has no Cmd modifier, don't intercept —
@@ -12498,7 +12504,7 @@ private extension NSWindow {
             // process it. Cmd-based shortcuts should still work during composition since
             // Cmd is never part of IME input sequences.
             if ghosttyView.hasMarkedText(), !event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command) {
-                return cmux_performKeyEquivalent(with: event)
+                return icc_performKeyEquivalent(with: event)
             }
 
             let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
@@ -12539,14 +12545,14 @@ private extension NSWindow {
         ) {
             // Forwarding keyDown can re-enter performKeyEquivalent in WebKit/AppKit internals.
             // On re-entry, fall back to normal dispatch to avoid an infinite loop.
-            if cmuxBrowserReturnForwardingDepth > 0 {
+            if iccBrowserReturnForwardingDepth > 0 {
 #if DEBUG
                 dlog("  → browser Return/Enter reentry; using normal dispatch")
 #endif
                 return false
             }
-            cmuxBrowserReturnForwardingDepth += 1
-            defer { cmuxBrowserReturnForwardingDepth = max(0, cmuxBrowserReturnForwardingDepth - 1) }
+            iccBrowserReturnForwardingDepth += 1
+            defer { iccBrowserReturnForwardingDepth = max(0, iccBrowserReturnForwardingDepth - 1) }
 #if DEBUG
             dlog("  → browser Return/Enter routed to firstResponder.keyDown")
 #endif
@@ -12591,7 +12597,7 @@ private extension NSWindow {
             }
         }
 
-        let result = cmux_performKeyEquivalent(with: event)
+        let result = icc_performKeyEquivalent(with: event)
 #if DEBUG
         if result { dlog("  → consumed by original performKeyEquivalent") }
 #endif
@@ -12610,13 +12616,13 @@ private extension NSWindow {
         return parts.joined(separator: "+")
     }
 
-    private static func cmuxOwningWebView(for responder: NSResponder) -> CmuxWebView? {
-        if let webView = responder as? CmuxWebView {
+    private static func iccOwningWebView(for responder: NSResponder) -> IccWebView? {
+        if let webView = responder as? IccWebView {
             return webView
         }
 
         if let view = responder as? NSView,
-           let webView = cmuxOwningWebView(for: view) {
+           let webView = iccOwningWebView(for: view) {
             return webView
         }
 
@@ -12624,11 +12630,11 @@ private extension NSWindow {
         // a responder chain is tearing down can trap with "unowned reference".
         var current = responder.nextResponder
         while let next = current {
-            if let webView = next as? CmuxWebView {
+            if let webView = next as? IccWebView {
                 return webView
             }
             if let view = next as? NSView,
-               let webView = cmuxOwningWebView(for: view) {
+               let webView = iccOwningWebView(for: view) {
                 return webView
             }
             current = next.nextResponder
@@ -12637,11 +12643,11 @@ private extension NSWindow {
         return nil
     }
 
-    private static func cmuxOwningWebView(
+    private static func iccOwningWebView(
         for responder: NSResponder,
         in window: NSWindow,
         event: NSEvent?
-    ) -> CmuxWebView? {
+    ) -> IccWebView? {
         // Browser find runs in the portal slot alongside the hosted WKWebView.
         // Treat its native field editor chain as browser chrome, not as web content,
         // so Cmd+F can move first responder into the find field while web focus is suppressed.
@@ -12649,7 +12655,7 @@ private extension NSWindow {
             return nil
         }
 
-        if let webView = cmuxOwningWebView(for: responder) {
+        if let webView = iccOwningWebView(for: responder) {
             return webView
         }
 
@@ -12658,26 +12664,26 @@ private extension NSWindow {
         }
 
         if let event,
-           let hitWebView = cmuxPointerHitWebView(in: window, event: event) {
-            cmuxTrackFieldEditor(textView, owningWebView: hitWebView)
+           let hitWebView = iccPointerHitWebView(in: window, event: event) {
+            iccTrackFieldEditor(textView, owningWebView: hitWebView)
             return hitWebView
         }
 
-        return cmuxTrackedOwningWebView(for: textView)
+        return iccTrackedOwningWebView(for: textView)
     }
 
-    private static func cmuxOwningWebView(for view: NSView) -> CmuxWebView? {
-        if let webView = view as? CmuxWebView {
+    private static func iccOwningWebView(for view: NSView) -> IccWebView? {
+        if let webView = view as? IccWebView {
             return webView
         }
 
         var current: NSView? = view.superview
         while let candidate = current {
-            if let webView = candidate as? CmuxWebView {
+            if let webView = candidate as? IccWebView {
                 return webView
             }
             if String(describing: type(of: candidate)).contains("WindowBrowserSlotView"),
-               let portalWebView = cmuxUniqueBrowserWebView(in: candidate) {
+               let portalWebView = iccUniqueBrowserWebView(in: candidate) {
                 // Portal-hosted browser chrome (for example the Cmd+F overlay) is a
                 // sibling of the hosted WKWebView inside WindowBrowserSlotView, not a
                 // descendant of it. Allow native text-entry controls in that slot to
@@ -12687,7 +12693,7 @@ private extension NSWindow {
                 if view === portalWebView || view.isDescendant(of: portalWebView) {
                     return portalWebView
                 }
-                if cmuxAllowsPortalSlotTextEntryFocus(view) {
+                if iccAllowsPortalSlotTextEntryFocus(view) {
                     return nil
                 }
                 return portalWebView
@@ -12698,7 +12704,7 @@ private extension NSWindow {
         return nil
     }
 
-    private static func cmuxAllowsPortalSlotTextEntryFocus(_ view: NSView) -> Bool {
+    private static func iccAllowsPortalSlotTextEntryFocus(_ view: NSView) -> Bool {
         var current: NSView? = view
         while let candidate = current {
             if let textField = candidate as? NSTextField {
@@ -12712,11 +12718,11 @@ private extension NSWindow {
         return false
     }
 
-    private static func cmuxUniqueBrowserWebView(in root: NSView) -> CmuxWebView? {
+    private static func iccUniqueBrowserWebView(in root: NSView) -> IccWebView? {
         var stack: [NSView] = [root]
-        var found: CmuxWebView?
+        var found: IccWebView?
         while let current = stack.popLast() {
-            if let webView = current as? CmuxWebView {
+            if let webView = current as? IccWebView {
                 if found == nil {
                     found = webView
                 } else if found !== webView {
@@ -12728,19 +12734,19 @@ private extension NSWindow {
         return found
     }
 
-    private static func cmuxCurrentEvent(for window: NSWindow) -> NSEvent? {
+    private static func iccCurrentEvent(for window: NSWindow) -> NSEvent? {
 #if DEBUG
-        if let override = cmuxFirstResponderGuardCurrentEventOverride {
+        if let override = iccFirstResponderGuardCurrentEventOverride {
             return override
         }
 #endif
-        if cmuxFirstResponderGuardContextWindowNumber == window.windowNumber {
-            return cmuxFirstResponderGuardCurrentEventContext
+        if iccFirstResponderGuardContextWindowNumber == window.windowNumber {
+            return iccFirstResponderGuardCurrentEventContext
         }
         return NSApp.currentEvent
     }
 
-    private static func cmuxHitViewInThemeFrame(in window: NSWindow, event: NSEvent) -> NSView? {
+    private static func iccHitViewInThemeFrame(in window: NSWindow, event: NSEvent) -> NSView? {
         guard let contentView = window.contentView,
               let themeFrame = contentView.superview else {
             return nil
@@ -12749,7 +12755,7 @@ private extension NSWindow {
         return themeFrame.hitTest(pointInTheme)
     }
 
-    private static func cmuxHitViewInContentView(in window: NSWindow, event: NSEvent) -> NSView? {
+    private static func iccHitViewInContentView(in window: NSWindow, event: NSEvent) -> NSView? {
         guard let contentView = window.contentView else {
             return nil
         }
@@ -12757,69 +12763,69 @@ private extension NSWindow {
         return contentView.hitTest(pointInContent)
     }
 
-    private static func cmuxTopHitViewForEvent(in window: NSWindow, event: NSEvent) -> NSView? {
-        if let hitInThemeFrame = cmuxHitViewInThemeFrame(in: window, event: event) {
+    private static func iccTopHitViewForEvent(in window: NSWindow, event: NSEvent) -> NSView? {
+        if let hitInThemeFrame = iccHitViewInThemeFrame(in: window, event: event) {
             return hitInThemeFrame
         }
-        return cmuxHitViewInContentView(in: window, event: event)
+        return iccHitViewInContentView(in: window, event: event)
     }
 
-    private static func cmuxHitViewForEventDispatch(in window: NSWindow, event: NSEvent) -> NSView? {
+    private static func iccHitViewForEventDispatch(in window: NSWindow, event: NSEvent) -> NSView? {
         if event.windowNumber != 0, event.windowNumber != window.windowNumber {
             return nil
         }
         if let eventWindow = event.window, eventWindow !== window {
             return nil
         }
-        return cmuxTopHitViewForEvent(in: window, event: event)
+        return iccTopHitViewForEvent(in: window, event: event)
     }
 
-    private static func cmuxHitViewForCurrentEvent(in window: NSWindow, event: NSEvent) -> NSView? {
+    private static func iccHitViewForCurrentEvent(in window: NSWindow, event: NSEvent) -> NSView? {
 #if DEBUG
-        if let override = cmuxFirstResponderGuardHitViewOverride {
+        if let override = iccFirstResponderGuardHitViewOverride {
             return override
         }
 #endif
-        if cmuxFirstResponderGuardContextWindowNumber == window.windowNumber,
-           let contextHitView = cmuxFirstResponderGuardHitViewContext {
+        if iccFirstResponderGuardContextWindowNumber == window.windowNumber,
+           let contextHitView = iccFirstResponderGuardHitViewContext {
             return contextHitView
         }
-        return cmuxTopHitViewForEvent(in: window, event: event)
+        return iccTopHitViewForEvent(in: window, event: event)
     }
 
-    private static func cmuxTrackFieldEditor(_ fieldEditor: NSTextView, owningWebView webView: CmuxWebView?) {
+    private static func iccTrackFieldEditor(_ fieldEditor: NSTextView, owningWebView webView: IccWebView?) {
         if let webView {
             objc_setAssociatedObject(
                 fieldEditor,
-                &cmuxFieldEditorOwningWebViewAssociationKey,
-                CmuxFieldEditorOwningWebViewBox(webView: webView),
+                &iccFieldEditorOwningWebViewAssociationKey,
+                IccFieldEditorOwningWebViewBox(webView: webView),
                 .OBJC_ASSOCIATION_RETAIN_NONATOMIC
             )
         } else {
             objc_setAssociatedObject(
                 fieldEditor,
-                &cmuxFieldEditorOwningWebViewAssociationKey,
+                &iccFieldEditorOwningWebViewAssociationKey,
                 nil,
                 .OBJC_ASSOCIATION_RETAIN_NONATOMIC
             )
         }
     }
 
-    private static func cmuxTrackedOwningWebView(for fieldEditor: NSTextView) -> CmuxWebView? {
+    private static func iccTrackedOwningWebView(for fieldEditor: NSTextView) -> IccWebView? {
         guard let box = objc_getAssociatedObject(
             fieldEditor,
-            &cmuxFieldEditorOwningWebViewAssociationKey
-        ) as? CmuxFieldEditorOwningWebViewBox else {
+            &iccFieldEditorOwningWebViewAssociationKey
+        ) as? IccFieldEditorOwningWebViewBox else {
             return nil
         }
         guard let webView = box.webView else {
-            cmuxTrackFieldEditor(fieldEditor, owningWebView: nil)
+            iccTrackFieldEditor(fieldEditor, owningWebView: nil)
             return nil
         }
         return webView
     }
 
-    private static func cmuxIsPointerDownEvent(_ event: NSEvent) -> Bool {
+    private static func iccIsPointerDownEvent(_ event: NSEvent) -> Bool {
         switch event.type {
         case .leftMouseDown, .rightMouseDown, .otherMouseDown:
             return true
@@ -12828,8 +12834,8 @@ private extension NSWindow {
         }
     }
 
-    private static func cmuxPointerHitWebView(in window: NSWindow, event: NSEvent) -> CmuxWebView? {
-        guard cmuxIsPointerDownEvent(event) else { return nil }
+    private static func iccPointerHitWebView(in window: NSWindow, event: NSEvent) -> IccWebView? {
+        guard iccIsPointerDownEvent(event) else { return nil }
         if event.windowNumber != 0, event.windowNumber != window.windowNumber {
             return nil
         }
@@ -12839,22 +12845,22 @@ private extension NSWindow {
         if let portalWebView = BrowserWindowPortalRegistry.webViewAtWindowPoint(
             event.locationInWindow,
             in: window
-        ) as? CmuxWebView {
+        ) as? IccWebView {
             return portalWebView
         }
-        guard let hitView = cmuxHitViewForCurrentEvent(in: window, event: event) else {
+        guard let hitView = iccHitViewForCurrentEvent(in: window, event: event) else {
             return nil
         }
-        return cmuxOwningWebView(for: hitView)
+        return iccOwningWebView(for: hitView)
     }
 
-    private static func cmuxShouldAllowPointerInitiatedWebViewFocus(
+    private static func iccShouldAllowPointerInitiatedWebViewFocus(
         window: NSWindow,
-        webView: CmuxWebView,
+        webView: IccWebView,
         event: NSEvent?
     ) -> Bool {
         guard let event,
-              let hitWebView = cmuxPointerHitWebView(in: window, event: event) else {
+              let hitWebView = iccPointerHitWebView(in: window, event: event) else {
             return false
         }
         return hitWebView === webView

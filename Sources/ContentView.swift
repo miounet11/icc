@@ -40,7 +40,7 @@ func sidebarActiveForegroundNSColor(
     return baseColor.withAlphaComponent(clampedOpacity)
 }
 
-func cmuxAccentNSColor(for colorScheme: ColorScheme) -> NSColor {
+func iccAccentNSColor(for colorScheme: ColorScheme) -> NSColor {
     switch colorScheme {
     case .dark:
         return NSColor(
@@ -59,25 +59,25 @@ func cmuxAccentNSColor(for colorScheme: ColorScheme) -> NSColor {
     }
 }
 
-func cmuxAccentNSColor(for appAppearance: NSAppearance?) -> NSColor {
+func iccAccentNSColor(for appAppearance: NSAppearance?) -> NSColor {
     let bestMatch = appAppearance?.bestMatch(from: [.darkAqua, .aqua])
     let scheme: ColorScheme = (bestMatch == .darkAqua) ? .dark : .light
-    return cmuxAccentNSColor(for: scheme)
+    return iccAccentNSColor(for: scheme)
 }
 
-func cmuxAccentNSColor() -> NSColor {
+func iccAccentNSColor() -> NSColor {
     NSColor(name: nil) { appearance in
-        cmuxAccentNSColor(for: appearance)
+        iccAccentNSColor(for: appearance)
     }
 }
 
-func cmuxAccentColor() -> Color {
-    Color(nsColor: cmuxAccentNSColor())
+func iccAccentColor() -> Color {
+    Color(nsColor: iccAccentNSColor())
 }
 
 enum ICCChrome {
     static func accent(for colorScheme: ColorScheme) -> Color {
-        Color(nsColor: cmuxAccentNSColor(for: colorScheme))
+        Color(nsColor: iccAccentNSColor(for: colorScheme))
     }
 
     static func secondaryAccent(for colorScheme: ColorScheme) -> Color {
@@ -382,7 +382,7 @@ enum SidebarRemoteErrorCopySupport {
 }
 
 func sidebarSelectedWorkspaceBackgroundNSColor(for colorScheme: ColorScheme) -> NSColor {
-    cmuxAccentNSColor(for: colorScheme)
+    iccAccentNSColor(for: colorScheme)
 }
 
 func sidebarSelectedWorkspaceForegroundNSColor(opacity: CGFloat) -> NSColor {
@@ -393,7 +393,7 @@ func sidebarSelectedWorkspaceForegroundNSColor(opacity: CGFloat) -> NSColor {
 #if compiler(>=6.2)
 @available(macOS 26.0, *)
 enum InternalTabDragConfigurationProvider {
-    // These drags only make sense inside cmux. Outside the app, Finder should
+    // These drags only make sense inside icc. Outside the app, Finder should
     // reject them instead of materializing placeholder files from the payload.
     static let value = DragConfiguration(
         operationsWithinApp: .init(allowCopy: false, allowMove: true, allowDelete: false),
@@ -1201,8 +1201,8 @@ final class FileDropOverlayView: NSView {
 var fileDropOverlayKey: UInt8 = 0
 private var commandPaletteWindowOverlayKey: UInt8 = 0
 private var tmuxWorkspacePaneWindowOverlayKey: UInt8 = 0
-let commandPaletteOverlayContainerIdentifier = NSUserInterfaceItemIdentifier("cmux.commandPalette.overlay.container")
-let tmuxWorkspacePaneOverlayContainerIdentifier = NSUserInterfaceItemIdentifier("cmux.tmuxWorkspacePane.overlay.container")
+let commandPaletteOverlayContainerIdentifier = NSUserInterfaceItemIdentifier("icc.commandPalette.overlay.container")
+let tmuxWorkspacePaneOverlayContainerIdentifier = NSUserInterfaceItemIdentifier("icc.tmuxWorkspacePane.overlay.container")
 
 enum CommandPaletteOverlayPromotionPolicy {
     static func shouldPromote(previouslyVisible: Bool, isVisible: Bool) -> Bool {
@@ -1888,8 +1888,8 @@ struct ContentView: View {
     private var commandPaletteRenameSelectAllOnFocus = CommandPaletteRenameSelectionSettings.defaultSelectAllOnFocus
     @AppStorage(CommandPaletteSwitcherSearchSettings.searchAllSurfacesKey)
     private var commandPaletteSearchAllSurfaces = CommandPaletteSwitcherSearchSettings.defaultSearchAllSurfaces
-    @AppStorage(BrowserLinkOpenSettings.openSidebarPullRequestLinksInCmuxBrowserKey)
-    private var openSidebarPullRequestLinksInCmuxBrowser = BrowserLinkOpenSettings.defaultOpenSidebarPullRequestLinksInCmuxBrowser
+    @AppStorage(BrowserLinkOpenSettings.openSidebarPullRequestLinksInIccBrowserKey)
+    private var openSidebarPullRequestLinksInIccBrowser = BrowserLinkOpenSettings.defaultOpenSidebarPullRequestLinksInIccBrowser
     @FocusState private var isCommandPaletteSearchFocused: Bool
     @FocusState private var isCommandPaletteRenameFocused: Bool
 
@@ -3153,6 +3153,7 @@ struct ContentView: View {
                 }
             },
             onOpenRemoteExplorer: { AppDelegate.shared?.openRemoteExplorerPage() },
+            onLaunchLinkedMode: { launchLinkedModeFromTitlebar() },
             visibilityMode: .alwaysVisible,
             layoutMode: .full
         )
@@ -3766,6 +3767,17 @@ struct ContentView: View {
             updateSidebarResizerBandState()
         })
 
+        view = AnyView(view.onReceive(NotificationCenter.default.publisher(for: .iccAgentCollaborationRequested)) { notification in
+            let requestedWindow = notification.object as? NSWindow
+            guard Self.shouldHandleCommandPaletteRequest(
+                observedWindow: observedWindow,
+                requestedWindow: requestedWindow,
+                keyWindow: NSApp.keyWindow,
+                mainWindow: NSApp.mainWindow
+            ) else { return }
+            launchLinkedModeFromTitlebar()
+        })
+
         view = AnyView(view.onChange(of: sidebarWidth) { _ in
             let sanitized = normalizedSidebarWidth(sidebarWidth)
             if abs(sidebarWidth - sanitized) > 0.5 {
@@ -3853,7 +3865,7 @@ struct ContentView: View {
                 }
             }
 #if DEBUG
-            if ProcessInfo.processInfo.environment["CMUX_UI_TEST_MODE"] == "1" {
+            if ProcessInfo.processInfo.environment["ICC_UI_TEST_MODE"] == "1" {
                 UpdateLogStore.shared.append("ui test window accessor: id=\(windowIdentifier) visible=\(window.isVisible)")
             }
 #endif
@@ -4141,7 +4153,7 @@ struct ContentView: View {
     }
 
     private func setTitlebarControlsHidden(_ hidden: Bool, in window: NSWindow) {
-        let controlsId = NSUserInterfaceItemIdentifier("cmux.titlebarControls")
+        let controlsId = NSUserInterfaceItemIdentifier("icc.titlebarControls")
         for accessory in window.titlebarAccessoryViewControllers {
             if accessory.view.identifier == controlsId {
                 accessory.isHidden = hidden
@@ -4358,7 +4370,7 @@ struct ContentView: View {
                             let isSelected = index == selectedIndex
                             let isHovered = commandPaletteHoveredResultIndex == index
                             let rowBackground: Color = isSelected
-                                ? cmuxAccentColor().opacity(0.12)
+                                ? iccAccentColor().opacity(0.12)
                                 : (isHovered ? Color.primary.opacity(0.08) : .clear)
 
                             Button {
@@ -5748,7 +5760,7 @@ struct ContentView: View {
     private func commandPaletteCommandsContext(
         terminalOpenTargets: Set<TerminalDirectoryOpenTarget>
     ) -> CommandPaletteCommandsContext {
-        let cliInstalledInPATH = AppDelegate.shared?.isCmuxCLIInstalledInPATH() ?? false
+        let cliInstalledInPATH = AppDelegate.shared?.isIccCLIInstalledInPATH() ?? false
         var snapshot = commandPaletteContextSnapshot(terminalOpenTargets: terminalOpenTargets)
         snapshot.setBool(CommandPaletteContextKeys.cliInstalledInPATH, cliInstalledInPATH)
         return CommandPaletteCommandsContext(
@@ -6195,7 +6207,7 @@ struct ContentView: View {
                 commandId: "palette.restartSocketListener",
                 title: constant(String(localized: "command.restartSocketListener.title", defaultValue: "Restart CLI Listener")),
                 subtitle: constant(String(localized: "command.restartSocketListener.subtitle", defaultValue: "Global")),
-                keywords: ["restart", "socket", "listener", "cli", "cmux", "control"]
+                keywords: ["restart", "socket", "listener", "cli", "icc", "control"]
             )
         )
 
@@ -6706,10 +6718,10 @@ struct ContentView: View {
             AppDelegate.shared?.openNewMainWindow(nil)
         }
         registry.register(commandId: "palette.installCLI") {
-            AppDelegate.shared?.installCmuxCLIInPath(nil)
+            AppDelegate.shared?.installIccCLIInPath(nil)
         }
         registry.register(commandId: "palette.uninstallCLI") {
-            AppDelegate.shared?.uninstallCmuxCLIInPath(nil)
+            AppDelegate.shared?.uninstallIccCLIInPath(nil)
         }
         registry.register(commandId: "palette.newTerminalTab") {
             tabManager.newSurface()
@@ -7454,6 +7466,21 @@ struct ContentView: View {
         AppDelegate.shared?.setCommandPaletteSnapshot(commandPaletteDebugSnapshot(), for: window)
     }
 
+    private func launchLinkedModeFromTitlebar() {
+        guard let workspace = tabManager.selectedWorkspace else {
+            NSSound.beep()
+            return
+        }
+        let outcome = AgentCollaborationLauncher.perform(
+            .linkedMode,
+            in: workspace,
+            workingDirectory: workspace.currentDirectory
+        )
+        if outcome.isError {
+            NSSound.beep()
+        }
+    }
+
     private func commandPaletteDebugSnapshot() -> CommandPaletteDebugSnapshot {
         guard isCommandPalettePresented else { return .empty }
 
@@ -7619,7 +7646,7 @@ struct ContentView: View {
     }
 
     private func commandPaletteBackdropFocusTarget(for responder: NSResponder) -> CommandPaletteRestoreFocusTarget? {
-        if let terminalView = cmuxOwningGhosttyView(for: responder),
+        if let terminalView = iccOwningGhosttyView(for: responder),
            let workspaceId = terminalView.tabId,
            let panelId = terminalView.terminalSurface?.id,
            tabManager.tabs.contains(where: { $0.id == workspaceId }) {
@@ -7925,7 +7952,7 @@ struct ContentView: View {
 #if DEBUG
         guard !didApplyUITestSidebarSelection else { return }
         let env = ProcessInfo.processInfo.environment
-        guard let rawValue = env["CMUX_UI_TEST_SIDEBAR_SELECTED_WORKSPACE_INDICES"]?
+        guard let rawValue = env["ICC_UI_TEST_SIDEBAR_SELECTED_WORKSPACE_INDICES"]?
             .trimmingCharacters(in: .whitespacesAndNewlines),
               !rawValue.isEmpty else {
             return
@@ -8035,7 +8062,7 @@ struct ContentView: View {
         guard !pullRequests.isEmpty else { return false }
 
         var openedCount = 0
-        if openSidebarPullRequestLinksInCmuxBrowser {
+        if openSidebarPullRequestLinksInIccBrowser {
             for pullRequest in pullRequests {
                 if tabManager.openBrowser(url: pullRequest.url, insertAtEnd: true) != nil {
                     openedCount += 1
@@ -9523,7 +9550,7 @@ enum DevBuildBannerDebugSettings {
 
 private enum FeedbackComposerSettings {
     static let storedEmailKey = "sidebarHelpFeedbackEmail"
-    static let endpointEnvironmentKey = "CMUX_FEEDBACK_API_URL"
+    static let endpointEnvironmentKey = "ICC_FEEDBACK_API_URL"
     static let defaultEndpoint = ""
     static let supportURL = "https://github.com/miounet11/icc/issues"
     static let maxMessageLength = 4_000
@@ -9598,9 +9625,9 @@ private struct FeedbackComposerAppMetadata {
     static var current: FeedbackComposerAppMetadata {
         let infoDictionary = Bundle.main.infoDictionary ?? [:]
         let env = ProcessInfo.processInfo.environment
-        let commit = (infoDictionary["CMUXCommit"] as? String).flatMap { value in
+        let commit = (infoDictionary["ICCCommit"] as? String).flatMap { value in
             value.isEmpty ? nil : value
-        } ?? env["CMUX_COMMIT"]
+        } ?? env["ICC_COMMIT"]
 
         return FeedbackComposerAppMetadata(
             appVersion: infoDictionary["CFBundleShortVersionString"] as? String ?? "",
@@ -9899,8 +9926,8 @@ private enum FeedbackComposerClient {
 }
 
 enum SidebarDragLifecycleNotification {
-    static let stateDidChange = Notification.Name("cmux.sidebarDragStateDidChange")
-    static let requestClear = Notification.Name("cmux.sidebarDragRequestClear")
+    static let stateDidChange = Notification.Name("icc.sidebarDragStateDidChange")
+    static let requestClear = Notification.Name("icc.sidebarDragRequestClear")
     static let tabIdKey = "tabId"
     static let reasonKey = "reason"
 
@@ -10797,6 +10824,197 @@ private struct WeChatSidebarPaneView: View {
     }
 }
 
+private enum AgentTool {
+    case claude
+    case codex
+
+    var displayName: String {
+        switch self {
+        case .claude:
+            return "Claude Code"
+        case .codex:
+            return "Codex"
+        }
+    }
+
+    var launchCommand: String {
+        switch self {
+        case .claude:
+            return "command -v claude >/dev/null 2>&1 && claude || echo 'Claude Code is not installed in PATH.'"
+        case .codex:
+            return "command -v codex >/dev/null 2>&1 && codex || echo 'Codex is not installed in PATH.'"
+        }
+    }
+}
+
+private enum AgentCollaborationAction {
+    case addPane(AgentTool)
+    case linkedMode
+}
+
+private struct AgentCollaborationOutcome {
+    let isError: Bool
+    let message: String
+
+    static func success(_ message: String) -> Self {
+        Self(isError: false, message: message)
+    }
+
+    static func failure(_ message: String) -> Self {
+        Self(isError: true, message: message)
+    }
+}
+
+@MainActor
+private enum AgentCollaborationLauncher {
+    static func perform(
+        _ action: AgentCollaborationAction,
+        in workspace: Workspace,
+        workingDirectory: String,
+        onAsyncFailure: @escaping (AgentCollaborationOutcome) -> Void = { _ in }
+    ) -> AgentCollaborationOutcome {
+        let sanitizedDirectory = workingDirectory.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedDirectory = sanitizedDirectory.isEmpty ? FileManager.default.currentDirectoryPath : sanitizedDirectory
+
+        switch action {
+        case let .addPane(tool):
+            return addAgentPane(tool: tool, in: workspace, workingDirectory: resolvedDirectory, onAsyncFailure: onAsyncFailure)
+        case .linkedMode:
+            return createAgentPairLayout(in: workspace, workingDirectory: resolvedDirectory, onAsyncFailure: onAsyncFailure)
+        }
+    }
+
+    private static func addAgentPane(
+        tool: AgentTool,
+        in workspace: Workspace,
+        workingDirectory: String,
+        onAsyncFailure: @escaping (AgentCollaborationOutcome) -> Void
+    ) -> AgentCollaborationOutcome {
+        guard let panel = createExecutionPane(in: workspace) else {
+            return .failure("Couldn’t create a terminal pane for \(tool.displayName).")
+        }
+
+        queueCommand(
+            agentBootstrapCommand(for: tool),
+            for: panel,
+            workingDirectory: workingDirectory,
+            onFailure: {
+                onAsyncFailure(.failure("The \(tool.displayName) pane was created, but the command could not be delivered."))
+            }
+        )
+        return .success("\(tool.displayName) pane created.")
+    }
+
+    private static func createAgentPairLayout(
+        in workspace: Workspace,
+        workingDirectory: String,
+        onAsyncFailure: @escaping (AgentCollaborationOutcome) -> Void
+    ) -> AgentCollaborationOutcome {
+        let anchorPanelId = workspace.focusedPanelId
+            ?? workspace.focusedTerminalPanel?.id
+            ?? workspace.panels.keys.first
+            ?? createExecutionPane(in: workspace)?.id
+        guard let anchorPanelId else {
+            return .failure("No active pane is available for linked mode.")
+        }
+
+        guard let claudePanel = workspace.newTerminalSplit(
+            from: anchorPanelId,
+            orientation: .horizontal,
+            insertFirst: false,
+            focus: false
+        ) else {
+            return .failure("Couldn’t create the Claude pane.")
+        }
+        guard let codexPanel = workspace.newTerminalSplit(
+            from: claudePanel.id,
+            orientation: .vertical,
+            insertFirst: false,
+            focus: false
+        ) else {
+            return .failure("Claude pane created, but Codex pane could not be added.")
+        }
+
+        queueCommand(
+            agentBootstrapCommand(for: .claude),
+            for: claudePanel,
+            workingDirectory: workingDirectory,
+            onFailure: {
+                onAsyncFailure(.failure("Claude linked pane was created, but the launch command could not be delivered."))
+            }
+        )
+        queueCommand(
+            agentBootstrapCommand(for: .codex),
+            for: codexPanel,
+            workingDirectory: workingDirectory,
+            onFailure: {
+                onAsyncFailure(.failure("Codex linked pane was created, but the launch command could not be delivered."))
+            }
+        )
+        return .success("Claude + Codex linked mode created.")
+    }
+
+    private static func createExecutionPane(in workspace: Workspace) -> TerminalPanel? {
+        if let anchorPanelId = workspace.focusedPanelId ?? workspace.focusedTerminalPanel?.id ?? workspace.panels.keys.first,
+           let newPanel = workspace.newTerminalSplit(
+                from: anchorPanelId,
+                orientation: .horizontal,
+                insertFirst: false,
+                focus: false
+           ) {
+            return newPanel
+        }
+        return workspace.newTerminalSurfaceInFocusedPane(focus: false)
+    }
+
+    private static func queueCommand(
+        _ command: String,
+        for panel: TerminalPanel,
+        workingDirectory: String,
+        attempt: Int = 0,
+        onFailure: @escaping () -> Void
+    ) {
+        guard attempt < 12 else {
+            onFailure()
+            return
+        }
+
+        guard panel.surface.surface != nil else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                queueCommand(
+                    command,
+                    for: panel,
+                    workingDirectory: workingDirectory,
+                    attempt: attempt + 1,
+                    onFailure: onFailure
+                )
+            }
+            return
+        }
+
+        panel.sendText("cd \(shellQuote(workingDirectory))\n\(command)\n")
+    }
+
+    private static func agentBootstrapCommand(for tool: AgentTool) -> String {
+        [
+            "clear",
+            "printf 'AI Command Center · \(tool.displayName)\\n\\n'",
+            "printf 'Bridge commands:\\n'",
+            "printf '  icc list-panes\\n'",
+            "printf '  icc read-screen --surface <surface-id> --scrollback --lines 80\\n'",
+            "printf '  icc send --surface <surface-id> \"prompt here\\\\n\"\\n'",
+            "printf '  icc send-key --surface <surface-id> enter\\n\\n'",
+            tool.launchCommand,
+            "exec ${SHELL:-/bin/zsh} -l"
+        ].joined(separator: "\n")
+    }
+
+    private static func shellQuote(_ value: String) -> String {
+        if value.isEmpty { return "''" }
+        return "'" + value.replacingOccurrences(of: "'", with: "'\"'\"'") + "'"
+    }
+}
+
 private struct WeChatSidebarCard<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
@@ -10902,6 +11120,10 @@ private struct SourceControlSidebarPaneView: View {
         snapshot?.repositoryRoot
     }
 
+    private var collaborationWorkingDirectory: String {
+        repositoryRoot ?? currentDirectory
+    }
+
     private var branchHeadline: String {
         if let headline = snapshot?.branchHeadline,
            !headline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -10917,10 +11139,10 @@ private struct SourceControlSidebarPaneView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 overviewCard
+                aiCollaborationCard
 
                 if let snapshot, snapshot.isRepository {
                     repositoryActionsCard
-                    aiCollaborationCard
 
                     if !snapshot.githubRepoSlugs.isEmpty || !snapshot.remotes.isEmpty {
                         repositoryBindingCard(snapshot)
@@ -11109,30 +11331,30 @@ private struct SourceControlSidebarPaneView: View {
                 HStack(spacing: 8) {
                     Button("添加 Claude") {
                         performDeferredSidebarAction {
-                            addAgentPane(tool: .claude)
+                            launchAgentWorkflow(.addPane(.claude))
                         }
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .disabled(repositoryRoot == nil || isPerformingSidebarAction)
+                    .disabled(isPerformingSidebarAction)
 
                     Button("添加 Codex") {
                         performDeferredSidebarAction {
-                            addAgentPane(tool: .codex)
+                            launchAgentWorkflow(.addPane(.codex))
                         }
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .disabled(repositoryRoot == nil || isPerformingSidebarAction)
+                    .disabled(isPerformingSidebarAction)
 
                     Button("创建协作布局") {
                         performDeferredSidebarAction {
-                            createAgentPairLayout()
+                            launchAgentWorkflow(.linkedMode)
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
-                    .disabled(repositoryRoot == nil || isPerformingSidebarAction)
+                    .disabled(isPerformingSidebarAction)
                 }
 
                 Button("复制协作命令") {
@@ -11315,29 +11537,6 @@ private struct SourceControlSidebarPaneView: View {
         actionStatusMessage = "Current branch copied."
     }
 
-    private enum AgentTool {
-        case claude
-        case codex
-
-        var displayName: String {
-            switch self {
-            case .claude:
-                return "Claude Code"
-            case .codex:
-                return "Codex"
-            }
-        }
-
-        var launchCommand: String {
-            switch self {
-            case .claude:
-                return "command -v claude >/dev/null 2>&1 && claude || echo 'Claude Code is not installed in PATH.'"
-            case .codex:
-                return "command -v codex >/dev/null 2>&1 && codex || echo 'Codex is not installed in PATH.'"
-            }
-        }
-    }
-
     private func runRepositoryAction(title: String, command: String) {
         guard let repositoryRoot else {
             actionStatusIsError = true
@@ -11368,59 +11567,18 @@ private struct SourceControlSidebarPaneView: View {
         actionStatusMessage = "\(title) opened in a new pane."
     }
 
-    private func addAgentPane(tool: AgentTool) {
-        guard let repositoryRoot else {
-            actionStatusIsError = true
-            actionStatusMessage = "Open a Git repository first."
-            return
-        }
-        guard let panel = createExecutionPane() else {
-            actionStatusIsError = true
-            actionStatusMessage = "Couldn’t create a terminal pane for \(tool.displayName)."
-            return
-        }
-
-        queueCommand(agentBootstrapCommand(for: tool), for: panel, workingDirectory: repositoryRoot)
-        actionStatusIsError = false
-        actionStatusMessage = "\(tool.displayName) pane created."
-    }
-
-    private func createAgentPairLayout() {
-        guard let repositoryRoot else {
-            actionStatusIsError = true
-            actionStatusMessage = "Open a Git repository first."
-            return
-        }
-        guard let anchorPanelId = workspace.focusedPanelId ?? workspace.focusedTerminalPanel?.id ?? workspace.panels.keys.first else {
-            actionStatusIsError = true
-            actionStatusMessage = "No active pane is available for the collaboration layout."
-            return
-        }
-        guard let claudePanel = workspace.newTerminalSplit(
-            from: anchorPanelId,
-            orientation: .horizontal,
-            insertFirst: false,
-            focus: false
-        ) else {
-            actionStatusIsError = true
-            actionStatusMessage = "Couldn’t create the Claude pane."
-            return
-        }
-        guard let codexPanel = workspace.newTerminalSplit(
-            from: claudePanel.id,
-            orientation: .vertical,
-            insertFirst: false,
-            focus: false
-        ) else {
-            actionStatusIsError = true
-            actionStatusMessage = "Claude pane created, but Codex pane could not be added."
-            return
-        }
-
-        queueCommand(agentBootstrapCommand(for: .claude), for: claudePanel, workingDirectory: repositoryRoot)
-        queueCommand(agentBootstrapCommand(for: .codex), for: codexPanel, workingDirectory: repositoryRoot)
-        actionStatusIsError = false
-        actionStatusMessage = "Claude + Codex collaboration layout created."
+    private func launchAgentWorkflow(_ action: AgentCollaborationAction) {
+        let outcome = AgentCollaborationLauncher.perform(
+            action,
+            in: workspace,
+            workingDirectory: collaborationWorkingDirectory,
+            onAsyncFailure: { asyncOutcome in
+                actionStatusIsError = asyncOutcome.isError
+                actionStatusMessage = asyncOutcome.message
+            }
+        )
+        actionStatusIsError = outcome.isError
+        actionStatusMessage = outcome.message
     }
 
     private func copyAgentBridgeCheatSheet() {
@@ -11480,20 +11638,6 @@ private struct SourceControlSidebarPaneView: View {
         }
 
         panel.sendText("cd \(shellQuote(workingDirectory))\n\(command)\n")
-    }
-
-    private func agentBootstrapCommand(for tool: AgentTool) -> String {
-        [
-            "clear",
-            "printf 'AI Command Center · \(tool.displayName)\\n\\n'",
-            "printf 'Bridge commands:\\n'",
-            "printf '  icc list-panes\\n'",
-            "printf '  icc read-screen --surface <surface-id> --scrollback --lines 80\\n'",
-            "printf '  icc send --surface <surface-id> \"prompt here\\\\n\"\\n'",
-            "printf '  icc send-key --surface <surface-id> enter\\n\\n'",
-            tool.launchCommand,
-            "exec ${SHELL:-/bin/zsh} -l"
-        ].joined(separator: "\n")
     }
 
     private func shellQuote(_ value: String) -> String {
@@ -13260,7 +13404,7 @@ private struct SidebarEmptyArea: View {
                 .overlay(alignment: .top) {
                     if shouldShowTopDropIndicator {
                         Rectangle()
-                            .fill(cmuxAccentColor())
+                            .fill(iccAccentColor())
                             .frame(height: 2)
                             .padding(.horizontal, 8)
                             .offset(y: -(rowSpacing / 2))
@@ -13468,8 +13612,8 @@ private struct TabItemView: View, Equatable {
     @AppStorage("sidebarShowBranchDirectory") private var sidebarShowBranchDirectory = true
     @AppStorage("sidebarShowGitBranchIcon") private var sidebarShowGitBranchIcon = false
     @AppStorage("sidebarShowPullRequest") private var sidebarShowPullRequest = true
-    @AppStorage(BrowserLinkOpenSettings.openSidebarPullRequestLinksInCmuxBrowserKey)
-    private var openSidebarPullRequestLinksInCmuxBrowser = BrowserLinkOpenSettings.defaultOpenSidebarPullRequestLinksInCmuxBrowser
+    @AppStorage(BrowserLinkOpenSettings.openSidebarPullRequestLinksInIccBrowserKey)
+    private var openSidebarPullRequestLinksInIccBrowser = BrowserLinkOpenSettings.defaultOpenSidebarPullRequestLinksInIccBrowser
     @AppStorage("sidebarShowSSH") private var sidebarShowSSH = true
     @AppStorage("sidebarShowPorts") private var sidebarShowPorts = true
     @AppStorage("sidebarShowLog") private var sidebarShowLog = true
@@ -13539,7 +13683,7 @@ private struct TabItemView: View, Equatable {
     }
 
     private var activeUnreadBadgeFillColor: Color {
-        usesInvertedActiveForeground ? Color.white.opacity(0.25) : cmuxAccentColor()
+        usesInvertedActiveForeground ? Color.white.opacity(0.25) : iccAccentColor()
     }
 
     private var activeProgressTrackColor: Color {
@@ -13547,7 +13691,7 @@ private struct TabItemView: View, Equatable {
     }
 
     private var activeProgressFillColor: Color {
-        usesInvertedActiveForeground ? Color.white.opacity(0.8) : cmuxAccentColor()
+        usesInvertedActiveForeground ? Color.white.opacity(0.8) : iccAccentColor()
     }
 
     private var shortcutHintEmphasis: Double {
@@ -14015,7 +14159,7 @@ private struct TabItemView: View, Equatable {
         .overlay(alignment: .top) {
             if showsCenteredTopDropIndicator {
                 Rectangle()
-                    .fill(cmuxAccentColor())
+                    .fill(iccAccentColor())
                     .frame(height: 2)
                     .padding(.horizontal, 8)
                     .offset(y: index == 0 ? 0 : -(rowSpacing / 2))
@@ -14283,7 +14427,7 @@ private struct TabItemView: View, Equatable {
         switch activeTabIndicatorStyle {
         case .leftRail:
             if isActive        { return Color(nsColor: sidebarSelectedWorkspaceBackgroundNSColor(for: colorScheme)).opacity(colorScheme == .dark ? 0.92 : 0.96) }
-            if isMultiSelected { return cmuxAccentColor().opacity(0.20) }
+            if isMultiSelected { return iccAccentColor().opacity(0.20) }
             if isHovering { return ICCChrome.mutedFill(for: colorScheme) }
             return Color.clear
         case .solidFill:
@@ -14293,7 +14437,7 @@ private struct TabItemView: View, Equatable {
                 if isHovering { return custom.opacity(0.22) }
                 return custom.opacity(0.14)
             }
-            if isMultiSelected { return cmuxAccentColor().opacity(0.20) }
+            if isMultiSelected { return iccAccentColor().opacity(0.20) }
             if isHovering { return ICCChrome.mutedFill(for: colorScheme) }
             return Color.clear
         }
@@ -14659,7 +14803,7 @@ private struct TabItemView: View, Equatable {
 
     private func openPullRequestLink(_ url: URL) {
         updateSelection()
-        if openSidebarPullRequestLinksInCmuxBrowser {
+        if openSidebarPullRequestLinksInIccBrowser {
             if tabManager.openBrowser(
                 inWorkspace: tab.id,
                 url: url,
@@ -15441,7 +15585,7 @@ private enum SidebarTabDragPayload {
     static let typeIdentifier = "com.icc.sidebar-tab-reorder"
     static let dropContentType = UTType(exportedAs: typeIdentifier)
     static let dropContentTypes: [UTType] = [dropContentType]
-    private static let prefix = "cmux.sidebar-tab."
+    private static let prefix = "icc.sidebar-tab."
 
     static func provider(for tabId: UUID) -> NSItemProvider {
         let provider = NSItemProvider()

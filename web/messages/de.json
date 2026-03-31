@@ -116,7 +116,7 @@
         "p1": "Meine Lieblingsfunktion in icc ist Cmd+Shift+U. Ich habe gerade 17 Workspaces offen, in denen jeweils ein Agent läuft. Früher habe ich mich durch Tabs und das Benachrichtigungspanel geklickt, um herauszufinden, was fertig ist. Tippen ist schneller.",
         "p2": "Cmd+Shift+U springt zur neuesten ungelesenen <link>Benachrichtigung</link>. In der Praxis bedeutet das der letzte Agent, der fertig wurde. Es wechselt zum richtigen Workspace, fokussiert den genauen Bereich, lässt ihn aufblitzen, damit Sie sehen, wo Sie hinschauen müssen, und markiert ihn als gelesen. Wenn die Benachrichtigung aus einem anderen Fenster kam, kommt dieses Fenster nach vorne."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "The Zen of icc",
         "summary": "icc ist ein Grundbaustein, keine Lösung. Es gibt Ihnen zusammensetzbare Teile, und Ihr Workflow liegt bei Ihnen.",
         "date": "27. Februar 2026",
@@ -144,7 +144,7 @@
         "scriptable": "Alles in icc ist über die CLI skriptfähig: Workspaces erstellen, Tastatureingaben senden, den Browser steuern, Benachrichtigungen lesen. Ein Teil der icc-Philosophie ist, programmierbar und zusammensetzbar zu sein, damit Menschen die Art anpassen können, wie sie mit Coding-Agenten arbeiten. Der Stand der Technik bei Coding-Agenten ändert sich schnell, und Sie möchten nicht in einem unflexiblen GUI-Orchestrator gefangen sein, der nicht mithalten kann.",
         "cta": "Wenn Sie mehrere Coding-Agenten betreiben, <link>probieren Sie icc aus</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "Einführung von icc",
         "summary": "Ein natives macOS-Terminal auf Basis von Ghostty, entwickelt für den gleichzeitigen Betrieb mehrerer KI-Coding-Agenten.",
         "date": "12. Februar 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "Angetrieben von libghostty für flüssiges Rendering"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "Das Zen von icc",
       "metaDescription": "icc ist ein Baustein, keine Lösung. Es gibt dir zusammensetzbare Teile und dein Workflow liegt bei dir."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "icc auf Show HN starten",
       "metaDescription": "Die Geschichte hinter dem Launch von icc auf Hacker News."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "Wir stellen icc vor",
       "metaDescription": "Warum wir icc gebaut haben, ein neues Terminal für macOS."
     }
@@ -241,7 +241,7 @@
       "paneNote": "Jeder Bereich kann mehrere Oberflächen (Tabs innerhalb des Bereichs) enthalten.",
       "surfaceTitle": "Oberfläche",
       "surfaceDesc": "Ein Tab innerhalb eines Bereichs. Jeder Bereich hat seine eigene Tab-Leiste und kann mehrere Oberflächen enthalten. Erstellt mit {new}, navigiert mit {prev} / {next} oder {jump}.",
-      "surfaceNote": "Oberflächen sind die einzelnen Terminal- oder Browser-Sitzungen, mit denen Sie interagieren. Jede Oberfläche hat ihre eigene CMUX_SURFACE_ID Umgebungsvariable.",
+      "surfaceNote": "Oberflächen sind die einzelnen Terminal- oder Browser-Sitzungen, mit denen Sie interagieren. Jede Oberfläche hat ihre eigene ICC_SURFACE_ID Umgebungsvariable.",
       "panelTitle": "Panel",
       "panelDesc": "Der Inhalt innerhalb einer Oberfläche. Derzeit zwei Typen:",
       "panelTerminal": "Terminal: Eine Ghostty-Terminal-Sitzung",
@@ -292,8 +292,8 @@
       "automationMode": "Automatisierungsmodus",
       "automationModeDesc": "Zugriffsebene der Steuerungs-Socket:",
       "automationOff": "Aus: Kein Socket-Zugriff (am sichersten)",
-      "automationCmux": "Nur icc-Prozesse: Nur Prozesse, die in icc-Terminals gestartet wurden, können sich verbinden",
-      "automationAll": "allowAll: Jeden lokalen Prozess verbinden lassen (CMUX_SOCKET_MODE=allowAll, nur per Umgebungsvariable)",
+      "automationIcc": "Nur icc-Prozesse: Nur Prozesse, die in icc-Terminals gestartet wurden, können sich verbinden",
+      "automationAll": "allowAll: Jeden lokalen Prozess verbinden lassen (ICC_SOCKET_MODE=allowAll, nur per Umgebungsvariable)",
       "automationCallout": "Auf gemeinsam genutzten Rechnern sollten Sie den Modus \"Aus\" oder \"Nur icc-Prozesse\" verwenden.",
       "browserLinkBehavior": "Browser-Link-Verhalten",
       "browserLinkDesc": "Unter Einstellungen > Browser stellt icc zwei Host-Listen mit unterschiedlichen Zwecken bereit:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Getaggter Debug-Build",
-      "socketOverride": "Überschreiben mit der Umgebungsvariable CMUX_SOCKET_PATH. Senden Sie eine JSON-Anfrage pro Aufruf, mit Zeilenumbruch am Ende:",
+      "socketOverride": "Überschreiben mit der Umgebungsvariable ICC_SOCKET_PATH. Senden Sie eine JSON-Anfrage pro Aufruf, mit Zeilenumbruch am Ende:",
       "socketCallout": "JSON-Socket-Anfragen müssen method und params verwenden. Legacy-v1-JSON-Payloads wie <legacy>'{'\"command\":\"...\"'}'</legacy> werden nicht unterstützt.",
       "accessModes": "Zugriffsmodi",
       "modeHeader": "Modus",
       "descriptionHeader": "Beschreibung",
       "howToEnableHeader": "Aktivierung",
       "offMode": "Socket deaktiviert",
-      "offEnable": "Einstellungs-UI oder CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Nur Prozesse, die in icc-Terminals gestartet wurden, können sich verbinden.",
-      "cmuxOnlyEnable": "Standardmodus in der Einstellungs-UI",
+      "offEnable": "Einstellungs-UI oder ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Nur Prozesse, die in icc-Terminals gestartet wurden, können sich verbinden.",
+      "iccOnlyEnable": "Standardmodus in der Einstellungs-UI",
       "allowAllMode": "Jeden lokalen Prozess verbinden lassen (keine Herkunftsprüfung).",
-      "allowAllEnable": "Nur per Umgebungsvariable: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Nur per Umgebungsvariable: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "Auf gemeinsam genutzten Rechnern verwenden Sie Aus oder Nur icc-Prozesse.",
       "cliOptions": "CLI-Optionen",
       "flagHeader": "Flag",
@@ -432,13 +432,13 @@
       "variableHeader": "Variable",
       "socketPathDesc": "Den von CLI und Integrationen verwendeten Socket-Pfad überschreiben",
       "socketEnableDesc": "Socket aktivieren/deaktivieren erzwingen (1/0, true/false, on/off)",
-      "socketModeDesc": "Zugriffsmodus überschreiben (cmuxOnly, allowAll, off). Akzeptiert auch icc-only/cmux_only und allow-all/allow_all",
+      "socketModeDesc": "Zugriffsmodus überschreiben (iccOnly, allowAll, off). Akzeptiert auch icc-only/icc_only und allow-all/allow_all",
       "workspaceIdDesc": "Automatisch gesetzt: Aktuelle Workspace-ID",
       "surfaceIdDesc": "Automatisch gesetzt: Aktuelle Oberflächen-ID",
       "termProgramDesc": "Gesetzt auf ghostty",
       "termDesc": "Gesetzt auf xterm-ghostty",
-      "envCallout": "Legacy-Werte für CMUX_SOCKET_MODE full und notifications werden aus Kompatibilitätsgründen weiterhin akzeptiert.",
-      "detectingCmux": "icc erkennen",
+      "envCallout": "Legacy-Werte für ICC_SOCKET_MODE full und notifications werden aus Kompatibilitätsgründen weiterhin akzeptiert.",
+      "detectingIcc": "icc erkennen",
       "examples": "Beispiele",
       "pythonClient": "Python-Client",
       "shellScript": "Shell-Skript",

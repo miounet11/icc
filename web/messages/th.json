@@ -116,7 +116,7 @@
         "p1": "ฟีเจอร์ icc ที่ผมชอบที่สุดคือ Cmd+Shift+U ตอนนี้ผมเปิด 17 workspace แต่ละอันรัน agent อยู่ ก่อนหน้านี้ผมต้องคลิกผ่านแท็บและแผงแจ้งเตือนเพื่อดูว่าอันไหนเสร็จแล้ว การพิมพ์เร็วกว่า",
         "p2": "Cmd+Shift+U กระโดดไปที่<link>การแจ้งเตือน</link>ที่ยังไม่ได้อ่านล่าสุด ในทางปฏิบัติหมายถึง agent ตัวล่าสุดที่ทำงานเสร็จ มันจะสลับไป workspace ที่ถูกต้อง, โฟกัสพาเนลที่แน่นอน, กระพริบให้เห็นว่าต้องดูตรงไหน และทำเครื่องหมายว่าอ่านแล้ว ถ้าการแจ้งเตือนมาจากหน้าต่างอื่น หน้าต่างนั้นจะถูกนำมาด้านหน้า"
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "The Zen of icc",
         "summary": "icc เป็นชิ้นส่วนพื้นฐาน ไม่ใช่โซลูชัน มันให้ชิ้นส่วนที่ประกอบกันได้ และ workflow เป็นเรื่องของคุณ",
         "date": "27 กุมภาพันธ์ 2026",
@@ -144,7 +144,7 @@
         "scriptable": "ทุกอย่างใน icc เขียนสคริปต์ได้ผ่าน CLI: สร้าง workspace, ส่งการกดปุ่ม, ควบคุมเบราว์เซอร์, อ่านการแจ้งเตือน ส่วนหนึ่งของปรัชญา icc คือการเขียนโปรแกรมได้และประกอบกันได้ เพื่อให้คนปรับแต่งวิธีทำงานกับ coding agent ได้ สถานะของ coding agent เปลี่ยนแปลงเร็ว และคุณไม่อยากถูกล็อคอยู่กับ GUI orchestrator ที่ไม่ยืดหยุ่นซึ่งตามไม่ทัน",
         "cta": "ถ้าคุณรัน coding agent หลายตัว <link>ลองใช้ icc ดู</link>"
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "แนะนำ icc",
         "summary": "เทอร์มินัล macOS เนทีฟที่สร้างบน Ghostty ออกแบบมาเพื่อรัน AI coding agent หลายตัวพร้อมกัน",
         "date": "12 กุมภาพันธ์ 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "ขับเคลื่อนด้วย libghostty เพื่อการเรนเดอร์ที่ลื่นไหล"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "เซนของ icc",
       "metaDescription": "icc เป็นพื้นฐาน ไม่ใช่โซลูชัน ให้ชิ้นส่วนที่ประกอบได้และเวิร์กโฟลว์ขึ้นอยู่กับคุณ"
     },
@@ -178,7 +178,7 @@
       "metaTitle": "เปิดตัว icc บน Show HN",
       "metaDescription": "เรื่องราวการเปิดตัว icc บน Hacker News"
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "แนะนำ icc",
       "metaDescription": "ทำไมเราถึงสร้าง icc เทอร์มินัลใหม่สำหรับ macOS"
     }
@@ -241,7 +241,7 @@
       "paneNote": "แต่ละพาเนลสามารถมี surface หลายอัน (แท็บภายในพาเนล)",
       "surfaceTitle": "Surface",
       "surfaceDesc": "แท็บภายในพาเนล แต่ละพาเนลมี tab bar ของตัวเองและสามารถมี surface หลายอัน สร้างด้วย {new}, นำทางด้วย {prev} / {next} หรือ {jump}",
-      "surfaceNote": "Surface คือเซสชันเทอร์มินัลหรือเบราว์เซอร์ที่คุณโต้ตอบด้วย แต่ละ surface มีตัวแปรสภาพแวดล้อม CMUX_SURFACE_ID ของตัวเอง",
+      "surfaceNote": "Surface คือเซสชันเทอร์มินัลหรือเบราว์เซอร์ที่คุณโต้ตอบด้วย แต่ละ surface มีตัวแปรสภาพแวดล้อม ICC_SURFACE_ID ของตัวเอง",
       "panelTitle": "Panel",
       "panelDesc": "เนื้อหาภายใน surface ปัจจุบันมีสองประเภท:",
       "panelTerminal": "Terminal: เซสชันเทอร์มินัล Ghostty",
@@ -292,8 +292,8 @@
       "automationMode": "โหมดระบบอัตโนมัติ",
       "automationModeDesc": "ควบคุมระดับการเข้าถึง socket:",
       "automationOff": "Off: ไม่มีการควบคุม socket (ปลอดภัยที่สุด)",
-      "automationCmux": "icc processes only: อนุญาตเฉพาะโปรเซสที่เริ่มจากภายในเทอร์มินัล icc เท่านั้น",
-      "automationAll": "allowAll: อนุญาตให้โปรเซสในเครื่องใดก็ได้เชื่อมต่อ (CMUX_SOCKET_MODE=allowAll, override ผ่าน env เท่านั้น)",
+      "automationIcc": "icc processes only: อนุญาตเฉพาะโปรเซสที่เริ่มจากภายในเทอร์มินัล icc เท่านั้น",
+      "automationAll": "allowAll: อนุญาตให้โปรเซสในเครื่องใดก็ได้เชื่อมต่อ (ICC_SOCKET_MODE=allowAll, override ผ่าน env เท่านั้น)",
       "automationCallout": "บนเครื่องที่ใช้ร่วมกัน ควรใช้โหมด \"Off\" หรือ \"icc processes only\"",
       "browserLinkBehavior": "พฤติกรรมลิงก์เบราว์เซอร์",
       "browserLinkDesc": "ใน Settings > Browser icc มีรายการ host สองรายการที่มีจุดประสงค์ต่างกัน:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagged debug build",
-      "socketOverride": "Override ด้วยตัวแปรสภาพแวดล้อม CMUX_SOCKET_PATH ส่ง JSON request ที่จบด้วย newline หนึ่งรายการต่อการเรียก:",
+      "socketOverride": "Override ด้วยตัวแปรสภาพแวดล้อม ICC_SOCKET_PATH ส่ง JSON request ที่จบด้วย newline หนึ่งรายการต่อการเรียก:",
       "socketCallout": "JSON socket request ต้องใช้ method และ params Legacy v1 JSON payload เช่น <legacy>'{'\"command\":\"...\"'}'</legacy> ไม่รองรับ",
       "accessModes": "โหมดการเข้าถึง",
       "modeHeader": "โหมด",
       "descriptionHeader": "คำอธิบาย",
       "howToEnableHeader": "วิธีเปิดใช้งาน",
       "offMode": "ปิด socket",
-      "offEnable": "Settings UI หรือ CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "เฉพาะโปรเซสที่เกิดภายในเทอร์มินัล icc เท่านั้นที่เชื่อมต่อได้",
-      "cmuxOnlyEnable": "โหมดเริ่มต้นใน Settings UI",
+      "offEnable": "Settings UI หรือ ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "เฉพาะโปรเซสที่เกิดภายในเทอร์มินัล icc เท่านั้นที่เชื่อมต่อได้",
+      "iccOnlyEnable": "โหมดเริ่มต้นใน Settings UI",
       "allowAllMode": "อนุญาตให้โปรเซสในเครื่องใดก็ได้เชื่อมต่อ (ไม่ตรวจสอบ ancestry)",
-      "allowAllEnable": "Override ผ่าน environment เท่านั้น: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Override ผ่าน environment เท่านั้น: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "บนเครื่องที่ใช้ร่วมกัน ใช้ Off หรือ icc processes only",
       "cliOptions": "ตัวเลือก CLI",
       "flagHeader": "Flag",
@@ -432,13 +432,13 @@
       "variableHeader": "ตัวแปร",
       "socketPathDesc": "Override socket path ที่ใช้โดย CLI และ integration",
       "socketEnableDesc": "บังคับเปิด/ปิด socket (1/0, true/false, on/off)",
-      "socketModeDesc": "Override โหมดการเข้าถึง (cmuxOnly, allowAll, off) รับ icc-only/cmux_only และ allow-all/allow_all ด้วย",
+      "socketModeDesc": "Override โหมดการเข้าถึง (iccOnly, allowAll, off) รับ icc-only/icc_only และ allow-all/allow_all ด้วย",
       "workspaceIdDesc": "ตั้งอัตโนมัติ: workspace ID ปัจจุบัน",
       "surfaceIdDesc": "ตั้งอัตโนมัติ: surface ID ปัจจุบัน",
       "termProgramDesc": "ตั้งเป็น ghostty",
       "termDesc": "ตั้งเป็น xterm-ghostty",
-      "envCallout": "ค่า CMUX_SOCKET_MODE แบบเก่า full และ notifications ยังรับได้เพื่อความเข้ากันได้",
-      "detectingCmux": "การตรวจจับ icc",
+      "envCallout": "ค่า ICC_SOCKET_MODE แบบเก่า full และ notifications ยังรับได้เพื่อความเข้ากันได้",
+      "detectingIcc": "การตรวจจับ icc",
       "examples": "ตัวอย่าง",
       "pythonClient": "Python client",
       "shellScript": "Shell script",

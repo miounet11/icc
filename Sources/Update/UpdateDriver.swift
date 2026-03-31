@@ -38,7 +38,7 @@ class UpdateDriver: NSObject, SPUUserDriver {
               reply: @escaping @Sendable (SUUpdatePermissionResponse) -> Void) {
 #if DEBUG
         let env = ProcessInfo.processInfo.environment
-        if env["CMUX_UI_TEST_TRIGGER_UPDATE_CHECK"] == "1" || env["CMUX_UI_TEST_AUTO_ALLOW_PERMISSION"] == "1" {
+        if env["ICC_UI_TEST_TRIGGER_UPDATE_CHECK"] == "1" || env["ICC_UI_TEST_AUTO_ALLOW_PERMISSION"] == "1" {
             UpdateLogStore.shared.append("auto-allow update permission (ui test)")
             DispatchQueue.main.async {
                 reply(SUUpdatePermissionResponse(automaticUpdateChecks: true, sendSystemProfile: false))
@@ -46,7 +46,7 @@ class UpdateDriver: NSObject, SPUUserDriver {
             return
         }
 #endif
-        // Never show Sparkle's permission UI. cmux always enables scheduled checks and keeps
+        // Never show Sparkle's permission UI. icc always enables scheduled checks and keeps
         // automatic downloads disabled so installs remain user-driven.
         UpdateLogStore.shared.append("auto-allow update permission (no UI)")
         DispatchQueue.main.async {
@@ -92,7 +92,7 @@ class UpdateDriver: NSObject, SPUUserDriver {
         if usesStandardPresentation {
             standard.showUpdateReleaseNotes(with: downloadData)
         }
-        // cmux uses Sparkle's UI for release notes links instead.
+        // icc uses Sparkle's UI for release notes links instead.
     }
 
     func showUpdateReleaseNotesFailedToDownloadWithError(_ error: any Error) {

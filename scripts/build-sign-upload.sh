@@ -19,7 +19,7 @@ EOF
 }
 
 ALLOW_OVERWRITE="false"
-ENV_FILE="${ICC_RELEASE_ENV_FILE:-$HOME/.secrets/cmuxterm.env}"
+ENV_FILE="${ICC_RELEASE_ENV_FILE:-$HOME/.secrets/icc.env}"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -57,7 +57,7 @@ TAG="$1"
 VERSION="$(icc_release_version "$TAG")"
 ICC_RELEASE_DMG_NAME="$(icc_release_dmg_name "$VERSION")"
 SIGN_HASH="A050CC7E193C8221BDBA204E731B046CDCCC1B30"
-ENTITLEMENTS="cmux.entitlements"
+ENTITLEMENTS="icc.entitlements"
 APP_PATH="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}"
 
 # --- Pre-flight ---
@@ -85,7 +85,7 @@ fi
 # --- Build app (Release, unsigned) ---
 echo "Building app..."
 rm -rf build/
-xcodebuild -scheme cmux -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -5
+xcodebuild -scheme icc -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -5
 echo "Build succeeded"
 
 HELPER_PATH="$APP_PATH/Contents/Resources/bin/ghostty"
@@ -206,7 +206,7 @@ if [[ "$TAG" != *"-nightly"* ]]; then
   VERSION="${TAG#v}"
   DMG_SHA256=$(shasum -a 256 "$ICC_RELEASE_DMG_NAME" | cut -d' ' -f1)
   echo "Updating homebrew cask to $VERSION (SHA: $DMG_SHA256)..."
-  CASK_FILE="homebrew-cmux/Casks/cmux.rb"
+  CASK_FILE="homebrew-icc/Casks/icc.rb"
   if [ -n "$ICC_HOMEBREW_TAP_REPOSITORY" ] && [ -f "$CASK_FILE" ]; then
     cat > "$CASK_FILE" << CASKEOF
 cask "icc" do
@@ -235,8 +235,8 @@ cask "icc" do
   ]
 end
 CASKEOF
-    cd homebrew-cmux
-    git add Casks/cmux.rb
+    cd homebrew-icc
+    git add Casks/icc.rb
     if git diff --staged --quiet; then
       echo "Homebrew cask already up to date"
     else

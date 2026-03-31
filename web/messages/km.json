@@ -116,7 +116,7 @@
         "p1": "មុខងារ icc ដែលខ្ញុំចូលចិត្តបំផុតគឺ Cmd+Shift+U។ ខ្ញុំមាន workspace 17 បើកនៅពេលនេះ, នីមួយៗកំពុងដំណើរការ agent មួយ។ ខ្ញុំធ្លាប់ចុចតាមផ្ទាំងនិងផ្ទាំងជូនដំណឹងដើម្បីរកមើលអ្វីដែលបានបញ្ចប់។ ការវាយអក្សរលឿនជាង។",
         "p2": "Cmd+Shift+U លោតទៅ <link>ជូនដំណឹង</link> មិនទាន់អានថ្មីបំផុត។ ក្នុងការអនុវត្តន៍វាមានន័យថា agent ចុងក្រោយដែលបានបញ្ចប់។ វាប្ដូរទៅ workspace ត្រឹមត្រូវ, ផ្ដោតលើបន្ទះពិតប្រាកដ, ភ្លឺវាឡើងដើម្បីអ្នកមើលឃើញកន្លែងដែលត្រូវមើល, និងសម្គាល់ថាបានអាន។ ប្រសិនបើជូនដំណឹងមកពីបង្អួចផ្សេង, បង្អួចនោះមកមុខ។"
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "ទស្សនវិជ្ជា icc",
         "summary": "icc គឺជាប្រដាប់មូលដ្ឋាន មិនមែនជាដំណោះស្រាយទេ។ វាផ្ដល់ឱ្យអ្នកនូវផ្នែកដែលអាចផ្សំបាន ហើយលំហូរការងាររបស់អ្នកអាស្រ័យលើអ្នក។",
         "date": "ថ្ងៃទី 27 ខែកុម្ភៈ ឆ្នាំ 2026",
@@ -144,7 +144,7 @@
         "scriptable": "អ្វីទាំងអស់ក្នុង icc អាចសរសេរស្គ្រីបបានតាមរយៈ CLI: បង្កើត workspace, ផ្ញើការចុចគ្រាប់ចុច, គ្រប់គ្រងកម្មវិធីរុករក, អានជូនដំណឹង។ ផ្នែកមួយនៃទស្សនវិជ្ជា icc គឺអាចសរសេរកម្មវិធីនិងផ្សំបាន ដើម្បីមនុស្សអាចប្ដូរវិធីធ្វើការជាមួយ coding agent តាមបំណង។ បច្ចេកវិទ្យាទំនើបបំផុតសម្រាប់ coding agent កំពុងផ្លាស់ប្ដូរយ៉ាងលឿន ហើយអ្នកមិនចង់ជាប់នៅក្នុង GUI orchestrator ដែលមិនអាចតាមទានទេ។",
         "cta": "ប្រសិនបើអ្នកកំពុងដំណើរការ coding agent ជាច្រើន, <link>សាកល្បង icc</link>។"
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "ណែនាំ icc",
         "summary": "ទែមីណល macOS ដើមដែលបង្កើតនៅលើ Ghostty, រចនាសម្រាប់ដំណើរការ AI coding agent ជាច្រើនជាប់គ្នា។",
         "date": "ថ្ងៃទី 12 ខែកុម្ភៈ ឆ្នាំ 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "ដំណើរការដោយ libghostty សម្រាប់ការបង្ហាញរលូន"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "ហ្សែនរបស់ icc",
       "metaDescription": "icc គឺជាបុព្វបទ មិនមែនដំណោះស្រាយទេ។"
     },
@@ -178,7 +178,7 @@
       "metaTitle": "ចាប់ផ្តើម icc នៅ Show HN",
       "metaDescription": "រឿងរ៉ាវនៃការចាប់ផ្តើម icc នៅ Hacker News។"
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "ណែនាំ icc",
       "metaDescription": "ហេតុអ្វីយើងបង្កើត icc ស្ថានីយថ្មីសម្រាប់ macOS។"
     }
@@ -241,7 +241,7 @@
       "paneNote": "បន្ទះនីមួយៗអាចមាន surface ជាច្រើន (ផ្ទាំងក្នុងបន្ទះ)។",
       "surfaceTitle": "Surface",
       "surfaceDesc": "ផ្ទាំងក្នុងបន្ទះ។ បន្ទះនីមួយៗមានរបារផ្ទាំងផ្ទាល់ខ្លួន ហើយអាចមាន surface ជាច្រើន។ បង្កើតជាមួយ {new}, រុករកជាមួយ {prev} / {next} ឬ {jump}។",
-      "surfaceNote": "Surface គឺជាវគ្គទែមីណល ឬកម្មវិធីរុករកម្នាក់ៗដែលអ្នកធ្វើអន្តរកម្មជាមួយ។ Surface នីមួយៗមានអថេរបរិស្ថាន CMUX_SURFACE_ID ផ្ទាល់ខ្លួន។",
+      "surfaceNote": "Surface គឺជាវគ្គទែមីណល ឬកម្មវិធីរុករកម្នាក់ៗដែលអ្នកធ្វើអន្តរកម្មជាមួយ។ Surface នីមួយៗមានអថេរបរិស្ថាន ICC_SURFACE_ID ផ្ទាល់ខ្លួន។",
       "panelTitle": "Panel",
       "panelDesc": "មាតិកានៅក្នុង surface។ បច្ចុប្បន្នមានពីរប្រភេទ:",
       "panelTerminal": "ទែមីណល: វគ្គទែមីណល Ghostty",
@@ -292,8 +292,8 @@
       "automationMode": "មុខងារស្វ័យប្រវត្តិកម្ម",
       "automationModeDesc": "កម្រិតចូលប្រើ socket:",
       "automationOff": "បិទ: គ្មានការគ្រប់គ្រង socket (សុវត្ថិភាពបំផុត)",
-      "automationCmux": "ដំណើរការ icc ប៉ុណ្ណោះ: អនុញ្ញាតតែដំណើរការដែលចាប់ផ្ដើមក្នុងទែមីណល icc ភ្ជាប់",
-      "automationAll": "allowAll: អនុញ្ញាតដំណើរការមូលដ្ឋានណាមួយភ្ជាប់ (CMUX_SOCKET_MODE=allowAll, បដិសេធអថេរបរិស្ថានប៉ុណ្ណោះ)",
+      "automationIcc": "ដំណើរការ icc ប៉ុណ្ណោះ: អនុញ្ញាតតែដំណើរការដែលចាប់ផ្ដើមក្នុងទែមីណល icc ភ្ជាប់",
+      "automationAll": "allowAll: អនុញ្ញាតដំណើរការមូលដ្ឋានណាមួយភ្ជាប់ (ICC_SOCKET_MODE=allowAll, បដិសេធអថេរបរិស្ថានប៉ុណ្ណោះ)",
       "automationCallout": "នៅលើម៉ាស៊ីនចែករំលែក, ពិចារណាប្រើមុខងារ \"បិទ\" ឬ \"ដំណើរការ icc ប៉ុណ្ណោះ\"។",
       "browserLinkBehavior": "អាកប្បកិរិយាតំណកម្មវិធីរុករក",
       "browserLinkDesc": "នៅក្នុងការកំណត់ > កម្មវិធីរុករក, icc បង្ហាញបញ្ជី host ពីរជាមួយគោលបំណងផ្សេងគ្នា:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagged debug build",
-      "socketOverride": "បដិសេធជាមួយអថេរបរិស្ថាន CMUX_SOCKET_PATH។ ផ្ញើសំណើ JSON មួយដែលបញ្ចប់ដោយបន្ទាត់ថ្មីក្នុងការហៅម្ដង:",
+      "socketOverride": "បដិសេធជាមួយអថេរបរិស្ថាន ICC_SOCKET_PATH។ ផ្ញើសំណើ JSON មួយដែលបញ្ចប់ដោយបន្ទាត់ថ្មីក្នុងការហៅម្ដង:",
       "socketCallout": "សំណើ socket JSON ត្រូវប្រើ method និង params។ JSON payloads ចាស់ v1 ដូចជា <legacy>'{'\"command\":\"...\"'}'</legacy> មិនត្រូវបានគាំទ្រទេ។",
       "accessModes": "មុខងារចូលប្រើ",
       "modeHeader": "មុខងារ",
       "descriptionHeader": "ការពិពណ៌នា",
       "howToEnableHeader": "របៀបបើក",
       "offMode": "Socket បានបិទ",
-      "offEnable": "UI ការកំណត់ ឬ CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "មានតែដំណើរការដែលចាប់ផ្ដើមក្នុងទែមីណល icc ប៉ុណ្ណោះអាចភ្ជាប់បាន។",
-      "cmuxOnlyEnable": "មុខងារលំនាំដើមក្នុង UI ការកំណត់",
+      "offEnable": "UI ការកំណត់ ឬ ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "មានតែដំណើរការដែលចាប់ផ្ដើមក្នុងទែមីណល icc ប៉ុណ្ណោះអាចភ្ជាប់បាន។",
+      "iccOnlyEnable": "មុខងារលំនាំដើមក្នុង UI ការកំណត់",
       "allowAllMode": "អនុញ្ញាតដំណើរការមូលដ្ឋានណាមួយភ្ជាប់ (គ្មានការពិនិត្យដើមកំណើត)។",
-      "allowAllEnable": "បដិសេធអថេរបរិស្ថានប៉ុណ្ណោះ: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "បដិសេធអថេរបរិស្ថានប៉ុណ្ណោះ: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "នៅលើម៉ាស៊ីនចែករំលែក, ប្រើមុខងារបិទ ឬដំណើរការ icc ប៉ុណ្ណោះ។",
       "cliOptions": "ជម្រើស CLI",
       "flagHeader": "ទង់",
@@ -432,13 +432,13 @@
       "variableHeader": "អថេរ",
       "socketPathDesc": "បដិសេធផ្លូវ socket ដែលប្រើដោយ CLI និងការរួមបញ្ចូល",
       "socketEnableDesc": "បង្ខំបើក/បិទ socket (1/0, true/false, on/off)",
-      "socketModeDesc": "បដិសេធមុខងារចូលប្រើ (cmuxOnly, allowAll, off)។ ទទួលផងដែរ icc-only/cmux_only និង allow-all/allow_all",
+      "socketModeDesc": "បដិសេធមុខងារចូលប្រើ (iccOnly, allowAll, off)។ ទទួលផងដែរ icc-only/icc_only និង allow-all/allow_all",
       "workspaceIdDesc": "កំណត់ស្វ័យប្រវត្តិ: ID workspace បច្ចុប្បន្ន",
       "surfaceIdDesc": "កំណត់ស្វ័យប្រវត្តិ: ID surface បច្ចុប្បន្ន",
       "termProgramDesc": "កំណត់ទៅ ghostty",
       "termDesc": "កំណត់ទៅ xterm-ghostty",
-      "envCallout": "តម្លៃ CMUX_SOCKET_MODE ចាស់ full និង notifications នៅតែទទួលបានសម្រាប់ភាពឆបគ្នា។",
-      "detectingCmux": "កំណត់ icc",
+      "envCallout": "តម្លៃ ICC_SOCKET_MODE ចាស់ full និង notifications នៅតែទទួលបានសម្រាប់ភាពឆបគ្នា។",
+      "detectingIcc": "កំណត់ icc",
       "examples": "ឧទាហរណ៍",
       "pythonClient": "Python client",
       "shellScript": "Shell script",

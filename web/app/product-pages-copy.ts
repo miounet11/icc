@@ -320,7 +320,7 @@ const englishCopy: ProductPageCopy = {
       "This log is the public release record for ICC. It tracks the current product line, the official website rollout, documentation changes, and the operating notes you should check before replacing your current build.",
     currentReleaseLabel: "Current release line",
     currentReleaseBody:
-      "ICC is currently published as v1.0.9. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
+      "ICC is currently published as v1.0.10. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
     releaseModelTitle: "How to read ICC releases",
     releaseModelIntro:
       "Use the changelog as an operating document, not just a marketing page. A good release note helps you decide whether to adopt immediately, validate first, or hold until an active workflow is done.",
@@ -358,6 +358,18 @@ const englishCopy: ProductPageCopy = {
     ],
     entriesTitle: "Release history",
     entries: [
+      {
+        date: "March 31, 2026",
+        version: "v1.0.10",
+        title: "Interaction reliability pass and linked-mode quick launch",
+        body:
+          "This stable release focuses on the parts users hit first: inactive-window click reliability, a faster Claude + Codex launch path, and tighter alignment between the packaged app and the website release line.",
+        bullets: [
+          "Accepted first-click activation across the main window host, titlebar accessory host, and settings-style utility windows so buttons and toggles no longer need a second click after refocus.",
+          "Promoted Claude + Codex linked mode into the titlebar control cluster and compact creation menu, using the same shared workspace launcher as the AI Command Center sidebar.",
+          "Adjusted release-facing website copy so the homepage and changelog describe the same new stable line before users download the installer.",
+        ],
+      },
       {
         date: "March 31, 2026",
         version: "v1.0.9",
@@ -703,7 +715,7 @@ const zhCnCopy: ProductPageCopy = {
       "这份页面是 ICC 的公开发布记录。它追踪当前产品线、官网上线、多语言站点扩展，以及替换当前构建前应该检查的操作说明。",
     currentReleaseLabel: "当前发布线",
     currentReleaseBody:
-      "ICC 当前对外发布版本为 v1.0.9。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
+      "ICC 当前对外发布版本为 v1.0.10。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
     releaseModelTitle: "应该怎么读 ICC 的版本发布",
     releaseModelIntro:
       "把升级日志当成操作文档，而不仅仅是宣传页。好的发布记录应该帮助你判断是马上采用、先验证，还是等当前任务结束后再更新。",
@@ -741,6 +753,18 @@ const zhCnCopy: ProductPageCopy = {
     ],
     entriesTitle: "发布历史",
     entries: [
+      {
+        date: "2026年3月31日",
+        version: "v1.0.10",
+        title: "交互可靠性修复与联动模式快速入口",
+        body:
+          "这个稳定版本优先修复用户最先接触到的交互问题，包括失焦后首击无响应、Claude + Codex 联动模式入口过深，以及官网发布线描述需要和安装包版本保持一致。",
+        bullets: [
+          "让主窗口宿主、标题栏控件宿主以及 Settings 类工具窗口都接受失焦后的第一次点击，避免按钮和开关需要点两次才触发。",
+          "把 Claude + Codex 联动模式提升到标题栏快捷按钮和紧凑创建菜单中，并复用 AI Command Center 同一套工作区启动逻辑。",
+          "同步调整官网发布文案，让首页、升级日志与用户实际下载到的稳定安装包版本保持一致。",
+        ],
+      },
       {
         date: "2026年3月31日",
         version: "v1.0.9",

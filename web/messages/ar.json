@@ -116,7 +116,7 @@
         "p1": "ميزتي المفضلة في icc هي Cmd+Shift+U. لدي 17 مساحة عمل مفتوحة الآن، كل منها يشغل وكيلاً. كنت أنقر بين علامات التبويب ولوحة الإشعارات لمعرفة ما اكتمل. الكتابة أسرع.",
         "p2": "Cmd+Shift+U ينتقل إلى أحدث <link>إشعار</link> غير مقروء. عملياً يعني ذلك آخر وكيل انتهى. ينتقل إلى مساحة العمل الصحيحة، يركز على اللوح المحدد، يومضه حتى ترى أين تنظر، ويضعه كمقروء. إذا جاء الإشعار من نافذة أخرى، تظهر تلك النافذة في المقدمة."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "فلسفة icc",
         "summary": "icc عنصر أساسي وليس حلاً متكاملاً. يمنحك قطعاً قابلة للتركيب وطريقة عملك متروكة لك.",
         "date": "27 فبراير 2026",
@@ -144,7 +144,7 @@
         "scriptable": "كل شيء في icc قابل للبرمجة عبر واجهة سطر الأوامر: إنشاء مساحات العمل، إرسال ضغطات المفاتيح، التحكم بالمتصفح، قراءة الإشعارات. جزء من فلسفة icc هو أن يكون قابلاً للبرمجة والتركيب، حتى يتمكن الناس من تخصيص طريقة عملهم مع وكلاء البرمجة. أحدث ما وصلت إليه وكلاء البرمجة يتغير بسرعة، ولا تريد أن تكون مقيداً بمنسق واجهة رسومية غير مرن لا يستطيع المواكبة.",
         "cta": "إذا كنت تشغل عدة وكلاء برمجة، <link>جرب icc</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "تقديم icc",
         "summary": "طرفية macOS أصلية مبنية على Ghostty، مصممة لتشغيل عدة وكلاء برمجة بالذكاء الاصطناعي جنباً إلى جنب.",
         "date": "12 فبراير 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "مدعوم بـ libghostty لعرض سلس"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "فلسفة icc",
       "metaDescription": "icc أداة أساسية وليست حلاً. تمنحك قطعاً قابلة للتركيب وسير العمل متروك لك."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "إطلاق icc على Show HN",
       "metaDescription": "قصة إطلاق icc على Hacker News."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "تقديم icc",
       "metaDescription": "لماذا بنينا icc، محطة طرفية جديدة لنظام macOS."
     }
@@ -241,7 +241,7 @@
       "paneNote": "كل لوح يمكنه احتواء عدة أسطح (علامات تبويب داخل اللوح).",
       "surfaceTitle": "السطح",
       "surfaceDesc": "علامة تبويب داخل لوح. كل لوح له شريط علامات تبويب خاص ويمكنه احتواء عدة أسطح. يُنشأ بـ {new}، يُتنقل بـ {prev} / {next} أو {jump}.",
-      "surfaceNote": "الأسطح هي جلسات الطرفية أو المتصفح الفردية التي تتفاعل معها. كل سطح له متغير بيئة CMUX_SURFACE_ID خاص.",
+      "surfaceNote": "الأسطح هي جلسات الطرفية أو المتصفح الفردية التي تتفاعل معها. كل سطح له متغير بيئة ICC_SURFACE_ID خاص.",
       "panelTitle": "اللوحة",
       "panelDesc": "المحتوى داخل السطح. حالياً نوعان:",
       "panelTerminal": "طرفية: جلسة طرفية Ghostty",
@@ -292,8 +292,8 @@
       "automationMode": "وضع الأتمتة",
       "automationModeDesc": "مستوى الوصول إلى المقبس:",
       "automationOff": "معطل: بدون تحكم عبر المقبس (الأكثر أماناً)",
-      "automationCmux": "عمليات icc فقط: السماح فقط للعمليات التي بدأت داخل طرفيات icc بالاتصال",
-      "automationAll": "allowAll: السماح لأي عملية محلية بالاتصال (CMUX_SOCKET_MODE=allowAll، تجاوز عبر متغير البيئة فقط)",
+      "automationIcc": "عمليات icc فقط: السماح فقط للعمليات التي بدأت داخل طرفيات icc بالاتصال",
+      "automationAll": "allowAll: السماح لأي عملية محلية بالاتصال (ICC_SOCKET_MODE=allowAll، تجاوز عبر متغير البيئة فقط)",
       "automationCallout": "على الأجهزة المشتركة، فكر في استخدام وضع \"معطل\" أو \"عمليات icc فقط\".",
       "browserLinkBehavior": "سلوك روابط المتصفح",
       "browserLinkDesc": "في الإعدادات > المتصفح، يوفر icc قائمتين من المضيفين بأغراض مختلفة:",
@@ -373,18 +373,18 @@
       "release": "الإصدار",
       "debug": "التصحيح",
       "taggedDebug": "بناء تصحيح موسوم",
-      "socketOverride": "تجاوز بمتغير البيئة CMUX_SOCKET_PATH. أرسل طلب JSON واحد منتهي بسطر جديد لكل استدعاء:",
+      "socketOverride": "تجاوز بمتغير البيئة ICC_SOCKET_PATH. أرسل طلب JSON واحد منتهي بسطر جديد لكل استدعاء:",
       "socketCallout": "طلبات مقبس JSON يجب أن تستخدم method وparams. حمولات JSON القديمة بنسخة v1 مثل <legacy>'{'\"command\":\"...\"'}'</legacy> غير مدعومة.",
       "accessModes": "أوضاع الوصول",
       "modeHeader": "الوضع",
       "descriptionHeader": "الوصف",
       "howToEnableHeader": "كيفية التفعيل",
       "offMode": "المقبس معطل",
-      "offEnable": "واجهة الإعدادات أو CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "فقط العمليات التي بدأت داخل طرفيات icc يمكنها الاتصال.",
-      "cmuxOnlyEnable": "الوضع الافتراضي في واجهة الإعدادات",
+      "offEnable": "واجهة الإعدادات أو ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "فقط العمليات التي بدأت داخل طرفيات icc يمكنها الاتصال.",
+      "iccOnlyEnable": "الوضع الافتراضي في واجهة الإعدادات",
       "allowAllMode": "السماح لأي عملية محلية بالاتصال (بدون فحص السلالة).",
-      "allowAllEnable": "تجاوز عبر متغير البيئة فقط: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "تجاوز عبر متغير البيئة فقط: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "على الأجهزة المشتركة، استخدم وضع معطل أو عمليات icc فقط.",
       "cliOptions": "خيارات واجهة الأوامر",
       "flagHeader": "العلم",
@@ -432,13 +432,13 @@
       "variableHeader": "المتغير",
       "socketPathDesc": "تجاوز مسار المقبس المستخدم بواسطة واجهة الأوامر والتكاملات",
       "socketEnableDesc": "تفعيل/تعطيل المقبس قسرياً (1/0, true/false, on/off)",
-      "socketModeDesc": "تجاوز وضع الوصول (cmuxOnly, allowAll, off). يقبل أيضاً icc-only/cmux_only وallow-all/allow_all",
+      "socketModeDesc": "تجاوز وضع الوصول (iccOnly, allowAll, off). يقبل أيضاً icc-only/icc_only وallow-all/allow_all",
       "workspaceIdDesc": "يُعين تلقائياً: معرف مساحة العمل الحالية",
       "surfaceIdDesc": "يُعين تلقائياً: معرف السطح الحالي",
       "termProgramDesc": "مُعين إلى ghostty",
       "termDesc": "مُعين إلى xterm-ghostty",
-      "envCallout": "قيم CMUX_SOCKET_MODE القديمة full وnotifications لا تزال مقبولة للتوافق.",
-      "detectingCmux": "كشف icc",
+      "envCallout": "قيم ICC_SOCKET_MODE القديمة full وnotifications لا تزال مقبولة للتوافق.",
+      "detectingIcc": "كشف icc",
       "examples": "أمثلة",
       "pythonClient": "عميل Python",
       "shellScript": "نص Shell",

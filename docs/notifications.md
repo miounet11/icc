@@ -5,7 +5,7 @@
 Compatibility note:
 
 - The user-facing CLI is `icc`.
-- Some environment variables still use legacy `CMUX_*` names for compatibility.
+- Some environment variables still use legacy `ICC_*` names for compatibility.
 
 ## Quick start
 
@@ -88,12 +88,12 @@ export const IccNotificationPlugin = async ({ $, }) => {
 
 | Variable | Description |
 | --- | --- |
-| `CMUX_SOCKET_PATH` | Path to the local control socket |
-| `CMUX_WORKSPACE_ID` | UUID of the current workspace |
-| `CMUX_PANEL_ID` | UUID of the current panel |
-| `CMUX_TAB_ID` | UUID of the current surface/tab |
-| `CMUX_PORT` | Start of the workspace port range |
-| `CMUX_PORT_END` | End of the workspace port range |
+| `ICC_SOCKET_PATH` | Path to the local control socket |
+| `ICC_WORKSPACE_ID` | UUID of the current workspace |
+| `ICC_PANEL_ID` | UUID of the current panel |
+| `ICC_TAB_ID` | UUID of the current surface/tab |
+| `ICC_PORT` | Start of the workspace port range |
+| `ICC_PORT_END` | End of the workspace port range |
 
 ## Best practices
 

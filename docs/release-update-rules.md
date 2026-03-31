@@ -41,11 +41,11 @@ Nightly channel:
 
 Remote helper manifest:
 
-- `https://www.iccjk.com/downloads/remote/cmuxd-remote-manifest.json`
+- `https://www.iccjk.com/downloads/remote/iccd-remote-manifest.json`
 
 Compatibility note:
 
-- The remote helper and several manifest fields still use the legacy `cmuxd-remote` name. Do not rename those casually; they are part of the working remote bootstrap path.
+- The remote helper and several manifest fields still use the legacy `iccd-remote` name. Do not rename those casually; they are part of the working remote bootstrap path.
 
 ## Asset naming rules
 
@@ -83,12 +83,12 @@ Nightly release assets:
 
 ## Current baseline
 
-- Current public stable line: `v1.0.6`
+- Current public stable line: `v1.0.10`
 - Repository: `https://github.com/miounet11/icc`
 
 ## Release workflow rules
 
-1. Update `MARKETING_VERSION` to the target release, currently `1.0.6`.
+1. Update `MARKETING_VERSION` to the target release, currently `1.0.10`.
 2. Keep `CURRENT_PROJECT_VERSION` increasing even if the marketing version resets for branding reasons.
 3. Build the signed and notarized macOS app, then generate `appcast.xml` with the matching Sparkle private key.
 4. Stage the DMG, appcast, release manifest, and remote helper assets into `web/public/downloads` or the production site's `public/downloads` directory.

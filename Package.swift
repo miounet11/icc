@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "cmux",
+    name: "icc",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "cmux", targets: ["cmux"])
+        .executable(name: "icc", targets: ["icc"])
     ],
     dependencies: [
         .package(url: "https://github.com/migueldeicaza/SwiftTerm.git", from: "1.2.0"),
@@ -19,7 +19,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "cmux",
+            name: "icc",
             dependencies: [
                 "SwiftTerm",
                 .product(name: "Sparkle", package: "sparkle"),

@@ -116,7 +116,7 @@
         "p1": "Min yndlingsfunktion i icc er Cmd+Shift+U. Jeg har 17 workspaces åbne lige nu, hver med en kørende agent. Jeg plejede at klikke gennem faner og notifikationspanelet for at finde ud af hvad der var færdigt. Tastaturet er hurtigere.",
         "p2": "Cmd+Shift+U springer til den nyeste ulæste <link>notifikation</link>. I praksis betyder det den sidste agent der blev færdig. Den skifter til det rigtige workspace, fokuserer det præcise panel, flasher det så du kan se hvor du skal kigge, og markerer det som læst. Hvis notifikationen kom fra et andet vindue, kommer det vindue forrest."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "The Zen of icc",
         "summary": "icc er en byggesten, ikke en løsning. Den giver dig komponerbare dele, og din arbejdsgang er op til dig.",
         "date": "27. februar 2026",
@@ -144,7 +144,7 @@
         "scriptable": "Alt i icc er scriptbart gennem CLI: oprettelse af workspaces, afsendelse af tastetryk, styring af browseren, læsning af notifikationer. En del af icc-filosofien er at være programmerbar og komponerbar, så folk kan tilpasse måden de arbejder med kodningsagenter på. State of the art for kodningsagenter ændrer sig hurtigt, og du vil ikke være låst ind i en ufleksibel GUI-orkestrator der ikke kan følge med.",
         "cta": "Hvis du kører flere kodningsagenter, <link>så prøv icc</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "Vi introducerer icc",
         "summary": "En native macOS-terminal bygget på Ghostty, designet til at køre flere AI-kodningsagenter side om side.",
         "date": "12. februar 2026",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "drevet af libghostty for jævn rendering"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "Zen i icc",
       "metaDescription": "icc er en primitiv, ikke en løsning. Det giver dig sammensættelige dele, og dit workflow er op til dig."
     },
@@ -178,7 +178,7 @@
       "metaTitle": "Lancering af icc på Show HN",
       "metaDescription": "Historien om lanceringen af icc på Hacker News."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "Vi præsenterer icc",
       "metaDescription": "Hvorfor vi byggede icc, en ny terminal til macOS."
     }
@@ -241,7 +241,7 @@
       "paneNote": "Hvert panel kan indeholde flere surfaces (faner inden for panelet).",
       "surfaceTitle": "Surface",
       "surfaceDesc": "En fane inden for et panel. Hvert panel har sin egen fanebjælke og kan indeholde flere surfaces. Oprettes med {new}, navigeres med {prev} / {next} eller {jump}.",
-      "surfaceNote": "Surfaces er de individuelle terminal- eller browsersessioner du interagerer med. Hver surface har sin egen CMUX_SURFACE_ID-miljøvariabel.",
+      "surfaceNote": "Surfaces er de individuelle terminal- eller browsersessioner du interagerer med. Hver surface har sin egen ICC_SURFACE_ID-miljøvariabel.",
       "panelTitle": "Panel",
       "panelDesc": "Indholdet inde i en surface. Aktuelt to typer:",
       "panelTerminal": "Terminal: en Ghostty-terminalsession",
@@ -292,8 +292,8 @@
       "automationMode": "Automatiseringstilstand",
       "automationModeDesc": "Adgangsniveau for kontrolsocket:",
       "automationOff": "Fra: ingen socketkontrol (mest sikker)",
-      "automationCmux": "Kun icc-processer: tillad kun processer startet inde i icc-terminaler at forbinde",
-      "automationAll": "allowAll: tillad enhver lokal proces at forbinde (CMUX_SOCKET_MODE=allowAll, kun env-override)",
+      "automationIcc": "Kun icc-processer: tillad kun processer startet inde i icc-terminaler at forbinde",
+      "automationAll": "allowAll: tillad enhver lokal proces at forbinde (ICC_SOCKET_MODE=allowAll, kun env-override)",
       "automationCallout": "På delte maskiner bør du overveje at bruge \"Fra\" eller \"Kun icc-processer\"-tilstand.",
       "browserLinkBehavior": "Browser-linkadfærd",
       "browserLinkDesc": "Under Indstillinger > Browser eksponerer icc to værtslister med forskellige formål:",
@@ -373,18 +373,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagget debug build",
-      "socketOverride": "Overskriv med CMUX_SOCKET_PATH-miljøvariablen. Send én linjetermineret JSON-anmodning per kald:",
+      "socketOverride": "Overskriv med ICC_SOCKET_PATH-miljøvariablen. Send én linjetermineret JSON-anmodning per kald:",
       "socketCallout": "JSON socket-anmodninger skal bruge method og params. Legacy v1 JSON-payloads som <legacy>'{'\"command\":\"...\"'}'</legacy> understøttes ikke.",
       "accessModes": "Adgangstilstande",
       "modeHeader": "Tilstand",
       "descriptionHeader": "Beskrivelse",
       "howToEnableHeader": "Sådan aktiveres",
       "offMode": "Socket deaktiveret",
-      "offEnable": "Indstillinger-UI eller CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Kun processer startet inde i icc-terminaler kan forbinde.",
-      "cmuxOnlyEnable": "Standardtilstand i Indstillinger-UI",
+      "offEnable": "Indstillinger-UI eller ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Kun processer startet inde i icc-terminaler kan forbinde.",
+      "iccOnlyEnable": "Standardtilstand i Indstillinger-UI",
       "allowAllMode": "Tillad enhver lokal proces at forbinde (ingen ancestry-kontrol).",
-      "allowAllEnable": "Kun miljøvariabel-override: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Kun miljøvariabel-override: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "På delte maskiner, brug Fra eller Kun icc-processer.",
       "cliOptions": "CLI-indstillinger",
       "flagHeader": "Flag",
@@ -432,13 +432,13 @@
       "variableHeader": "Variabel",
       "socketPathDesc": "Overskriv socketstien brugt af CLI og integrationer",
       "socketEnableDesc": "Tving aktivering/deaktivering af socket (1/0, true/false, on/off)",
-      "socketModeDesc": "Overskriv adgangstilstand (cmuxOnly, allowAll, off). Accepterer også icc-only/cmux_only og allow-all/allow_all",
+      "socketModeDesc": "Overskriv adgangstilstand (iccOnly, allowAll, off). Accepterer også icc-only/icc_only og allow-all/allow_all",
       "workspaceIdDesc": "Auto-sat: nuværende workspace-ID",
       "surfaceIdDesc": "Auto-sat: nuværende surface-ID",
       "termProgramDesc": "Sat til ghostty",
       "termDesc": "Sat til xterm-ghostty",
-      "envCallout": "Legacy CMUX_SOCKET_MODE-værdier full og notifications accepteres stadig for kompatibilitet.",
-      "detectingCmux": "Detektering af icc",
+      "envCallout": "Legacy ICC_SOCKET_MODE-værdier full og notifications accepteres stadig for kompatibilitet.",
+      "detectingIcc": "Detektering af icc",
       "examples": "Eksempler",
       "pythonClient": "Python-klient",
       "shellScript": "Shell-script",

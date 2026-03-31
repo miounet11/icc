@@ -116,7 +116,7 @@
         "p1": "我最喜欢的 icc 功能是 Cmd+Shift+U。我现在开着 17 个工作区，每个都在运行一个 agent。以前我需要逐个点击标签页和通知面板来查看哪些已经完成。用键盘更快。",
         "p2": "Cmd+Shift+U 跳转到最新的未读<link>通知</link>。实际上就是最后一个完成的 agent。它会切换到对应的工作区，聚焦到确切的面板，闪烁提示你查看的位置，并标记为已读。如果通知来自另一个窗口，那个窗口会自动前置。"
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "icc 之道",
         "summary": "icc 是基础组件，不是完整方案。它提供可组合的模块，工作流由你决定。",
         "date": "2026年2月27日",
@@ -144,7 +144,7 @@
         "scriptable": "icc 中的一切都可以通过 CLI 编程控制：创建工作区、发送按键、控制浏览器、读取通知。icc 的理念之一就是可编程和可组合，让开发者可以自定义与 coding agent 的协作方式。Coding agent 的前沿在快速变化，你不会想被锁定在一个跟不上节奏的僵化 GUI 编排工具里。",
         "cta": "如果你在同时运行多个 coding agent，<link>试试 icc</link>。"
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "icc 介绍",
         "summary": "一个基于 Ghostty 构建的原生 macOS 终端，专为并行运行多个 AI coding agent 而设计。",
         "date": "2026年2月12日",
@@ -166,7 +166,7 @@
         "featureGpuDesc": "由 libghostty 驱动，渲染流畅"
       }
     },
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "icc 之禅",
       "metaDescription": "icc 是原语而非解决方案。它提供可组合的部件，工作流由你决定。"
     },
@@ -178,7 +178,7 @@
       "metaTitle": "在 Show HN 上发布 icc",
       "metaDescription": "在 Hacker News 上发布 icc 的故事。"
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "icc 介绍",
       "metaDescription": "我们为什么要做 icc，一个全新的 macOS 终端。"
     }
@@ -267,7 +267,7 @@
       "paneNote": "每个面板可以包含多个 surface（面板内的标签页）。",
       "surfaceTitle": "Surface",
       "surfaceDesc": "面板内的一个标签页。每个面板有自己的标签栏，可以包含多个 surface。使用 {new} 创建，使用 {prev} / {next} 或 {jump} 导航。",
-      "surfaceNote": "Surface 是你直接交互的终端或浏览器会话。每个 surface 有自己的 CMUX_SURFACE_ID 环境变量。",
+      "surfaceNote": "Surface 是你直接交互的终端或浏览器会话。每个 surface 有自己的 ICC_SURFACE_ID 环境变量。",
       "panelTitle": "Panel",
       "panelDesc": "Surface 内部的内容。目前有两种类型：",
       "panelTerminal": "终端：一个 Ghostty 终端会话",
@@ -318,8 +318,8 @@
       "automationMode": "自动化模式",
       "automationModeDesc": "控制 socket 访问级别：",
       "automationOff": "Off：禁用 socket 控制（最安全）",
-      "automationCmux": "icc processes only：仅允许在 icc 终端内启动的进程连接",
-      "automationAll": "allowAll：允许任何本地进程连接（CMUX_SOCKET_MODE=allowAll，仅通过环境变量覆盖）",
+      "automationIcc": "icc processes only：仅允许在 icc 终端内启动的进程连接",
+      "automationAll": "allowAll：允许任何本地进程连接（ICC_SOCKET_MODE=allowAll，仅通过环境变量覆盖）",
       "automationCallout": "在共享机器上，建议使用「Off」或「icc processes only」模式。",
       "browserLinkBehavior": "浏览器链接行为",
       "browserLinkDesc": "在 Settings > Browser 中，icc 提供两个用途不同的主机列表：",
@@ -399,18 +399,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "带标签的 Debug 构建",
-      "socketOverride": "可通过 CMUX_SOCKET_PATH 环境变量覆盖。每次调用发送一个以换行符结尾的 JSON 请求：",
+      "socketOverride": "可通过 ICC_SOCKET_PATH 环境变量覆盖。每次调用发送一个以换行符结尾的 JSON 请求：",
       "socketCallout": "JSON socket 请求必须使用 method 和 params。不支持旧版 v1 JSON 格式（如 <legacy>'{'\"command\":\"...\"'}'</legacy>）。",
       "accessModes": "访问模式",
       "modeHeader": "模式",
       "descriptionHeader": "描述",
       "howToEnableHeader": "启用方式",
       "offMode": "禁用 Socket",
-      "offEnable": "Settings UI 或 CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "仅允许在 icc 终端内启动的进程连接。",
-      "cmuxOnlyEnable": "Settings UI 中的默认模式",
+      "offEnable": "Settings UI 或 ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "仅允许在 icc 终端内启动的进程连接。",
+      "iccOnlyEnable": "Settings UI 中的默认模式",
       "allowAllMode": "允许任何本地进程连接（不检查进程来源）。",
-      "allowAllEnable": "仅通过环境变量覆盖：CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "仅通过环境变量覆盖：ICC_SOCKET_MODE=allowAll",
       "accessCallout": "在共享机器上，请使用 Off 或 icc processes only。",
       "cliOptions": "CLI 选项",
       "flagHeader": "Flag",
@@ -458,13 +458,13 @@
       "variableHeader": "变量",
       "socketPathDesc": "覆盖 CLI 和集成使用的 socket 路径",
       "socketEnableDesc": "强制启用/禁用 socket（1/0、true/false、on/off）",
-      "socketModeDesc": "覆盖访问模式（cmuxOnly、allowAll、off）。也接受 icc-only/cmux_only 和 allow-all/allow_all",
+      "socketModeDesc": "覆盖访问模式（iccOnly、allowAll、off）。也接受 icc-only/icc_only 和 allow-all/allow_all",
       "workspaceIdDesc": "自动设置：当前工作区 ID",
       "surfaceIdDesc": "自动设置：当前 surface ID",
       "termProgramDesc": "设置为 ghostty",
       "termDesc": "设置为 xterm-ghostty",
-      "envCallout": "旧版 CMUX_SOCKET_MODE 值 full 和 notifications 仍然兼容。",
-      "detectingCmux": "检测 icc",
+      "envCallout": "旧版 ICC_SOCKET_MODE 值 full 和 notifications 仍然兼容。",
+      "detectingIcc": "检测 icc",
       "examples": "示例",
       "pythonClient": "Python 客户端",
       "shellScript": "Shell 脚本",

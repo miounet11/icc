@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-xcodebuild -project GhosttyTabs.xcodeproj -scheme cmux -configuration Release -destination 'platform=macOS' build
+xcodebuild -project GhosttyTabs.xcodeproj -scheme icc -configuration Release -destination 'platform=macOS' build
 pkill -x icc || true
 sleep 0.2
 APP_PATH="$(

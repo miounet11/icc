@@ -75,15 +75,15 @@ struct SSHConfigHostEntry: Identifiable, Equatable {
         control_path=\(shellSingleQuoted(controlPath))
         password="$(/usr/bin/security find-generic-password -s \(shellSingleQuoted(RemoteHostPasswordStore.serviceName)) -a "$alias_name" -w 2>/dev/null || true)"
         if [ -n "$password" ] && command -v /usr/bin/expect >/dev/null 2>&1; then
-          CMUX_SSH_ALIAS="$alias_name" \
-          CMUX_SSH_CONTROL_PATH="$control_path" \
-          CMUX_SSH_PASSWORD="$password" \
-          /usr/bin/expect <<'CMUX_EXPECT'
+          ICC_SSH_ALIAS="$alias_name" \
+          ICC_SSH_CONTROL_PATH="$control_path" \
+          ICC_SSH_PASSWORD="$password" \
+          /usr/bin/expect <<'ICC_EXPECT'
         set timeout -1
         log_user 1
-        set alias_name $env(CMUX_SSH_ALIAS)
-        set control_path $env(CMUX_SSH_CONTROL_PATH)
-        set password $env(CMUX_SSH_PASSWORD)
+        set alias_name $env(ICC_SSH_ALIAS)
+        set control_path $env(ICC_SSH_CONTROL_PATH)
+        set password $env(ICC_SSH_PASSWORD)
         set sent_password 0
         spawn ssh -M -o ControlPersist=yes -o ControlPath=$control_path\(compatibilitySSHArguments) $alias_name
         expect {
@@ -113,7 +113,7 @@ struct SSHConfigHostEntry: Identifiable, Equatable {
             }
         }
         interact
-        CMUX_EXPECT
+        ICC_EXPECT
         else
           exec ssh -M -o ControlPersist=yes -o ControlPath="$control_path"\(compatibilitySSHArguments) "$alias_name"
         fi
@@ -423,7 +423,7 @@ enum RemoteSSHFileService {
         let resolved = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
         guard result.status == 0, !resolved.isEmpty else {
             let detail = bestErrorLine(stderr: result.stderr, stdout: result.stdout) ?? "Failed to resolve remote directory."
-            throw NSError(domain: "cmux.remote.explorer", code: 1, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 1, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -437,7 +437,7 @@ enum RemoteSSHFileService {
         let script = """
         target=\(shellSingleQuoted(path))
         if [ ! -d "$target" ]; then
-          echo "__CMUX_ERROR__ Not a directory: $target" >&2
+          echo "__ICC_ERROR__ Not a directory: $target" >&2
           exit 3
         fi
         find "$target" -mindepth 1 -maxdepth 1 -exec sh -c '
@@ -460,7 +460,7 @@ enum RemoteSSHFileService {
         )
         guard result.status == 0 else {
             let detail = bestErrorLine(stderr: result.stderr, stdout: result.stdout) ?? "Failed to list remote directory."
-            throw NSError(domain: "cmux.remote.explorer", code: 2, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 2, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -492,12 +492,12 @@ enum RemoteSSHFileService {
         let script = """
         target=\(shellSingleQuoted(path))
         if [ ! -f "$target" ]; then
-          echo "__CMUX_ERROR__ File not found: $target" >&2
+          echo "__ICC_ERROR__ File not found: $target" >&2
           exit 4
         fi
         size=$(wc -c < "$target" | tr -d '[:space:]')
         if [ -n "$size" ] && [ "$size" -gt 1048576 ]; then
-          echo "__CMUX_ERROR__ File is larger than 1 MB." >&2
+          echo "__ICC_ERROR__ File is larger than 1 MB." >&2
           exit 5
         fi
         cat "$target"
@@ -510,7 +510,7 @@ enum RemoteSSHFileService {
         )
         guard result.status == 0 else {
             let detail = bestErrorLine(stderr: result.stderr, stdout: result.stdout) ?? "Failed to read remote file."
-            throw NSError(domain: "cmux.remote.explorer", code: 3, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 3, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -549,7 +549,7 @@ enum RemoteSSHFileService {
         )
         guard result.status == 0 else {
             let detail = bestErrorLine(stderr: result.stderr, stdout: result.stdout) ?? "Failed to save remote file."
-            throw NSError(domain: "cmux.remote.explorer", code: 4, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 4, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -588,7 +588,7 @@ enum RemoteSSHFileService {
         )
         guard result.status == 0 else {
             let detail = bestErrorLine(stderr: result.stderr, stdout: result.stdout) ?? "Failed to inspect remote terminfo."
-            throw NSError(domain: "cmux.remote.explorer", code: 6, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 6, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -657,7 +657,7 @@ enum RemoteSSHFileService {
         )
         guard fallbackResult.status == 0 else {
             let detail = bestErrorLine(stderr: fallbackResult.stderr, stdout: fallbackResult.stdout) ?? "Failed to install Ghostty terminfo on remote host."
-            throw NSError(domain: "cmux.remote.explorer", code: 7, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 7, userInfo: [
                 NSLocalizedDescriptionKey: detail
             ])
         }
@@ -697,7 +697,7 @@ enum RemoteSSHFileService {
         }
         if process.isRunning {
             process.terminate()
-            throw NSError(domain: "cmux.remote.explorer", code: 5, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 5, userInfo: [
                 NSLocalizedDescriptionKey: "SSH request timed out."
             ])
         }
@@ -774,7 +774,7 @@ enum RemoteSSHFileService {
             }
         }
 
-        throw NSError(domain: "cmux.remote.explorer", code: 8, userInfo: [
+        throw NSError(domain: "icc.remote.explorer", code: 8, userInfo: [
             NSLocalizedDescriptionKey: "Local Ghostty terminfo source is unavailable."
         ])
     }
@@ -793,7 +793,7 @@ enum RemoteSSHFileService {
             }
         }
 
-        throw NSError(domain: "cmux.remote.explorer", code: 9, userInfo: [
+        throw NSError(domain: "icc.remote.explorer", code: 9, userInfo: [
             NSLocalizedDescriptionKey: "Bundled Ghostty terminfo binary is unavailable."
         ])
     }
@@ -1552,7 +1552,7 @@ enum ExplorerTextDocumentLoader {
         if let text = try? String(contentsOf: url, encoding: .ascii) {
             return text
         }
-        throw NSError(domain: "cmux.explorer.editor", code: 1, userInfo: [
+        throw NSError(domain: "icc.explorer.editor", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Unsupported text encoding"
         ])
     }
@@ -2369,7 +2369,7 @@ struct RemoteWorkspaceExplorerSidebar: View {
 extension Workspace {
     func loadRemoteExplorerDocument(path: String) throws -> ExplorerTextDocument {
         guard let configuration = remoteConfiguration else {
-            throw NSError(domain: "cmux.remote.explorer", code: 10, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 10, userInfo: [
                 NSLocalizedDescriptionKey: "Remote workspace is not configured."
             ])
         }
@@ -2378,7 +2378,7 @@ extension Workspace {
 
     func saveRemoteExplorerDocument(path: String, text: String) throws {
         guard let configuration = remoteConfiguration else {
-            throw NSError(domain: "cmux.remote.explorer", code: 11, userInfo: [
+            throw NSError(domain: "icc.remote.explorer", code: 11, userInfo: [
                 NSLocalizedDescriptionKey: "Remote workspace is not configured."
             ])
         }

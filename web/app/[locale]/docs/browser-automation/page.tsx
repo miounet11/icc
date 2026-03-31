@@ -179,7 +179,7 @@ icc browser surface:2 highlight "#checkout"`}</CodeBlock>
       <CodeBlock lang="bash">{`icc browser surface:2 eval "document.title"
 icc browser surface:2 eval --script "window.location.href"
 
-icc browser surface:2 addinitscript "window.__cmuxReady = true;"
+icc browser surface:2 addinitscript "window.__iccReady = true;"
 icc browser surface:2 addscript "document.querySelector('#name')?.focus()"
 icc browser surface:2 addstyle "#debug-banner { display: none !important; }"`}</CodeBlock>
 

@@ -17,16 +17,16 @@ export async function generateMetadata({
 
 const blogSlugs = [
   "cmdShiftU",
-  "zenOfCmux",
+  "zenOfIcc",
   "showHnLaunch",
-  "introducingCmux",
+  "introducingIcc",
 ] as const;
 
 const slugToPath: Record<string, string> = {
   cmdShiftU: "cmd-shift-u",
-  zenOfCmux: "zen-of-cmux",
+  zenOfIcc: "zen-of-icc",
   showHnLaunch: "show-hn-launch",
-  introducingCmux: "introducing-cmux",
+  introducingIcc: "introducing-icc",
 };
 
 export default function BlogPage() {

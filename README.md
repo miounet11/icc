@@ -110,7 +110,7 @@ icc clear-notifications
 
 Compatibility note:
 
-- Some internal protocol names, environment variables, sockets, and daemon binaries still use legacy `cmux` or `CMUX_*` names. That is intentional for compatibility during the transition.
+- Some internal protocol names, environment variables, sockets, and daemon binaries still use legacy `icc` or `ICC_*` names. That is intentional for compatibility during the transition.
 - The user-facing app name and shipped CLI name are `icc`.
 
 ## Remote workflow
@@ -158,7 +158,7 @@ Open Settings → Automation to configure:
 ## Development notes
 
 - The repository name is now `icc`, and the product being released is `icc`.
-- Some Xcode target names, scripts, package identifiers, and helper binaries still use legacy `cmux` naming. Do not mass-rename those blindly; several are still part of the working build and protocol surface.
+- Some Xcode target names, scripts, package identifiers, and helper binaries still use legacy `icc` naming. Do not mass-rename those blindly; several are still part of the working build and protocol surface.
 - The Homebrew tap submodule is still legacy-named and should be treated as migration work, not the primary install path for this release.
 
 ## License

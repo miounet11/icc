@@ -3,12 +3,12 @@
 const DEFAULT_IMMUTABLE_RELEASE_ASSETS = [
   "icc-v0.0.1-macos.dmg",
   "appcast.xml",
-  "cmuxd-remote-darwin-arm64",
-  "cmuxd-remote-darwin-amd64",
-  "cmuxd-remote-linux-arm64",
-  "cmuxd-remote-linux-amd64",
-  "cmuxd-remote-checksums.txt",
-  "cmuxd-remote-manifest.json",
+  "iccd-remote-darwin-arm64",
+  "iccd-remote-darwin-amd64",
+  "iccd-remote-linux-arm64",
+  "iccd-remote-linux-amd64",
+  "iccd-remote-checksums.txt",
+  "iccd-remote-manifest.json",
 ];
 const RELEASE_ASSET_GUARD_STATE = Object.freeze({
   CLEAR: "clear",

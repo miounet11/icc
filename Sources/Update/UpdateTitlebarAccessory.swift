@@ -3,7 +3,7 @@ import Bonsplit
 import Combine
 import SwiftUI
 
-final class NonDraggableHostingView<Content: View>: NSHostingView<Content> {
+final class NonDraggableHostingView<Content: View>: IccFirstMouseHostingView<Content> {
     override var mouseDownCanMoveWindow: Bool { false }
 }
 
@@ -120,7 +120,8 @@ final class TitlebarControlsViewModel: ObservableObject {
 }
 
 extension Notification.Name {
-    static let cmuxNotificationsPopoverVisibilityDidChange = Notification.Name("cmux.notificationsPopoverVisibilityDidChange")
+    static let iccNotificationsPopoverVisibilityDidChange = Notification.Name("icc.notificationsPopoverVisibilityDidChange")
+    static let iccAgentCollaborationRequested = Notification.Name("icc.agentCollaborationRequested")
 }
 
 private enum NotificationsPopoverVisibilityUserInfoKey {
@@ -129,9 +130,16 @@ private enum NotificationsPopoverVisibilityUserInfoKey {
 
 private func postNotificationsPopoverVisibilityDidChange(isShown: Bool) {
     NotificationCenter.default.post(
-        name: .cmuxNotificationsPopoverVisibilityDidChange,
+        name: .iccNotificationsPopoverVisibilityDidChange,
         object: nil,
         userInfo: [NotificationsPopoverVisibilityUserInfoKey.isShown: isShown]
+    )
+}
+
+private func postAgentCollaborationRequested(window: NSWindow?) {
+    NotificationCenter.default.post(
+        name: .iccAgentCollaborationRequested,
+        object: window
     )
 }
 
@@ -264,6 +272,7 @@ struct TitlebarControlsView: View {
     let onNewWindow: () -> Void
     let onNewWorkspace: () -> Void
     let onOpenRemoteExplorer: () -> Void
+    let onLaunchLinkedMode: () -> Void
     let visibilityMode: TitlebarControlsVisibilityMode
     let layoutMode: LayoutMode
     @AppStorage("titlebarControlsStyle") private var styleRawValue = TitlebarControlsStyle.classic.rawValue
@@ -343,7 +352,7 @@ struct TitlebarControlsView: View {
             .onAppear {
                 isNotificationsPopoverShown = AppDelegate.shared?.isNotificationsPopoverShown() ?? false
             }
-            .onReceive(NotificationCenter.default.publisher(for: .cmuxNotificationsPopoverVisibilityDidChange)) { notification in
+            .onReceive(NotificationCenter.default.publisher(for: .iccNotificationsPopoverVisibilityDidChange)) { notification in
                 isNotificationsPopoverShown = (notification.userInfo?[NotificationsPopoverVisibilityUserInfoKey.isShown] as? Bool) ?? false
             }
             .onAppear {
@@ -395,7 +404,7 @@ struct TitlebarControlsView: View {
                                 .foregroundColor(.white)
                                 .frame(width: config.badgeSize, height: config.badgeSize)
                                 .background(
-                                    Circle().fill(cmuxAccentColor())
+                                    Circle().fill(iccAccentColor())
                                 )
                                 .offset(x: config.badgeOffset.width, y: config.badgeOffset.height)
                         }
@@ -406,6 +415,28 @@ struct TitlebarControlsView: View {
                 .background(NotificationsAnchorView { viewModel.notificationsAnchorView = $0 })
                 .accessibilityLabel(String(localized: "titlebar.notifications.accessibilityLabel", defaultValue: "Notifications"))
                 .safeHelp(KeyboardShortcutSettings.Action.showNotifications.tooltip(String(localized: "titlebar.notifications.tooltip", defaultValue: "Show notifications")))
+
+                TitlebarControlButton(config: config, action: {
+                    #if DEBUG
+                    dlog("titlebar.linkedMode")
+                    #endif
+                    onLaunchLinkedMode()
+                }) {
+                    iconLabel(systemName: "square.split.2x1", config: config)
+                }
+                .accessibilityIdentifier("titlebarControl.linkedMode")
+                .accessibilityLabel(
+                    String(
+                        localized: "titlebar.linkedMode.accessibilityLabel",
+                        defaultValue: "Launch Claude + Codex linked mode"
+                    )
+                )
+                .safeHelp(
+                    String(
+                        localized: "titlebar.linkedMode.tooltip",
+                        defaultValue: "Create a linked Claude + Codex workspace"
+                    )
+                )
             }
 
             creationMenuButton(config: config)
@@ -489,7 +520,16 @@ struct TitlebarControlsView: View {
     }
 
     private func titlebarButtonRightEdge(for slot: HintSlot, config: TitlebarControlsStyleConfig) -> CGFloat {
-        let index = CGFloat(slot.rawValue)
+        let index: CGFloat
+        switch slot {
+        case .toggleSidebar:
+            index = 0
+        case .showNotifications:
+            index = 1
+        case .openFolder:
+            // The linked-mode quick action sits before the creation menu in full mode.
+            index = 3
+        }
         return (index + 1) * config.buttonSize + index * config.spacing
     }
 
@@ -572,6 +612,18 @@ struct TitlebarControlsView: View {
                 onNewWorkspace()
             }
 
+            Button(
+                String(
+                    localized: "titlebar.linkedMode.menuTitle",
+                    defaultValue: "Claude + Codex Linked Mode"
+                )
+            ) {
+                #if DEBUG
+                dlog("titlebar.linkedMode.menu")
+                #endif
+                onLaunchLinkedMode()
+            }
+
             Divider()
 
             Button(String(localized: "sidebar.remote.title", defaultValue: "Remote Explorer")) {
@@ -619,11 +671,22 @@ struct HiddenTitlebarSidebarControlsView: View {
                 }
             },
             onOpenRemoteExplorer: { AppDelegate.shared?.openRemoteExplorerPage() },
+            onLaunchLinkedMode: {
+                postAgentCollaborationRequested(window: hostWindow ?? NSApp.keyWindow ?? NSApp.mainWindow)
+            },
             visibilityMode: .onHover,
             layoutMode: .full
         )
         .frame(width: hostWidth, height: hostHeight, alignment: .leading)
+        .background(
+            WindowAccessor { window in
+                hostWindow = window
+            }
+            .frame(width: 0, height: 0)
+        )
     }
+
+    @State private var hostWindow: NSWindow?
 }
 
 enum TitlebarControlsVisibilityMode {
@@ -851,6 +914,9 @@ final class TitlebarControlsAccessoryViewController: NSTitlebarAccessoryViewCont
             }
         }
         let openRemoteExplorer: () -> Void = { AppDelegate.shared?.openRemoteExplorerPage() }
+        let launchLinkedMode: () -> Void = {
+            postAgentCollaborationRequested(window: NSApp.keyWindow ?? NSApp.mainWindow)
+        }
 
         hostingView = NonDraggableHostingView(
             rootView: TitlebarControlsView(
@@ -862,6 +928,7 @@ final class TitlebarControlsAccessoryViewController: NSTitlebarAccessoryViewCont
                 onNewWindow: newWindow,
                 onNewWorkspace: newWorkspace,
                 onOpenRemoteExplorer: openRemoteExplorer,
+                onLaunchLinkedMode: launchLinkedMode,
                 visibilityMode: .onHover,
                 layoutMode: .compactMenu
             )
@@ -1124,7 +1191,7 @@ private struct NotificationsPopoverView: View {
                 HStack(spacing: 6) {
                     Image(systemName: hasUnreadNotifications ? "bell.badge.fill" : "bell")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(hasUnreadNotifications ? cmuxAccentColor() : .secondary)
+                        .foregroundStyle(hasUnreadNotifications ? iccAccentColor() : .secondary)
                     Text(hasUnreadNotifications ? "有未读" : "已读")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(hasUnreadNotifications ? .primary : .secondary)
@@ -1385,7 +1452,7 @@ private struct NotificationPopoverRow: View {
                 .fill(isHovering ? Color.primary.opacity(0.055) : Color(nsColor: .controlBackgroundColor))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(notification.isRead ? Color.primary.opacity(0.08) : cmuxAccentColor().opacity(0.22), lineWidth: 1)
+                        .strokeBorder(notification.isRead ? Color.primary.opacity(0.08) : iccAccentColor().opacity(0.22), lineWidth: 1)
                 )
         )
         .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -1394,11 +1461,11 @@ private struct NotificationPopoverRow: View {
 
     private var unreadDot: some View {
         Circle()
-            .fill(notification.isRead ? Color.clear : cmuxAccentColor())
+            .fill(notification.isRead ? Color.clear : iccAccentColor())
             .frame(width: 9, height: 9)
             .overlay(
                 Circle()
-                    .stroke(cmuxAccentColor().opacity(notification.isRead ? 0.24 : 1), lineWidth: 1.1)
+                    .stroke(iccAccentColor().opacity(notification.isRead ? 0.24 : 1), lineWidth: 1.1)
             )
             .padding(.top, 5)
     }
@@ -1449,7 +1516,7 @@ final class UpdateTitlebarAccessoryController {
     private var observers: [NSObjectProtocol] = []
     private var pendingAttachRetries: [ObjectIdentifier: Int] = [:]
     private var startupScanWorkItems: [DispatchWorkItem] = []
-    private let controlsIdentifier = NSUserInterfaceItemIdentifier("cmux.titlebarControls")
+    private let controlsIdentifier = NSUserInterfaceItemIdentifier("icc.titlebarControls")
     private let controlsControllers = NSHashTable<TitlebarControlsAccessoryViewController>.weakObjects()
 
     init(viewModel: UpdateViewModel) {
@@ -1520,7 +1587,7 @@ final class UpdateTitlebarAccessoryController {
                 }
 #if DEBUG
                 let env = ProcessInfo.processInfo.environment
-                if env["CMUX_UI_TEST_MODE"] == "1" {
+                if env["ICC_UI_TEST_MODE"] == "1" {
                     let ids = NSApp.windows.map { $0.identifier?.rawValue ?? "<nil>" }
                     let delayText = String(format: "%.2f", delay)
                     UpdateLogStore.shared.append("startup window scan (delay=\(delayText)) count=\(NSApp.windows.count) ids=\(ids.joined(separator: ","))")
@@ -1578,7 +1645,7 @@ final class UpdateTitlebarAccessoryController {
 
 #if DEBUG
         let env = ProcessInfo.processInfo.environment
-        if env["CMUX_UI_TEST_MODE"] == "1" {
+        if env["ICC_UI_TEST_MODE"] == "1" {
             let ident = window.identifier?.rawValue ?? "<nil>"
             UpdateLogStore.shared.append("attached titlebar accessories to window id=\(ident)")
         }
@@ -1612,7 +1679,7 @@ final class UpdateTitlebarAccessoryController {
 
 #if DEBUG
         let env = ProcessInfo.processInfo.environment
-        if env["CMUX_UI_TEST_MODE"] == "1" {
+        if env["ICC_UI_TEST_MODE"] == "1" {
             let ident = window.identifier?.rawValue ?? "<nil>"
             UpdateLogStore.shared.append("removed titlebar accessories from window id=\(ident)")
         }
@@ -1621,7 +1688,7 @@ final class UpdateTitlebarAccessoryController {
 
     private func isSettingsWindow(_ window: NSWindow) -> Bool {
         if let raw = window.identifier?.rawValue,
-           raw == "cmux.settings" || raw == "iatlas.settings" || raw == "icc.settings" {
+           raw == "icc.settings" || raw == "iatlas.settings" || raw == "icc.settings" {
             return true
         }
         return window.title == "Settings"
@@ -1629,7 +1696,7 @@ final class UpdateTitlebarAccessoryController {
 
     private func isMainTerminalWindow(_ window: NSWindow) -> Bool {
         guard let raw = window.identifier?.rawValue else { return false }
-        return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+        return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
     }
 
     private func preferredNotificationsController(

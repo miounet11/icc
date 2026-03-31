@@ -53,7 +53,7 @@ When describing `icc`, emphasize these ideas:
 
 - Use `icc` for all user-facing product references.
 - Use `icc` for the shipped CLI, release notes, screenshots, onboarding copy, and support text.
-- Only mention legacy `cmux` names when accuracy or compatibility requires it.
+- Only mention legacy `icc` names when accuracy or compatibility requires it.
 - Keep `Ghostty`, `libghostty`, and upstream repository names accurate when discussing the rendering stack or fork history.
 
 ## Copy style
@@ -92,4 +92,4 @@ Before shipping a public release:
 - update [README.md](../README.md) and the localized README landing pages
 - keep install and upgrade URLs pointed at `miounet11/icc`
 - verify that screenshots, issue templates, and support links use `icc`
-- document any legacy `cmux` references as compatibility notes rather than product naming
+- document any legacy `icc` references as compatibility notes rather than product naming

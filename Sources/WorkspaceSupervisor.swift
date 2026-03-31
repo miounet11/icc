@@ -2231,7 +2231,7 @@ enum WorkspaceSupervisorLLMClient {
     ) async throws -> WorkspaceSupervisorReview {
         let heuristic = WorkspaceSupervisorHeuristics.evaluate(snapshot: snapshot)
         guard let url = URL(string: endpoint) else {
-            throw NSError(domain: "cmux.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "Invalid LLM endpoint URL"])
+            throw NSError(domain: "icc.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "Invalid LLM endpoint URL"])
         }
 
         let prompt = """
@@ -2274,14 +2274,14 @@ enum WorkspaceSupervisorLLMClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             let errorText = String(data: data, encoding: .utf8) ?? "Unknown API error"
-            throw NSError(domain: "cmux.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
+            throw NSError(domain: "icc.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
         }
 
         let decoded = try JSONDecoder().decode(WorkspaceSupervisorLLMResponse.self, from: data)
         let content = decoded.choices.first?.message.content ?? ""
         guard let payloadData = content.data(using: .utf8),
               let payload = try JSONSerialization.jsonObject(with: payloadData) as? [String: Any] else {
-            throw NSError(domain: "cmux.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM returned invalid JSON"])
+            throw NSError(domain: "icc.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM returned invalid JSON"])
         }
 
         let health = WorkspaceSupervisorHealth(rawValue: String(describing: payload["health"] ?? "")) ?? heuristic.health
@@ -2306,7 +2306,7 @@ enum WorkspaceSupervisorLLMClient {
     ) async throws -> WorkspaceSupervisorStartupPlan {
         let heuristic = WorkspaceSupervisorHeuristics.prepareStartupPlan(snapshot: snapshot, interactions: interactions)
         guard let url = URL(string: endpoint) else {
-            throw NSError(domain: "cmux.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "无效的 LLM 接口地址"])
+            throw NSError(domain: "icc.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "无效的 LLM 接口地址"])
         }
 
         let prompt = """
@@ -2354,14 +2354,14 @@ enum WorkspaceSupervisorLLMClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             let errorText = String(data: data, encoding: .utf8) ?? "Unknown API error"
-            throw NSError(domain: "cmux.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
+            throw NSError(domain: "icc.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
         }
 
         let decoded = try JSONDecoder().decode(WorkspaceSupervisorLLMResponse.self, from: data)
         let content = decoded.choices.first?.message.content ?? ""
         guard let payloadData = content.data(using: .utf8),
               let payload = try JSONSerialization.jsonObject(with: payloadData) as? [String: Any] else {
-            throw NSError(domain: "cmux.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM 返回了无效 JSON"])
+            throw NSError(domain: "icc.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM 返回了无效 JSON"])
         }
 
         return WorkspaceSupervisorStartupPlan(
@@ -2390,7 +2390,7 @@ enum WorkspaceSupervisorLLMClient {
             startupPlan: startupPlan
         )
         guard let url = URL(string: endpoint) else {
-            throw NSError(domain: "cmux.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "Invalid LLM endpoint URL"])
+            throw NSError(domain: "icc.supervisor", code: 10, userInfo: [NSLocalizedDescriptionKey: "Invalid LLM endpoint URL"])
         }
 
         let prompt = """
@@ -2440,14 +2440,14 @@ enum WorkspaceSupervisorLLMClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             let errorText = String(data: data, encoding: .utf8) ?? "Unknown API error"
-            throw NSError(domain: "cmux.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
+            throw NSError(domain: "icc.supervisor", code: 11, userInfo: [NSLocalizedDescriptionKey: errorText])
         }
 
         let decoded = try JSONDecoder().decode(WorkspaceSupervisorLLMResponse.self, from: data)
         let content = decoded.choices.first?.message.content ?? ""
         guard let payloadData = content.data(using: .utf8),
               let payload = try JSONSerialization.jsonObject(with: payloadData) as? [String: Any] else {
-            throw NSError(domain: "cmux.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM returned invalid JSON"])
+            throw NSError(domain: "icc.supervisor", code: 12, userInfo: [NSLocalizedDescriptionKey: "LLM returned invalid JSON"])
         }
 
         return WorkspaceSupervisorExecutionBrief(

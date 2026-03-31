@@ -1,24 +1,24 @@
 #!/bin/bash
-# Test script that sends keystrokes to cmux via AppleScript
+# Test script that sends keystrokes to icc via AppleScript
 # This tests the actual keyboard input path through the app
 
 set -e
 
-echo "=== cmux Keystroke Test ==="
+echo "=== icc Keystroke Test ==="
 echo ""
 
-# Check if cmux is running
-if ! pgrep -x "cmux" > /dev/null; then
-    echo "Error: cmux is not running"
-    echo "Please start cmux first"
+# Check if icc is running
+if ! pgrep -x "icc" > /dev/null; then
+    echo "Error: icc is not running"
+    echo "Please start icc first"
     exit 1
 fi
 
-echo "cmux is running"
+echo "icc is running"
 echo ""
 
-# Activate cmux
-osascript -e 'tell application "cmux" to activate'
+# Activate icc
+osascript -e 'tell application "icc" to activate'
 sleep 0.5
 
 echo "Test 1: Testing Ctrl+C (SIGINT)"
@@ -56,7 +56,7 @@ echo "  If cat exited, Ctrl+D is working!"
 echo ""
 
 echo "=== Manual Verification Required ==="
-echo "Please check the cmux window to verify:"
+echo "Please check the icc window to verify:"
 echo "  1. The 'sleep 30' command was interrupted by Ctrl+C"
 echo "  2. The 'cat' command exited after Ctrl+D"
 echo ""

@@ -36,7 +36,7 @@ export function NavLinks() {
         href="https://github.com/miounet11/icc"
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => posthog.capture("cmuxterm_github_clicked", { location: "navbar" })}
+        onClick={() => posthog.capture("icc_github_clicked", { location: "navbar" })}
         className="hover:text-foreground transition-colors"
       >
         {t("github")}

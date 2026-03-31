@@ -4,7 +4,7 @@ import SwiftUI
 
 @MainActor
 final class WindowToolbarController: NSObject, NSToolbarDelegate {
-    private let commandItemIdentifier = NSToolbarItem.Identifier("cmux.focusedCommand")
+    private let commandItemIdentifier = NSToolbarItem.Identifier("icc.focusedCommand")
 
     private weak var tabManager: TabManager?
 

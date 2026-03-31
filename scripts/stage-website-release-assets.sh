@@ -98,7 +98,7 @@ LATEST_MANIFEST_PATH="${OUTPUT_DIR}/latest.json"
 ARCHIVE_DIR="${OUTPUT_DIR}/archive/${TAG}"
 REMOTE_LATEST_DIR="${OUTPUT_DIR}/remote"
 REMOTE_VERSION_DIR="${REMOTE_LATEST_DIR}/${TAG}"
-REMOTE_MANIFEST_PATH="${REMOTE_LATEST_DIR}/cmuxd-remote-manifest.json"
+REMOTE_MANIFEST_PATH="${REMOTE_LATEST_DIR}/iccd-remote-manifest.json"
 
 mkdir -p "$ARCHIVE_DIR" "$REMOTE_LATEST_DIR"
 cp "$DMG_PATH" "$LATEST_DMG_PATH"
@@ -115,8 +115,8 @@ if [[ -n "$REMOTE_ASSETS_DIR" ]]; then
   rm -rf "$REMOTE_VERSION_DIR"
   mkdir -p "$REMOTE_VERSION_DIR"
   cp -R "${REMOTE_ASSETS_DIR}/." "$REMOTE_VERSION_DIR/"
-  if [[ -f "${REMOTE_ASSETS_DIR}/cmuxd-remote-manifest.json" ]]; then
-    cp "${REMOTE_ASSETS_DIR}/cmuxd-remote-manifest.json" "$REMOTE_MANIFEST_PATH"
+  if [[ -f "${REMOTE_ASSETS_DIR}/iccd-remote-manifest.json" ]]; then
+    cp "${REMOTE_ASSETS_DIR}/iccd-remote-manifest.json" "$REMOTE_MANIFEST_PATH"
   fi
 fi
 
@@ -140,7 +140,7 @@ manifest = {
     "publishedAt": published_at,
     "available": False,
     "reason": "Remote helper assets were not staged for this release from this build host.",
-    "manifestUrl": f"{base_url}/remote/cmuxd-remote-manifest.json",
+    "manifestUrl": f"{base_url}/remote/iccd-remote-manifest.json",
 }
 Path(manifest_path).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
@@ -181,7 +181,7 @@ manifest = {
     },
 }
 manifest["remoteDaemon"] = {
-    "manifestUrl": f"{base_url}/remote/cmuxd-remote-manifest.json",
+    "manifestUrl": f"{base_url}/remote/iccd-remote-manifest.json",
     "archiveBaseUrl": f"{base_url}/remote/{tag}",
     "available": bool(remote_assets_dir),
 }

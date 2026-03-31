@@ -35,7 +35,7 @@ enum NotificationSoundSettings {
     static let customFileValue = "custom_file"
     static let customFilePathKey = "notificationSoundCustomFilePath"
     static let defaultCustomFilePath = ""
-    private static let stagedCustomSoundBaseName = "cmux-custom-notification-sound"
+    private static let stagedCustomSoundBaseName = "icc-custom-notification-sound"
     private static let customSoundPreparationQueue = DispatchQueue(
         label: "com.iatlas.notification-sound-preparation",
         qos: .utility
@@ -534,9 +534,9 @@ enum NotificationSoundSettings {
             process.executableURL = URL(fileURLWithPath: "/bin/sh")
             process.arguments = ["-c", command]
             var env = ProcessInfo.processInfo.environment
-            env["CMUX_NOTIFICATION_TITLE"] = title
-            env["CMUX_NOTIFICATION_SUBTITLE"] = subtitle
-            env["CMUX_NOTIFICATION_BODY"] = body
+            env["ICC_NOTIFICATION_TITLE"] = title
+            env["ICC_NOTIFICATION_SUBTITLE"] = subtitle
+            env["ICC_NOTIFICATION_BODY"] = body
             process.environment = env
             process.standardOutput = FileHandle.nullDevice
             process.standardError = FileHandle.nullDevice
@@ -579,7 +579,7 @@ enum NotificationPaneFlashSettings {
 }
 
 enum TaggedRunBadgeSettings {
-    static let environmentKey = "CMUX_TAG"
+    static let environmentKey = "ICC_TAG"
     private static let maxTagLength = 10
 
     static func normalizedTag(from env: [String: String] = ProcessInfo.processInfo.environment) -> String? {
@@ -616,7 +616,7 @@ enum AppFocusState {
         // Only treat the app as "focused" for notification suppression when a main terminal window
         // is key. If Settings/About/debug panels are key, we still want notifications to show.
         if let raw = keyWindow.identifier?.rawValue {
-            return raw == "cmux.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("cmux.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
+            return raw == "icc.main" || raw == "iatlas.main" || raw == "icc.main" || raw.hasPrefix("icc.main.") || raw.hasPrefix("iatlas.main.") || raw.hasPrefix("icc.main.")
         }
         return false
     }

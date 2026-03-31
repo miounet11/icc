@@ -108,7 +108,7 @@
     "metaTitle": "Blog",
     "metaDescription": "News and updates from the icc team",
     "description": "News and updates from the icc team",
-    "zenOfCmux": {
+    "zenOfIcc": {
       "metaTitle": "The Zen of icc",
       "metaDescription": "icc is a primitive, not a solution. It gives you composable pieces and your workflow is up to you."
     },
@@ -120,7 +120,7 @@
       "metaTitle": "Launching icc on Show HN",
       "metaDescription": "icc launched on Hacker News, hit #2, went viral in Japan, and people started building extensions on the CLI. Here's what happened."
     },
-    "introducingCmux": {
+    "introducingIcc": {
       "metaTitle": "Introducing icc",
       "metaDescription": "A native macOS terminal built on Ghostty, designed for running multiple AI coding agents side by side."
     },
@@ -132,7 +132,7 @@
         "p1": "My favorite icc feature is Cmd+Shift+U. I have 17 workspaces open right now, each running an agent. I used to click through tabs and the notification panel to figure out what completed. Typing is faster.",
         "p2": "Cmd+Shift+U jumps to the newest unread <link>notification</link>. In practice that means the last agent that finished. It switches to the right workspace, focuses the exact pane, flashes it so you see where to look, and marks it read. If the notification came from another window, that window comes forward."
       },
-      "zenOfCmux": {
+      "zenOfIcc": {
         "title": "The Zen of icc",
         "summary": "icc is a primitive, not a solution. It gives you composable pieces and your workflow is up to you.",
         "date": "February 27, 2026",
@@ -160,7 +160,7 @@
         "scriptable": "Everything in icc is scriptable through the CLI: creating workspaces, sending keystrokes, controlling the browser, reading notifications. Part of the icc philosophy is being programmable and composable, so people can customize the way they work with coding agents. The state of the art for coding agents is changing fast, and you don't want to be locked into an inflexible GUI orchestrator that can't keep up.",
         "cta": "If you're running multiple coding agents, <link>give icc a try</link>."
       },
-      "introducingCmux": {
+      "introducingIcc": {
         "title": "Introducing icc",
         "summary": "A native macOS terminal built on Ghostty, designed for running multiple AI coding agents side by side.",
         "date": "February 12, 2026",
@@ -268,7 +268,7 @@
       "paneNote": "Each pane can hold multiple surfaces (tabs within the pane).",
       "surfaceTitle": "Surface",
       "surfaceDesc": "A tab within a pane. Each pane has its own tab bar and can hold multiple surfaces. Created with {new}, navigated with {prev} / {next} or {jump}.",
-      "surfaceNote": "Surfaces are the individual terminal or browser sessions you interact with. Each surface has its own CMUX_SURFACE_ID environment variable.",
+      "surfaceNote": "Surfaces are the individual terminal or browser sessions you interact with. Each surface has its own ICC_SURFACE_ID environment variable.",
       "panelTitle": "Panel",
       "panelDesc": "The content inside a surface. Currently two types:",
       "panelTerminal": "Terminal: a Ghostty terminal session",
@@ -319,8 +319,8 @@
       "automationMode": "Automation mode",
       "automationModeDesc": "Control socket access level:",
       "automationOff": "Off: no socket control (most secure)",
-      "automationCmux": "icc processes only: only allow processes started inside icc terminals to connect",
-      "automationAll": "allowAll: allow any local process to connect (CMUX_SOCKET_MODE=allowAll, env override only)",
+      "automationIcc": "icc processes only: only allow processes started inside icc terminals to connect",
+      "automationAll": "allowAll: allow any local process to connect (ICC_SOCKET_MODE=allowAll, env override only)",
       "automationCallout": "On shared machines, consider using \"Off\" or \"icc processes only\" mode.",
       "browserLinkBehavior": "Browser link behavior",
       "browserLinkDesc": "In Settings > Browser, icc exposes two host lists with different purposes:",
@@ -400,18 +400,18 @@
       "release": "Release",
       "debug": "Debug",
       "taggedDebug": "Tagged debug build",
-      "socketOverride": "Override with the CMUX_SOCKET_PATH environment variable. Send one newline-terminated JSON request per call:",
+      "socketOverride": "Override with the ICC_SOCKET_PATH environment variable. Send one newline-terminated JSON request per call:",
       "socketCallout": "JSON socket requests must use method and params. Legacy v1 JSON payloads such as <legacy>'{'\"command\":\"...\"'}'</legacy> are not supported.",
       "accessModes": "Access modes",
       "modeHeader": "Mode",
       "descriptionHeader": "Description",
       "howToEnableHeader": "How to enable",
       "offMode": "Socket disabled",
-      "offEnable": "Settings UI or CMUX_SOCKET_MODE=off",
-      "cmuxOnlyMode": "Only processes spawned inside icc terminals can connect.",
-      "cmuxOnlyEnable": "Default mode in Settings UI",
+      "offEnable": "Settings UI or ICC_SOCKET_MODE=off",
+      "iccOnlyMode": "Only processes spawned inside icc terminals can connect.",
+      "iccOnlyEnable": "Default mode in Settings UI",
       "allowAllMode": "Allow any local process to connect (no ancestry check).",
-      "allowAllEnable": "Environment override only: CMUX_SOCKET_MODE=allowAll",
+      "allowAllEnable": "Environment override only: ICC_SOCKET_MODE=allowAll",
       "accessCallout": "On shared machines, use Off or icc processes only.",
       "cliOptions": "CLI options",
       "flagHeader": "Flag",
@@ -459,13 +459,13 @@
       "variableHeader": "Variable",
       "socketPathDesc": "Override the socket path used by CLI and integrations",
       "socketEnableDesc": "Force-enable/disable socket (1/0, true/false, on/off)",
-      "socketModeDesc": "Override access mode (cmuxOnly, allowAll, off). Also accepts icc-only/cmux_only and allow-all/allow_all",
+      "socketModeDesc": "Override access mode (iccOnly, allowAll, off). Also accepts icc-only/icc_only and allow-all/allow_all",
       "workspaceIdDesc": "Auto-set: current workspace ID",
       "surfaceIdDesc": "Auto-set: current surface ID",
       "termProgramDesc": "Set to ghostty",
       "termDesc": "Set to xterm-ghostty",
-      "envCallout": "Legacy CMUX_SOCKET_MODE values full and notifications are still accepted for compatibility.",
-      "detectingCmux": "Detecting icc",
+      "envCallout": "Legacy ICC_SOCKET_MODE values full and notifications are still accepted for compatibility.",
+      "detectingIcc": "Detecting icc",
       "examples": "Examples",
       "pythonClient": "Python client",
       "shellScript": "Shell script",

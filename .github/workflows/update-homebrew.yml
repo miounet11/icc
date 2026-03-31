@@ -81,13 +81,13 @@ jobs:
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "DMG SHA256: $SHA256"
 
-      - name: Checkout homebrew-cmux
+      - name: Checkout homebrew-icc
         if: steps.version.outputs.skip != 'true' && env.ICC_HOMEBREW_TAP_REPOSITORY != ''
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: ${{ env.ICC_HOMEBREW_TAP_REPOSITORY }}
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          path: homebrew-cmux
+          path: homebrew-icc
 
       - name: Update cask formula
         if: steps.version.outputs.skip != 'true' && env.ICC_HOMEBREW_TAP_REPOSITORY != ''
@@ -95,7 +95,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          cat > homebrew-cmux/Casks/icc.rb << CASKEOF
+          cat > homebrew-icc/Casks/icc.rb << CASKEOF
           cask "icc" do
             version "${VERSION}"
             sha256 "${SHA256}"
@@ -123,12 +123,12 @@ jobs:
           end
           CASKEOF
           # Remove leading whitespace from heredoc
-          sed -i 's/^          //' homebrew-cmux/Casks/icc.rb
+          sed -i 's/^          //' homebrew-icc/Casks/icc.rb
 
       - name: Verify cask SHA matches DMG
         if: steps.version.outputs.skip != 'true' && env.ICC_HOMEBREW_TAP_REPOSITORY != ''
         run: |
-          CASK_SHA=$(grep 'sha256' homebrew-cmux/Casks/icc.rb | sed 's/.*"\(.*\)".*/\1/')
+          CASK_SHA=$(grep 'sha256' homebrew-icc/Casks/icc.rb | sed 's/.*"\(.*\)".*/\1/')
           ACTUAL_SHA=$(shasum -a 256 icc.dmg | cut -d' ' -f1)
           if [ "$CASK_SHA" != "$ACTUAL_SHA" ]; then
             echo "SHA mismatch! Cask: $CASK_SHA, Actual: $ACTUAL_SHA" >&2
@@ -141,7 +141,7 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          cd homebrew-cmux
+          cd homebrew-icc
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Casks/icc.rb

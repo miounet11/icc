@@ -7,7 +7,7 @@ This document is the current release-facing summary of `icc` managed SSH behavio
 Historical note:
 
 - The shipped app is `icc`.
-- Several internal components still keep legacy names such as `cmuxd-remote`, `CMUX_*`, and `~/.cmux/...` paths for compatibility.
+- Several internal components still keep legacy names such as `iccd-remote`, `ICC_*`, and `~/.icc/...` paths for compatibility.
 
 ## Goal
 
@@ -39,13 +39,13 @@ Historical note:
 
 ### Remote helper
 
-- Internal daemon name: `cmuxd-remote`
+- Internal daemon name: `iccd-remote`
 - Transport: newline-delimited JSON over stdio
 - Main RPC groups: `hello`, `ping`, `proxy.*`, `session.*`
 
 ### Local relay and compatibility paths
 
-- The app can install a remote wrapper under `~/.cmux/bin/`.
+- The app can install a remote wrapper under `~/.icc/bin/`.
 - Reverse SSH forwarding is used so remote commands can speak back to the local app safely.
 - Browser proxy traffic is tunneled through the remote daemon stream RPC instead of relying on ad hoc per-port forwarding.
 
@@ -57,7 +57,7 @@ Historical note:
 
 - Managed remote TERM mode can prefer `xterm-256color` for safer compatibility.
 - Ghostty TERM can also be preserved when the remote host has matching terminfo support.
-- Remote helper naming and `~/.cmux/` paths remain legacy for now and should not be changed without a coordinated migration.
+- Remote helper naming and `~/.icc/` paths remain legacy for now and should not be changed without a coordinated migration.
 
 ## Current status
 

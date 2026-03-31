@@ -218,7 +218,7 @@ jobs:
       - name: Build universal nightly app (Release)
         if: needs.decide.outputs.should_publish != 'true' || steps.current_head_prebuild.outputs.still_current == 'true'
         run: |
-          xcodebuild -scheme cmux -configuration Release -derivedDataPath build-universal \
+          xcodebuild -scheme icc -configuration Release -derivedDataPath build-universal \
             -destination 'generic/platform=macOS' \
             -clonedSourcePackagesDirPath .spm-cache \
             ARCHS="arm64 x86_64" \
@@ -248,7 +248,7 @@ jobs:
           set -euo pipefail
           CLI_BINARY="build-universal/Build/Products/Release/${ICC_APP_BUNDLE_NAME}/Contents/Resources/bin/${ICC_CLI_NAME}"
           [ -x "$CLI_BINARY" ] || { echo "icc CLI binary not found at $CLI_BINARY" >&2; exit 1; }
-          CMUX_CLI_BIN="$CLI_BINARY" python3 tests/test_cli_version_memory_guard.py
+          ICC_CLI_BIN="$CLI_BINARY" python3 tests/test_cli_version_memory_guard.py
 
       - name: Check whether build commit is still current main HEAD after build
         if: needs.decide.outputs.should_publish == 'true' && steps.current_head_prebuild.outputs.still_current == 'true'
@@ -312,8 +312,8 @@ jobs:
             /usr/libexec/PlistBuddy -c "Add :SUFeedURL string ${feed_url}" "$app_plist"
             /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${NIGHTLY_MARKETING_VERSION}" "$app_plist"
             /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${NIGHTLY_BUILD}" "$app_plist"
-            /usr/libexec/PlistBuddy -c "Delete :CMUXCommit" "$app_plist" >/dev/null 2>&1 || true
-            /usr/libexec/PlistBuddy -c "Add :CMUXCommit string ${SHORT_SHA}" "$app_plist"
+            /usr/libexec/PlistBuddy -c "Delete :ICCCommit" "$app_plist" >/dev/null 2>&1 || true
+            /usr/libexec/PlistBuddy -c "Add :ICCCommit string ${SHORT_SHA}" "$app_plist"
             mv "$app_dir/${ICC_APP_BUNDLE_NAME}" "$app_dir/${ICC_NIGHTLY_APP_NAME}.app"
           }
 
@@ -338,14 +338,14 @@ jobs:
             --release-tag "nightly" \
             --repo "$ICC_REMOTE_DAEMON_REPO" \
             --output-dir "remote-daemon-assets"
-          MANIFEST_JSON="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), separators=(",",":")))' remote-daemon-assets/cmuxd-remote-manifest.json)"
+          MANIFEST_JSON="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), separators=(",",":")))' remote-daemon-assets/iccd-remote-manifest.json)"
           APP_PLIST="build-universal/Build/Products/Release/${ICC_NIGHTLY_APP_NAME}.app/Contents/Info.plist"
           if [ ! -f "$APP_PLIST" ]; then
             echo "Missing nightly app Info.plist at $APP_PLIST" >&2
             exit 1
           fi
-          plutil -remove CMUXRemoteDaemonManifestJSON "$APP_PLIST" >/dev/null 2>&1 || true
-          plutil -insert CMUXRemoteDaemonManifestJSON -string "$MANIFEST_JSON" "$APP_PLIST"
+          plutil -remove ICCRemoteDaemonManifestJSON "$APP_PLIST" >/dev/null 2>&1 || true
+          plutil -insert ICCRemoteDaemonManifestJSON -string "$MANIFEST_JSON" "$APP_PLIST"
 
       - name: Import signing cert
         if: needs.decide.outputs.should_publish != 'true' || (steps.current_head_prebuild.outputs.still_current == 'true' && steps.current_head_postbuild.outputs.still_current == 'true')
@@ -380,7 +380,7 @@ jobs:
             echo "Missing APPLE_SIGNING_IDENTITY secret" >&2
             exit 1
           fi
-          ENTITLEMENTS="cmux.entitlements"
+          ENTITLEMENTS="icc.entitlements"
           for APP_PATH in \
             "build-universal/Build/Products/Release/${ICC_NIGHTLY_APP_NAME}.app"
           do
@@ -458,7 +458,7 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: manaflow
-          SENTRY_PROJECT: cmuxterm-macos
+          SENTRY_PROJECT: icc-macos
         run: |
           if [ -z "$SENTRY_AUTH_TOKEN" ]; then
             echo "SENTRY_AUTH_TOKEN not set, skipping dSYM upload"
@@ -487,12 +487,12 @@ jobs:
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: |
-            remote-daemon-assets/cmuxd-remote-darwin-arm64
-            remote-daemon-assets/cmuxd-remote-darwin-amd64
-            remote-daemon-assets/cmuxd-remote-linux-arm64
-            remote-daemon-assets/cmuxd-remote-linux-amd64
-            remote-daemon-assets/cmuxd-remote-checksums.txt
-            remote-daemon-assets/cmuxd-remote-manifest.json
+            remote-daemon-assets/iccd-remote-darwin-arm64
+            remote-daemon-assets/iccd-remote-darwin-amd64
+            remote-daemon-assets/iccd-remote-linux-arm64
+            remote-daemon-assets/iccd-remote-linux-amd64
+            remote-daemon-assets/iccd-remote-checksums.txt
+            remote-daemon-assets/iccd-remote-manifest.json
 
       - name: Upload branch nightly artifacts
         if: needs.decide.outputs.should_publish != 'true'
@@ -502,12 +502,12 @@ jobs:
           path: |
             icc-nightly-macos*.dmg
             appcast.xml
-            remote-daemon-assets/cmuxd-remote-darwin-arm64
-            remote-daemon-assets/cmuxd-remote-darwin-amd64
-            remote-daemon-assets/cmuxd-remote-linux-arm64
-            remote-daemon-assets/cmuxd-remote-linux-amd64
-            remote-daemon-assets/cmuxd-remote-checksums.txt
-            remote-daemon-assets/cmuxd-remote-manifest.json
+            remote-daemon-assets/iccd-remote-darwin-arm64
+            remote-daemon-assets/iccd-remote-darwin-amd64
+            remote-daemon-assets/iccd-remote-linux-arm64
+            remote-daemon-assets/iccd-remote-linux-amd64
+            remote-daemon-assets/iccd-remote-checksums.txt
+            remote-daemon-assets/iccd-remote-manifest.json
             appcast-universal.xml
           if-no-files-found: error
 
@@ -541,12 +541,12 @@ jobs:
             icc-nightly-macos-${{ github.run_id }}*.dmg
             icc-nightly-macos.dmg
             appcast.xml
-            remote-daemon-assets/cmuxd-remote-darwin-arm64
-            remote-daemon-assets/cmuxd-remote-darwin-amd64
-            remote-daemon-assets/cmuxd-remote-linux-arm64
-            remote-daemon-assets/cmuxd-remote-linux-amd64
-            remote-daemon-assets/cmuxd-remote-checksums.txt
-            remote-daemon-assets/cmuxd-remote-manifest.json
+            remote-daemon-assets/iccd-remote-darwin-arm64
+            remote-daemon-assets/iccd-remote-darwin-amd64
+            remote-daemon-assets/iccd-remote-linux-arm64
+            remote-daemon-assets/iccd-remote-linux-amd64
+            remote-daemon-assets/iccd-remote-checksums.txt
+            remote-daemon-assets/iccd-remote-manifest.json
             appcast-universal.xml
           overwrite_files: true
 

@@ -5,7 +5,7 @@ This document tracks the modern JSON socket API used by `icc`.
 Historical note:
 
 - The current product and shipped CLI are `icc`.
-- The implementation still contains legacy `cmux` naming in protocol handlers, tests, and scripts.
+- The implementation still contains legacy `icc` naming in protocol handlers, tests, and scripts.
 
 ## Purpose
 

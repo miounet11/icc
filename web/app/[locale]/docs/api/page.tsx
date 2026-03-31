@@ -103,8 +103,8 @@ export default function ApiPage() {
             <td>
               <strong>icc processes only</strong>
             </td>
-            <td>{t("cmuxOnlyMode")}</td>
-            <td>{t("cmuxOnlyEnable")}</td>
+            <td>{t("iccOnlyMode")}</td>
+            <td>{t("iccOnlyEnable")}</td>
           </tr>
           <tr>
             <td>
@@ -375,31 +375,31 @@ icc identify --json`}
         <tbody>
           <tr>
             <td>
-              <code>CMUX_SOCKET_PATH</code>
+              <code>ICC_SOCKET_PATH</code>
             </td>
             <td>{t("socketPathDesc")}</td>
           </tr>
           <tr>
             <td>
-              <code>CMUX_SOCKET_ENABLE</code>
+              <code>ICC_SOCKET_ENABLE</code>
             </td>
             <td>{t("socketEnableDesc")}</td>
           </tr>
           <tr>
             <td>
-              <code>CMUX_SOCKET_MODE</code>
+              <code>ICC_SOCKET_MODE</code>
             </td>
             <td>{t("socketModeDesc")}</td>
           </tr>
           <tr>
             <td>
-              <code>CMUX_WORKSPACE_ID</code>
+              <code>ICC_WORKSPACE_ID</code>
             </td>
             <td>{t("workspaceIdDesc")}</td>
           </tr>
           <tr>
             <td>
-              <code>CMUX_SURFACE_ID</code>
+              <code>ICC_SURFACE_ID</code>
             </td>
             <td>{t("surfaceIdDesc")}</td>
           </tr>
@@ -421,19 +421,19 @@ icc identify --json`}
         {t("envCallout")}
       </Callout>
 
-      <h2>{t("detectingCmux")}</h2>
+      <h2>{t("detectingIcc")}</h2>
       <CodeBlock title="bash" lang="bash">{`# Prefer explicit socket path if set
-SOCK="\${CMUX_SOCKET_PATH:-/tmp/icc.sock}"
+SOCK="\${ICC_SOCKET_PATH:-/tmp/icc.sock}"
 [ -S "$SOCK" ] && echo "Socket available"
 
 # Check for the CLI
 command -v icc &>/dev/null && echo "icc available"
 
 # In icc-managed terminals these are auto-set
-[ -n "\${CMUX_WORKSPACE_ID:-}" ] && [ -n "\${CMUX_SURFACE_ID:-}" ] && echo "Inside icc surface"
+[ -n "\${ICC_WORKSPACE_ID:-}" ] && [ -n "\${ICC_SURFACE_ID:-}" ] && echo "Inside icc surface"
 
 # Distinguish from regular Ghostty
-[ "$TERM_PROGRAM" = "ghostty" ] && [ -n "\${CMUX_WORKSPACE_ID:-}" ] && echo "In icc"`}</CodeBlock>
+[ "$TERM_PROGRAM" = "ghostty" ] && [ -n "\${ICC_WORKSPACE_ID:-}" ] && echo "In icc"`}</CodeBlock>
 
       <h2>{t("examples")}</h2>
 
@@ -442,7 +442,7 @@ command -v icc &>/dev/null && echo "icc available"
 import os
 import socket
 
-SOCKET_PATH = os.environ.get("CMUX_SOCKET_PATH", "/tmp/icc.sock")
+SOCKET_PATH = os.environ.get("ICC_SOCKET_PATH", "/tmp/icc.sock")
 
 def rpc(method, params=None, req_id=1):
     payload = {"id": req_id, "method": method, "params": params or {}}
@@ -463,14 +463,14 @@ print(rpc(
 
       <h3>{t("shellScript")}</h3>
       <CodeBlock title="bash" lang="bash">{`#!/bin/bash
-SOCK="\${CMUX_SOCKET_PATH:-/tmp/icc.sock}"
+SOCK="\${ICC_SOCKET_PATH:-/tmp/icc.sock}"
 
-cmux_cmd() {
+icc_cmd() {
     printf "%s\\n" "$1" | nc -U "$SOCK"
 }
 
-cmux_cmd '{"id":"ws","method":"workspace.list","params":{}}'
-cmux_cmd '{"id":"notify","method":"notification.create","params":{"title":"Done","body":"Task complete"}}'`}</CodeBlock>
+icc_cmd '{"id":"ws","method":"workspace.list","params":{}}'
+icc_cmd '{"id":"notify","method":"notification.create","params":{"title":"Done","body":"Task complete"}}'`}</CodeBlock>
 
       <h3>{t("buildScriptNotification")}</h3>
       <CodeBlock title="bash" lang="bash">{`#!/bin/bash

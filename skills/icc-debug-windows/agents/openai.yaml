@@ -1,0 +1,4 @@
+interface:
+  display_name: "icc Debug Windows"
+  short_description: "Tune icc debug windows and copy snapshots."
+  default_prompt: "Use this skill to manage icc sidebar/background/menu-bar debug windows, keep Debug menu wiring clean, and capture copyable debug snapshots."

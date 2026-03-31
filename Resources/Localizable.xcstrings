@@ -5258,7 +5258,7 @@
         }
       }
     },
-    "browser.import.destination.cmux": {
+    "browser.import.destination.icc": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -8973,7 +8973,7 @@
         }
       }
     },
-    "browser.proceedInCmux": {
+    "browser.proceedInIcc": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -31495,7 +31495,7 @@
         }
       }
     },
-    "dialog.quitCmux.message": {
+    "dialog.quitIcc.message": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -31608,7 +31608,7 @@
         }
       }
     },
-    "dialog.quitCmux.quit": {
+    "dialog.quitIcc.quit": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -31721,7 +31721,7 @@
         }
       }
     },
-    "dialog.quitCmux.title": {
+    "dialog.quitIcc.title": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -37614,7 +37614,7 @@
         }
       }
     },
-    "menu.quitCmux": {
+    "menu.quitIcc": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -48714,109 +48714,109 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Each workspace gets CMUX_PORT and CMUX_PORT_END env vars with a dedicated port range. New terminals inherit these values."
+            "value": "Each workspace gets ICC_PORT and ICC_PORT_END env vars with a dedicated port range. New terminals inherit these values."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "各ワークスペースにはCMUX_PORTとCMUX_PORT_END環境変数で専用のポート範囲が割り当てられます。新しいターミナルはこれらの値を継承します。"
+            "value": "各ワークスペースにはICC_PORTとICC_PORT_END環境変数で専用のポート範囲が割り当てられます。新しいターミナルはこれらの値を継承します。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "每个工作区会获得 CMUX_PORT 和 CMUX_PORT_END 环境变量，包含专用的端口范围。新终端会继承这些值。"
+            "value": "每个工作区会获得 ICC_PORT 和 ICC_PORT_END 环境变量，包含专用的端口范围。新终端会继承这些值。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "每個工作區都會取得包含專用連接埠範圍的 CMUX_PORT 和 CMUX_PORT_END 環境變數。新終端機會繼承這些值。"
+            "value": "每個工作區都會取得包含專用連接埠範圍的 ICC_PORT 和 ICC_PORT_END 環境變數。新終端機會繼承這些值。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "각 작업 공간에 전용 포트 범위가 있는 CMUX_PORT 및 CMUX_PORT_END 환경 변수가 할당됩니다. 새 터미널은 이 값을 상속합니다."
+            "value": "각 작업 공간에 전용 포트 범위가 있는 ICC_PORT 및 ICC_PORT_END 환경 변수가 할당됩니다. 새 터미널은 이 값을 상속합니다."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jeder Arbeitsbereich erhält CMUX_PORT- und CMUX_PORT_END-Umgebungsvariablen mit einem dedizierten Portbereich. Neue Terminals erben diese Werte."
+            "value": "Jeder Arbeitsbereich erhält ICC_PORT- und ICC_PORT_END-Umgebungsvariablen mit einem dedizierten Portbereich. Neue Terminals erben diese Werte."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada espacio de trabajo recibe las variables de entorno CMUX_PORT y CMUX_PORT_END con un rango de puertos dedicado. Los nuevos terminales heredan estos valores."
+            "value": "Cada espacio de trabajo recibe las variables de entorno ICC_PORT y ICC_PORT_END con un rango de puertos dedicado. Los nuevos terminales heredan estos valores."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chaque espace de travail reçoit les variables d'environnement CMUX_PORT et CMUX_PORT_END avec une plage de ports dédiée. Les nouveaux terminaux héritent de ces valeurs."
+            "value": "Chaque espace de travail reçoit les variables d'environnement ICC_PORT et ICC_PORT_END avec une plage de ports dédiée. Les nouveaux terminaux héritent de ces valeurs."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ogni area di lavoro riceve le variabili d'ambiente CMUX_PORT e CMUX_PORT_END con un intervallo di porte dedicato. I nuovi terminali ereditano questi valori."
+            "value": "Ogni area di lavoro riceve le variabili d'ambiente ICC_PORT e ICC_PORT_END con un intervallo di porte dedicato. I nuovi terminali ereditano questi valori."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hvert arbejdsområde får CMUX_PORT og CMUX_PORT_END miljøvariabler med et dedikeret portområde. Nye terminaler arver disse værdier."
+            "value": "Hvert arbejdsområde får ICC_PORT og ICC_PORT_END miljøvariabler med et dedikeret portområde. Nye terminaler arver disse værdier."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Każda przestrzeń robocza otrzymuje zmienne środowiskowe CMUX_PORT i CMUX_PORT_END z dedykowanym zakresem portów. Nowe terminale dziedziczą te wartości."
+            "value": "Każda przestrzeń robocza otrzymuje zmienne środowiskowe ICC_PORT i ICC_PORT_END z dedykowanym zakresem portów. Nowe terminale dziedziczą te wartości."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Каждое рабочее пространство получает переменные окружения CMUX_PORT и CMUX_PORT_END с выделенным диапазоном портов. Новые терминалы наследуют эти значения."
+            "value": "Каждое рабочее пространство получает переменные окружения ICC_PORT и ICC_PORT_END с выделенным диапазоном портов. Новые терминалы наследуют эти значения."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Svaki radni prostor dobija CMUX_PORT i CMUX_PORT_END varijable okruženja sa dodijeljenim rasponom portova. Novi terminali nasljeđuju ove vrijednosti."
+            "value": "Svaki radni prostor dobija ICC_PORT i ICC_PORT_END varijable okruženja sa dodijeljenim rasponom portova. Novi terminali nasljeđuju ove vrijednosti."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تحصل كل مساحة عمل على متغيرات البيئة CMUX_PORT و CMUX_PORT_END مع نطاق منافذ مخصص. ترث الطرفيات الجديدة هذه القيم."
+            "value": "تحصل كل مساحة عمل على متغيرات البيئة ICC_PORT و ICC_PORT_END مع نطاق منافذ مخصص. ترث الطرفيات الجديدة هذه القيم."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hvert arbeidsområde får CMUX_PORT- og CMUX_PORT_END-miljøvariabler med et dedikert portområde. Nye terminaler arver disse verdiene."
+            "value": "Hvert arbeidsområde får ICC_PORT- og ICC_PORT_END-miljøvariabler med et dedikert portområde. Nye terminaler arver disse verdiene."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada área de trabalho recebe as variáveis de ambiente CMUX_PORT e CMUX_PORT_END com uma faixa de portas dedicada. Novos terminais herdam esses valores."
+            "value": "Cada área de trabalho recebe as variáveis de ambiente ICC_PORT e ICC_PORT_END com uma faixa de portas dedicada. Novos terminais herdam esses valores."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "แต่ละเวิร์กสเปซจะได้รับตัวแปรสภาพแวดล้อม CMUX_PORT และ CMUX_PORT_END พร้อมช่วงพอร์ตเฉพาะ เทอร์มินัลใหม่จะสืบทอดค่าเหล่านี้"
+            "value": "แต่ละเวิร์กสเปซจะได้รับตัวแปรสภาพแวดล้อม ICC_PORT และ ICC_PORT_END พร้อมช่วงพอร์ตเฉพาะ เทอร์มินัลใหม่จะสืบทอดค่าเหล่านี้"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Her çalışma alanı ayrılmış bir port aralığıyla CMUX_PORT ve CMUX_PORT_END ortam değişkenlerini alır. Yeni terminaller bu değerleri devralır."
+            "value": "Her çalışma alanı ayrılmış bir port aralığıyla ICC_PORT ve ICC_PORT_END ortam değişkenlerini alır. Yeni terminaller bu değerleri devralır."
           }
         }
       }
@@ -48940,109 +48940,109 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Starting port for CMUX_PORT env var."
+            "value": "Starting port for ICC_PORT env var."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CMUX_PORT環境変数の開始ポート。"
+            "value": "ICC_PORT環境変数の開始ポート。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "CMUX_PORT 环境变量的起始端口。"
+            "value": "ICC_PORT 环境变量的起始端口。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "CMUX_PORT 環境變數的起始連接埠。"
+            "value": "ICC_PORT 環境變數的起始連接埠。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "CMUX_PORT 환경 변수의 시작 포트."
+            "value": "ICC_PORT 환경 변수의 시작 포트."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Startport für die CMUX_PORT-Umgebungsvariable."
+            "value": "Startport für die ICC_PORT-Umgebungsvariable."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Puerto inicial para la variable de entorno CMUX_PORT."
+            "value": "Puerto inicial para la variable de entorno ICC_PORT."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Port de départ pour la variable d'environnement CMUX_PORT."
+            "value": "Port de départ pour la variable d'environnement ICC_PORT."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Porta iniziale per la variabile d'ambiente CMUX_PORT."
+            "value": "Porta iniziale per la variabile d'ambiente ICC_PORT."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Startport for CMUX_PORT-miljøvariabel."
+            "value": "Startport for ICC_PORT-miljøvariabel."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Port początkowy dla zmiennej środowiskowej CMUX_PORT."
+            "value": "Port początkowy dla zmiennej środowiskowej ICC_PORT."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Начальный порт для переменной окружения CMUX_PORT."
+            "value": "Начальный порт для переменной окружения ICC_PORT."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Početni port za CMUX_PORT varijablu okruženja."
+            "value": "Početni port za ICC_PORT varijablu okruženja."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "المنفذ الابتدائي لمتغير البيئة CMUX_PORT."
+            "value": "المنفذ الابتدائي لمتغير البيئة ICC_PORT."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Startport for CMUX_PORT-miljøvariabelen."
+            "value": "Startport for ICC_PORT-miljøvariabelen."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Porta inicial para a variável de ambiente CMUX_PORT."
+            "value": "Porta inicial para a variável de ambiente ICC_PORT."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "พอร์ตเริ่มต้นสำหรับตัวแปรสภาพแวดล้อม CMUX_PORT"
+            "value": "พอร์ตเริ่มต้นสำหรับตัวแปรสภาพแวดล้อม ICC_PORT"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "CMUX_PORT ortam değişkeni için başlangıç portu."
+            "value": "ICC_PORT ortam değişkeni için başlangıç portu."
           }
         }
       }
@@ -49505,109 +49505,109 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overrides: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE, and CMUX_SOCKET_PATH (set CMUX_ALLOW_SOCKET_OVERRIDE=1 for stable/nightly builds)."
+            "value": "Overrides: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE, and ICC_SOCKET_PATH (set ICC_ALLOW_SOCKET_OVERRIDE=1 for stable/nightly builds)."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "オーバーライド: CMUX_SOCKET_ENABLE、CMUX_SOCKET_MODE、CMUX_SOCKET_PATH（stable/nightlyビルドではCMUX_ALLOW_SOCKET_OVERRIDE=1を設定）。"
+            "value": "オーバーライド: ICC_SOCKET_ENABLE、ICC_SOCKET_MODE、ICC_SOCKET_PATH（stable/nightlyビルドではICC_ALLOW_SOCKET_OVERRIDE=1を設定）。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "覆盖项：CMUX_SOCKET_ENABLE、CMUX_SOCKET_MODE 和 CMUX_SOCKET_PATH（对稳定版/每日构建版需设置 CMUX_ALLOW_SOCKET_OVERRIDE=1）。"
+            "value": "覆盖项：ICC_SOCKET_ENABLE、ICC_SOCKET_MODE 和 ICC_SOCKET_PATH（对稳定版/每日构建版需设置 ICC_ALLOW_SOCKET_OVERRIDE=1）。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "覆寫設定：CMUX_SOCKET_ENABLE、CMUX_SOCKET_MODE 和 CMUX_SOCKET_PATH（穩定版/每夜版需設定 CMUX_ALLOW_SOCKET_OVERRIDE=1）。"
+            "value": "覆寫設定：ICC_SOCKET_ENABLE、ICC_SOCKET_MODE 和 ICC_SOCKET_PATH（穩定版/每夜版需設定 ICC_ALLOW_SOCKET_OVERRIDE=1）。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "재정의: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE, CMUX_SOCKET_PATH (안정/나이틀리 빌드의 경우 CMUX_ALLOW_SOCKET_OVERRIDE=1 설정)."
+            "value": "재정의: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE, ICC_SOCKET_PATH (안정/나이틀리 빌드의 경우 ICC_ALLOW_SOCKET_OVERRIDE=1 설정)."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Überschreibungen: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE und CMUX_SOCKET_PATH (setzen Sie CMUX_ALLOW_SOCKET_OVERRIDE=1 für Stable-/Nightly-Builds)."
+            "value": "Überschreibungen: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE und ICC_SOCKET_PATH (setzen Sie ICC_ALLOW_SOCKET_OVERRIDE=1 für Stable-/Nightly-Builds)."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sobreescrituras: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE y CMUX_SOCKET_PATH (establece CMUX_ALLOW_SOCKET_OVERRIDE=1 para compilaciones estables/nightly)."
+            "value": "Sobreescrituras: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE y ICC_SOCKET_PATH (establece ICC_ALLOW_SOCKET_OVERRIDE=1 para compilaciones estables/nightly)."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remplacements : CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE et CMUX_SOCKET_PATH (définissez CMUX_ALLOW_SOCKET_OVERRIDE=1 pour les builds stable/nightly)."
+            "value": "Remplacements : ICC_SOCKET_ENABLE, ICC_SOCKET_MODE et ICC_SOCKET_PATH (définissez ICC_ALLOW_SOCKET_OVERRIDE=1 pour les builds stable/nightly)."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Override: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE e CMUX_SOCKET_PATH (imposta CMUX_ALLOW_SOCKET_OVERRIDE=1 per le build stable/nightly)."
+            "value": "Override: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE e ICC_SOCKET_PATH (imposta ICC_ALLOW_SOCKET_OVERRIDE=1 per le build stable/nightly)."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tilsidesættelser: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE og CMUX_SOCKET_PATH (sæt CMUX_ALLOW_SOCKET_OVERRIDE=1 for stabile/nightly builds)."
+            "value": "Tilsidesættelser: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE og ICC_SOCKET_PATH (sæt ICC_ALLOW_SOCKET_OVERRIDE=1 for stabile/nightly builds)."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nadpisania: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE i CMUX_SOCKET_PATH (ustaw CMUX_ALLOW_SOCKET_OVERRIDE=1 dla wersji stabilnych/nightly)."
+            "value": "Nadpisania: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE i ICC_SOCKET_PATH (ustaw ICC_ALLOW_SOCKET_OVERRIDE=1 dla wersji stabilnych/nightly)."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Переопределения: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE и CMUX_SOCKET_PATH (установите CMUX_ALLOW_SOCKET_OVERRIDE=1 для стабильных/ночных сборок)."
+            "value": "Переопределения: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE и ICC_SOCKET_PATH (установите ICC_ALLOW_SOCKET_OVERRIDE=1 для стабильных/ночных сборок)."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Premošćenja: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE i CMUX_SOCKET_PATH (postavite CMUX_ALLOW_SOCKET_OVERRIDE=1 za stabilne/nightly verzije)."
+            "value": "Premošćenja: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE i ICC_SOCKET_PATH (postavite ICC_ALLOW_SOCKET_OVERRIDE=1 za stabilne/nightly verzije)."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "التجاوزات: CMUX_SOCKET_ENABLE و CMUX_SOCKET_MODE و CMUX_SOCKET_PATH (اضبط CMUX_ALLOW_SOCKET_OVERRIDE=1 لبناءات stable/nightly)."
+            "value": "التجاوزات: ICC_SOCKET_ENABLE و ICC_SOCKET_MODE و ICC_SOCKET_PATH (اضبط ICC_ALLOW_SOCKET_OVERRIDE=1 لبناءات stable/nightly)."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overstyringer: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE og CMUX_SOCKET_PATH (sett CMUX_ALLOW_SOCKET_OVERRIDE=1 for stabile/nattlige bygg)."
+            "value": "Overstyringer: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE og ICC_SOCKET_PATH (sett ICC_ALLOW_SOCKET_OVERRIDE=1 for stabile/nattlige bygg)."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Substituições: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE e CMUX_SOCKET_PATH (defina CMUX_ALLOW_SOCKET_OVERRIDE=1 para builds stable/nightly)."
+            "value": "Substituições: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE e ICC_SOCKET_PATH (defina ICC_ALLOW_SOCKET_OVERRIDE=1 para builds stable/nightly)."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "การแทนที่: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE และ CMUX_SOCKET_PATH (ตั้ง CMUX_ALLOW_SOCKET_OVERRIDE=1 สำหรับบิลด์ stable/nightly)"
+            "value": "การแทนที่: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE และ ICC_SOCKET_PATH (ตั้ง ICC_ALLOW_SOCKET_OVERRIDE=1 สำหรับบิลด์ stable/nightly)"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Geçersiz kılmalar: CMUX_SOCKET_ENABLE, CMUX_SOCKET_MODE ve CMUX_SOCKET_PATH (kararlı/gece derlemeleri için CMUX_ALLOW_SOCKET_OVERRIDE=1 ayarlayın)."
+            "value": "Geçersiz kılmalar: ICC_SOCKET_ENABLE, ICC_SOCKET_MODE ve ICC_SOCKET_PATH (kararlı/gece derlemeleri için ICC_ALLOW_SOCKET_OVERRIDE=1 ayarlayın)."
           }
         }
       }
@@ -65213,7 +65213,7 @@
         }
       }
     },
-    "socketControl.cmuxOnly.description": {
+    "socketControl.iccOnly.description": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -65326,7 +65326,7 @@
         }
       }
     },
-    "socketControl.cmuxOnly.name": {
+    "socketControl.iccOnly.name": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -67469,6 +67469,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sistem"
+          }
+        }
+      }
+    },
+    "titlebar.linkedMode.accessibilityLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch Claude + Codex linked mode"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude + Codex 連携モードを起動"
+          }
+        }
+      }
+    },
+    "titlebar.linkedMode.menuTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude + Codex Linked Mode"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude + Codex 連携モード"
+          }
+        }
+      }
+    },
+    "titlebar.linkedMode.tooltip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a linked Claude + Codex workspace"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude と Codex の連携ワークスペースを作成"
           }
         }
       }
