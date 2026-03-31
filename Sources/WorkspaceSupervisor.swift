@@ -1917,6 +1917,7 @@ private struct SupervisorInfoTile: View {
                 .font(monospaced ? .system(size: 12, design: .monospaced) : .system(size: 12))
                 .foregroundStyle(.primary)
                 .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(12)
@@ -2069,15 +2070,29 @@ private struct SupervisorPromptDisclosure: View {
     @Environment(\.colorScheme) private var colorScheme
     let title: String
     let prompt: String
+    private let maxPromptHeight: CGFloat = 220
 
     var body: some View {
         DisclosureGroup {
-            Text(prompt.isEmpty ? "暂无提示词" : prompt)
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(.primary)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 8)
+            Group {
+                if prompt.isEmpty {
+                    Text("暂无提示词")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    ScrollView(.vertical, showsIndicators: true) {
+                        Text(prompt)
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundStyle(.primary)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: maxPromptHeight, alignment: .topLeading)
+                }
+            }
+            .padding(.top, 8)
         } label: {
             Text(title)
                 .font(.system(size: 12.5, weight: .semibold))

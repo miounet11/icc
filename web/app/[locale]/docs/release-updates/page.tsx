@@ -51,8 +51,8 @@ ${siteConfig.remoteManifestUrl}`}</CodeBlock>
 downloads/icc-macos.dmg
 downloads/appcast.xml
 downloads/latest.json
-downloads/archive/v1.0.5/${siteConfig.releaseDmgName}
-downloads/archive/v1.0.5/appcast.xml
+downloads/archive/${siteConfig.version}/${siteConfig.releaseDmgName}
+downloads/archive/${siteConfig.version}/appcast.xml
 downloads/remote/cmuxd-remote-manifest.json`}</CodeBlock>
 
       <h2>{t("controlTitle")}</h2>

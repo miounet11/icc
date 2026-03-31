@@ -51,18 +51,18 @@ Compatibility note:
 
 Stable release assets:
 
-- `icc-v1.0.5-macos.dmg`
+- `icc-v1.0.6-macos.dmg`
 - `appcast.xml`
 - `latest.json`
 
 Website-hosted archive copies:
 
-- `downloads/archive/v1.0.5/icc-v1.0.5-macos.dmg`
-- `downloads/archive/v1.0.5/appcast.xml`
+- `downloads/archive/v1.0.6/icc-v1.0.6-macos.dmg`
+- `downloads/archive/v1.0.6/appcast.xml`
 
 Website-hosted latest aliases:
 
-- `downloads/icc-v1.0.5-macos.dmg`
+- `downloads/icc-v1.0.6-macos.dmg`
 - `downloads/icc-macos.dmg`
 - `downloads/appcast.xml`
 - `downloads/latest.json`
@@ -76,26 +76,26 @@ Nightly release assets:
 
 ## Version rules
 
-- Marketing version uses semantic versioning, for example `1.0.5`.
-- Git tags must use the `v` prefix, for example `v1.0.5`.
+- Marketing version uses semantic versioning, for example `1.0.6`.
+- Git tags must use the `v` prefix, for example `v1.0.6`.
 - `CURRENT_PROJECT_VERSION` must remain monotonic for Sparkle.
 - `scripts/bump-version.sh` should remain the normal way to set or bump versions.
 
 ## Current baseline
 
-- Current public stable line: `v1.0.5`
+- Current public stable line: `v1.0.6`
 - Repository: `https://github.com/miounet11/icc`
 
 ## Release workflow rules
 
-1. Update `MARKETING_VERSION` to the target release, currently `1.0.5`.
+1. Update `MARKETING_VERSION` to the target release, currently `1.0.6`.
 2. Keep `CURRENT_PROJECT_VERSION` increasing even if the marketing version resets for branding reasons.
 3. Build the signed and notarized macOS app, then generate `appcast.xml` with the matching Sparkle private key.
 4. Stage the DMG, appcast, release manifest, and remote helper assets into `web/public/downloads` or the production site's `public/downloads` directory.
 5. Push the staged `web/public/downloads` update onto `main` so the website deployment picks up the same release state as the tag build.
 6. Deploy the website so `iccjk.com` serves the new DMG, `appcast.xml`, `latest.json`, and remote helper manifest.
 7. Push the branch to `miounet11/icc`.
-8. Create and push a tag such as `v1.0.5` after the website-hosted artifacts have been verified.
+8. Create and push a tag such as `v1.0.6` after the website-hosted artifacts have been verified.
 
 ## Important migration note
 

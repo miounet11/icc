@@ -7,6 +7,15 @@ Historical note:
 - This codebase originated from `cmux`, and older entries intentionally retain legacy names, issue numbers, PR links, and internal binary identifiers where that history still matters.
 - The current product being released from this repository is `icc`.
 
+## [1.0.6] - 2026-03-31
+
+### Changed
+- Refreshed the stable ICC installer and website download surfaces so the public homepage, manifest, and GitHub release can all point to the same versioned macOS package.
+- Regenerated the ICC branded app icons and website logo assets from a single source so desktop and web branding stay aligned.
+
+### Fixed
+- Long supervisor prompt cards in the sidebar now stay bounded inside the panel instead of expanding the entire narrow layout.
+
 ## [1.0.4] - 2026-03-30
 
 ### Added
