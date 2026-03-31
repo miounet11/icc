@@ -73,18 +73,44 @@ cleanup() {
 }
 trap cleanup EXIT
 
-create_dmg_args=(
-  --overwrite
-  "--dmg-title=$VOLUME_NAME"
-)
+create_dmg_help="$(create-dmg --help 2>&1 || true)"
+create_dmg_args=()
+stage_dir="$tmp_dir/stage"
+mkdir -p "$stage_dir"
+cp -R "$APP_PATH" "$stage_dir/"
+ln -s /Applications "$stage_dir/Applications"
+
+if grep -q -- '--overwrite' <<<"$create_dmg_help"; then
+  create_dmg_args+=(--overwrite)
+fi
+
+if grep -q -- '--skip-jenkins' <<<"$create_dmg_help"; then
+  create_dmg_args+=(--skip-jenkins)
+fi
+
+if grep -q -- '--dmg-title' <<<"$create_dmg_help"; then
+  create_dmg_args+=("--dmg-title=$VOLUME_NAME")
+elif grep -q -- '--volname' <<<"$create_dmg_help"; then
+  create_dmg_args+=(--volname "$VOLUME_NAME")
+else
+  echo "Unsupported create-dmg version: missing title flag" >&2
+  exit 1
+fi
 
 if [[ -n "$IDENTITY" ]]; then
-  create_dmg_args+=("--identity=$IDENTITY")
+  if grep -q -- '--identity' <<<"$create_dmg_help"; then
+    create_dmg_args+=("--identity=$IDENTITY")
+  elif grep -q -- '--codesign' <<<"$create_dmg_help"; then
+    create_dmg_args+=(--codesign "$IDENTITY")
+  else
+    echo "Unsupported create-dmg version: missing signing flag" >&2
+    exit 1
+  fi
 fi
 
 create_dmg_args+=(
-  "$APP_PATH"
-  "$tmp_dir"
+  "$tmp_dir/$(basename "$OUTPUT_PATH")"
+  "$stage_dir"
 )
 
 create-dmg "${create_dmg_args[@]}"
