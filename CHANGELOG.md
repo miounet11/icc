@@ -9,6 +9,17 @@ Historical note:
 
 ## [1.0.6] - 2026-03-31
 
+## [1.0.8] - 2026-03-31
+
+### Changed
+- Hardened the macOS installer packaging path by routing local and GitHub releases through one shared DMG creation helper.
+- Updated the website stable-line copy and release notes so the homepage and changelog describe the same current installer version.
+
+### Fixed
+- Release publication now mounts and verifies the DMG before upload, checking the app bundle shape and the `Applications` drag target so malformed installers are blocked before users download them.
+
+## [1.0.6] - 2026-03-31
+
 ### Changed
 - Refreshed the stable ICC installer and website download surfaces so the public homepage, manifest, and GitHub release can all point to the same versioned macOS package.
 - Regenerated the ICC branded app icons and website logo assets from a single source so desktop and web branding stay aligned.

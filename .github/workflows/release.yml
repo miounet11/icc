@@ -306,12 +306,12 @@ jobs:
           xcrun stapler validate "$APP_PATH"
           spctl -a -vv --type execute "$APP_PATH"
           rm -f "$ZIP_SUBMIT"
-          # create-dmg generates a styled drag-to-install DMG
-          create-dmg \
-            --identity="$APPLE_SIGNING_IDENTITY" \
-            "$APP_PATH" \
-            ./
-          mv ./icc*.dmg "$DMG_RELEASE"
+          ./scripts/create_release_dmg.sh \
+            --app-path "$APP_PATH" \
+            --output "$DMG_RELEASE" \
+            --identity "$APPLE_SIGNING_IDENTITY" \
+            --volume-name "icc ${GITHUB_REF_NAME#v}"
+          ./scripts/verify_release_artifact.sh --dmg "$DMG_RELEASE" --expected-app "$ICC_APP_BUNDLE_NAME"
           DMG_SUBMIT_JSON="$(xcrun notarytool submit "$DMG_RELEASE" "${AUTH_ARGS[@]}" --wait --output-format json)"
           DMG_SUBMIT_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$DMG_SUBMIT_JSON")"
           DMG_STATUS="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' <<<"$DMG_SUBMIT_JSON")"
@@ -322,6 +322,7 @@ jobs:
           fi
           xcrun stapler staple "$DMG_RELEASE"
           xcrun stapler validate "$DMG_RELEASE"
+          ./scripts/verify_release_artifact.sh --dmg "$DMG_RELEASE" --expected-app "$ICC_APP_BUNDLE_NAME"
           if [ -n "$API_KEY_PATH" ]; then
             rm -f "$API_KEY_PATH"
           fi

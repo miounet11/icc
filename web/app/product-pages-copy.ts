@@ -320,7 +320,7 @@ const englishCopy: ProductPageCopy = {
       "This log is the public release record for ICC. It tracks the current product line, the official website rollout, documentation changes, and the operating notes you should check before replacing your current build.",
     currentReleaseLabel: "Current release line",
     currentReleaseBody:
-      "ICC is currently published as v1.0.7. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
+      "ICC is currently published as v1.0.8. The desktop product, official website, multilingual marketing layer, and release assets now align to the current stable line.",
     releaseModelTitle: "How to read ICC releases",
     releaseModelIntro:
       "Use the changelog as an operating document, not just a marketing page. A good release note helps you decide whether to adopt immediately, validate first, or hold until an active workflow is done.",
@@ -358,6 +358,18 @@ const englishCopy: ProductPageCopy = {
     ],
     entriesTitle: "Release history",
     entries: [
+      {
+        date: "March 31, 2026",
+        version: "v1.0.8",
+        title: "Installer path hardening and release artifact verification",
+        body:
+          "This stable release hardens the macOS packaging path so the shipped DMG behaves like a proper drag-to-Applications installer and the release pipeline now verifies the artifact shape instead of assuming it.",
+        bullets: [
+          "Unified local and GitHub release packaging behind one shared DMG creation helper so release behavior stays consistent across environments.",
+          "Added release-time verification that mounts the DMG, checks the app bundle, validates the Applications drag target, and rejects malformed installer artifacts before publication.",
+          "Kept the website, release manifest, and GitHub assets aligned to the same versioned installer so operators and users see one stable source of truth.",
+        ],
+      },
       {
         date: "March 31, 2026",
         version: "v1.0.7",
@@ -679,7 +691,7 @@ const zhCnCopy: ProductPageCopy = {
       "这份页面是 ICC 的公开发布记录。它追踪当前产品线、官网上线、多语言站点扩展，以及替换当前构建前应该检查的操作说明。",
     currentReleaseLabel: "当前发布线",
     currentReleaseBody:
-      "ICC 当前对外发布版本为 v1.0.7。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
+      "ICC 当前对外发布版本为 v1.0.8。桌面产品、官方网站、多语言营销层以及发布资产现在都已经对齐到当前稳定版本线上。",
     releaseModelTitle: "应该怎么读 ICC 的版本发布",
     releaseModelIntro:
       "把升级日志当成操作文档，而不仅仅是宣传页。好的发布记录应该帮助你判断是马上采用、先验证，还是等当前任务结束后再更新。",
@@ -717,6 +729,18 @@ const zhCnCopy: ProductPageCopy = {
     ],
     entriesTitle: "发布历史",
     entries: [
+      {
+        date: "2026年3月31日",
+        version: "v1.0.8",
+        title: "安装包路径加固与发布产物校验",
+        body:
+          "这个稳定版本把 macOS 安装包链路进一步加固，让对外发布的 DMG 更接近标准的拖拽到 Applications 安装体验，同时发布流程会在上传前主动校验产物结构，而不再只是假定它是正确的。",
+        bullets: [
+          "把本地发布和 GitHub 发布统一到同一个 DMG 构建辅助脚本上，避免不同环境下产物行为漂移。",
+          "新增发布时校验流程：自动挂载 DMG、检查 app bundle、验证 Applications 拖拽目标，并在安装包结构异常时直接阻止发布。",
+          "继续保证官网、发布清单和 GitHub 资产始终指向同一个带版本号的安装包，让运维与用户看到的是同一条稳定真相源。",
+        ],
+      },
       {
         date: "2026年3月31日",
         version: "v1.0.7",

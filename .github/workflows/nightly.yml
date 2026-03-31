@@ -413,9 +413,6 @@ jobs:
             local dmg_release="$2"
             local dmg_immutable="$3"
             local zip_submit="${dmg_release%.dmg}-notary.zip"
-            local dmg_tmp_dir
-            local created_dmg
-
             ditto -c -k --sequesterRsrc --keepParent "$app_path" "$zip_submit"
             APP_SUBMIT_JSON="$(xcrun notarytool submit "$zip_submit" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait --output-format json)"
             APP_SUBMIT_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$APP_SUBMIT_JSON")"
@@ -430,18 +427,12 @@ jobs:
             spctl -a -vv --type execute "$app_path"
             rm -f "$zip_submit"
 
-            dmg_tmp_dir="$(mktemp -d)"
-            create-dmg \
-              --identity="$APPLE_SIGNING_IDENTITY" \
-              "$app_path" \
-              "$dmg_tmp_dir"
-            created_dmg="$(find "$dmg_tmp_dir" -maxdepth 1 -name '*.dmg' | head -n 1)"
-            if [ -z "$created_dmg" ]; then
-              echo "Failed to locate created DMG for $app_path" >&2
-              exit 1
-            fi
-            mv "$created_dmg" "$dmg_release"
-            rm -rf "$dmg_tmp_dir"
+            ./scripts/create_release_dmg.sh \
+              --app-path "$app_path" \
+              --output "$dmg_release" \
+              --identity "$APPLE_SIGNING_IDENTITY" \
+              --volume-name "${ICC_NIGHTLY_APP_NAME}"
+            ./scripts/verify_release_artifact.sh --dmg "$dmg_release" --expected-app "$(basename "$app_path")"
 
             DMG_SUBMIT_JSON="$(xcrun notarytool submit "$dmg_release" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait --output-format json)"
             DMG_SUBMIT_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$DMG_SUBMIT_JSON")"
@@ -453,6 +444,7 @@ jobs:
             fi
             xcrun stapler staple "$dmg_release"
             xcrun stapler validate "$dmg_release"
+            ./scripts/verify_release_artifact.sh --dmg "$dmg_release" --expected-app "$(basename "$app_path")"
             cp "$dmg_release" "$dmg_immutable"
           }
 

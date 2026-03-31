@@ -150,12 +150,18 @@ echo "App notarized"
 # --- Create and notarize DMG ---
 echo "Creating DMG..."
 rm -f "$ICC_RELEASE_DMG_NAME"
-create-dmg --codesign "$SIGN_HASH" "$ICC_RELEASE_DMG_NAME" "$APP_PATH"
+./scripts/create_release_dmg.sh \
+  --app-path "$APP_PATH" \
+  --output "$ICC_RELEASE_DMG_NAME" \
+  --identity "$SIGN_HASH" \
+  --volume-name "icc ${VERSION}"
+./scripts/verify_release_artifact.sh --dmg "$ICC_RELEASE_DMG_NAME" --expected-app "$ICC_APP_BUNDLE_NAME"
 echo "Notarizing DMG..."
 xcrun notarytool submit "$ICC_RELEASE_DMG_NAME" \
   "${notary_args[@]}" --wait
 xcrun stapler staple "$ICC_RELEASE_DMG_NAME"
 xcrun stapler validate "$ICC_RELEASE_DMG_NAME"
+./scripts/verify_release_artifact.sh --dmg "$ICC_RELEASE_DMG_NAME" --expected-app "$ICC_APP_BUNDLE_NAME"
 echo "DMG notarized"
 
 # --- Generate Sparkle appcast ---
