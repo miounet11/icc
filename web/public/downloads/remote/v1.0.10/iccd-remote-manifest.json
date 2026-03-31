@@ -1,0 +1,38 @@
+{
+  "appVersion": "1.0.10",
+  "checksumsAssetName": "iccd-remote-checksums.txt",
+  "checksumsURL": "https://github.com/miounet11/icc/releases/download/v1.0.10/iccd-remote-checksums.txt",
+  "entries": [
+    {
+      "assetName": "iccd-remote-darwin-arm64",
+      "downloadURL": "https://github.com/miounet11/icc/releases/download/v1.0.10/iccd-remote-darwin-arm64",
+      "goArch": "arm64",
+      "goOS": "darwin",
+      "sha256": "723ead45c86d8f63c0f9937b5ccb4445a1ad0d6cc8dc029d74f2eb40e42e1c36"
+    },
+    {
+      "assetName": "iccd-remote-darwin-amd64",
+      "downloadURL": "https://github.com/miounet11/icc/releases/download/v1.0.10/iccd-remote-darwin-amd64",
+      "goArch": "amd64",
+      "goOS": "darwin",
+      "sha256": "cf6620bf042a19f57807b181c82d7d68a47b7b7fd5373ca2d960dc1b79a529d0"
+    },
+    {
+      "assetName": "iccd-remote-linux-arm64",
+      "downloadURL": "https://github.com/miounet11/icc/releases/download/v1.0.10/iccd-remote-linux-arm64",
+      "goArch": "arm64",
+      "goOS": "linux",
+      "sha256": "4d2dce6d995046d3f27c4828fde266c357f2472a4b3a25d4cb6fc19dfc1ee6a9"
+    },
+    {
+      "assetName": "iccd-remote-linux-amd64",
+      "downloadURL": "https://github.com/miounet11/icc/releases/download/v1.0.10/iccd-remote-linux-amd64",
+      "goArch": "amd64",
+      "goOS": "linux",
+      "sha256": "ac0fe82ce7c3f5c7a9f8a23fb23d85d0e2039b1d37bd5ee488f16e72a9a4071f"
+    }
+  ],
+  "releaseTag": "v1.0.10",
+  "releaseURL": "https://github.com/miounet11/icc/releases/download/v1.0.10",
+  "schemaVersion": 1
+}
