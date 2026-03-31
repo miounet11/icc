@@ -271,21 +271,35 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          if [ -z "$APPLE_ID" ] || [ -z "$APPLE_APP_SPECIFIC_PASSWORD" ] || [ -z "$APPLE_TEAM_ID" ]; then
-            echo "Missing notarization secrets (APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID)" >&2
+          AUTH_MODE=""
+          AUTH_ARGS=()
+          API_KEY_PATH=""
+          if [ -n "$APP_STORE_CONNECT_API_KEY" ] && [ -n "$APP_STORE_CONNECT_KEY_ID" ] && [ -n "$APP_STORE_CONNECT_ISSUER_ID" ]; then
+            AUTH_MODE="app-store-connect"
+            API_KEY_PATH="$RUNNER_TEMP/appstoreconnect_api_key.p8"
+            printf '%s' "$APP_STORE_CONNECT_API_KEY" > "$API_KEY_PATH"
+            AUTH_ARGS=(--key "$API_KEY_PATH" --key-id "$APP_STORE_CONNECT_KEY_ID" --issuer "$APP_STORE_CONNECT_ISSUER_ID")
+          elif [ -n "$APPLE_ID" ] && [ -n "$APPLE_APP_SPECIFIC_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            AUTH_MODE="apple-id"
+            AUTH_ARGS=(--apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD")
+          else
+            echo "Missing notarization secrets. Provide either APP_STORE_CONNECT_API_KEY/APP_STORE_CONNECT_KEY_ID/APP_STORE_CONNECT_ISSUER_ID or APPLE_ID/APPLE_APP_SPECIFIC_PASSWORD/APPLE_TEAM_ID." >&2
             exit 1
           fi
           APP_PATH="build/Build/Products/Release/${ICC_APP_BUNDLE_NAME}"
           ZIP_SUBMIT="icc-notary.zip"
           DMG_RELEASE="$ICC_RELEASE_DMG_NAME"
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_SUBMIT"
-          APP_SUBMIT_JSON="$(xcrun notarytool submit "$ZIP_SUBMIT" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait --output-format json)"
+          APP_SUBMIT_JSON="$(xcrun notarytool submit "$ZIP_SUBMIT" "${AUTH_ARGS[@]}" --wait --output-format json)"
           APP_SUBMIT_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$APP_SUBMIT_JSON")"
           APP_STATUS="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' <<<"$APP_SUBMIT_JSON")"
           if [ "$APP_STATUS" != "Accepted" ]; then
             echo "App notarization failed with status: $APP_STATUS" >&2
-            xcrun notarytool log "$APP_SUBMIT_ID" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" || true
+            xcrun notarytool log "$APP_SUBMIT_ID" "${AUTH_ARGS[@]}" || true
             exit 1
           fi
           xcrun stapler staple "$APP_PATH"
@@ -298,16 +312,19 @@ jobs:
             "$APP_PATH" \
             ./
           mv ./icc*.dmg "$DMG_RELEASE"
-          DMG_SUBMIT_JSON="$(xcrun notarytool submit "$DMG_RELEASE" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait --output-format json)"
+          DMG_SUBMIT_JSON="$(xcrun notarytool submit "$DMG_RELEASE" "${AUTH_ARGS[@]}" --wait --output-format json)"
           DMG_SUBMIT_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$DMG_SUBMIT_JSON")"
           DMG_STATUS="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' <<<"$DMG_SUBMIT_JSON")"
           if [ "$DMG_STATUS" != "Accepted" ]; then
             echo "DMG notarization failed with status: $DMG_STATUS" >&2
-            xcrun notarytool log "$DMG_SUBMIT_ID" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" || true
+            xcrun notarytool log "$DMG_SUBMIT_ID" "${AUTH_ARGS[@]}" || true
             exit 1
           fi
           xcrun stapler staple "$DMG_RELEASE"
           xcrun stapler validate "$DMG_RELEASE"
+          if [ -n "$API_KEY_PATH" ]; then
+            rm -f "$API_KEY_PATH"
+          fi
 
       - name: Upload dSYMs to Sentry
         if: steps.guard_release_assets.outputs.skip_all != 'true'
